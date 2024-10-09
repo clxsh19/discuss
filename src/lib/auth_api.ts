@@ -1,16 +1,14 @@
 'use server'
 import { revalidatePath } from "next/cache";
 import { redirect } from 'next/navigation';
-import { useRouter } from 'next/navigation';
 import { cookies } from 'next/headers';
 
 
 // Login response headers:  [
 //   'connect.sid=s%3A4i2cEYpDTVANrK3RLUTHsoElSmV1VcET.etxnRrb1h02jCFCFMlZBo1lrT2UUPBsUoEyQxggbz%2BU; Path=/; Expires=Thu, 08 Aug 2024 14:53:17 GMT; HttpOnly; SameSite=Strict'
 // ]
+
 export async function logIn(formData: FormData) {
-  // 'use server';
-  // const router = useRouter();
   try {
     const rawFormData = {
       username: formData.get('username') as string,
@@ -25,33 +23,38 @@ export async function logIn(formData: FormData) {
       credentials: 'include',
       body: JSON.stringify(rawFormData),
     });
+
     const data = await res.json();
-    const setCookieHeader = res.headers.getSetCookie();
-    // console.log(setCookieHeader);
-    console.log("Login response data: ", data);
+
+    if (!res.ok) {
+      throw new Error(data.message || 'Login Failed');
+    }
+
+    const setCookieHeader = res.headers.get('Set-Cookie');
     if (setCookieHeader) {
-      setCookieHeader.forEach((cookieHeader) => {
-        // Extract the cookie name and value from the header
-        const [cookieNameValue, ...attributes] = cookieHeader.split(';');
-        const [cookieName, cookieValue] = cookieNameValue.split('=');
-        const decodedCookieValue = decodeURIComponent(cookieValue);
-        const cookieAttributes = attributes.join(';').trim();
-    
-        // Set the cookie with httpOnly attribute
-        cookies().set(cookieName, decodedCookieValue, {
-          httpOnly: true,
-        });
+      // Split the Set-Cookie header to extract cookies
+      const [cookieNameValue, ...attributes] = setCookieHeader.split(';');
+      const [cookieName, cookieValue] = cookieNameValue.split('=');
+      const decodedCookieValue = decodeURIComponent(cookieValue);
+
+      // Set the cookie using Next.js `cookies()`
+      cookies().set(cookieName, decodedCookieValue, {
+        httpOnly: true
       });
     }
+    console.log('logged in')
+  const pathname = formData.get('pathname') as string;
+   revalidatePath(pathname || '/');
+  // redirect(pathname || '/');
+    return true; // on success returns true
+
+  
   } catch (error) {
     console.error('Login failed', error);
-    throw new Error('Failed to login.');
+    return false; // false on falieur
   }
-  // Assuming you want to revalidate the path after login
-  // revalidatePath('/');
-  // redirect('/');
-  // router.back();
 }
+
 
 
 export async function userRegister(formData:FormData) {

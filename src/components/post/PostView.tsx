@@ -14,7 +14,7 @@ export interface PostViewProp extends PostItemProp {
 const PostView = (props : PostViewProp) => {
   const { 
     subreddit_name, post_id, username, created_at, total_comments,
-    title, total_votes, comments, text_content
+    title, total_votes, vote_type, comments, text_content
   } = props;
   const timePassed = getTimePassed(created_at);
   const votes_count = (total_votes == null) ? 0 : total_votes;

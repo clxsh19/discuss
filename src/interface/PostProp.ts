@@ -1,8 +1,9 @@
 export interface PostItemProp {
   post_id: number,
   title: string,
-  total_votes: number,
   total_comments: number,
+  total_votes: number,
+  vote_type: 1|-1|null,
   created_at: string,
   username: string,
   subreddit_name: string,

@@ -6,11 +6,14 @@ import VoteButton from '@/components/ui/VoteButton';
 import { submitPostVote } from '@/lib/create_api';
 
 const FeedItem = ({
-  post_id, title,
+  post_id, 
+  title,
   created_at,
   total_comments,
-  total_votes, subreddit_name,
-  link_url,
+  total_votes, 
+  vote_type,
+  subreddit_name,
+  link_url, 
   link_img_url,
 }: PostItemProp) => {
   const timePassed = getTimePassed(created_at);
@@ -58,7 +61,7 @@ const FeedItem = ({
       {/* Action Buttons */}
       <div className="flex relative items-center space-x-4 text-xs z-10">
         {/* Voting Button */}
-        <VoteButton post_id={post_id} votes_count={votes_count} submitVote={submitPostVote} />
+        <VoteButton id={post_id} votes_count={votes_count} vote_type={vote_type} submitVote={submitPostVote} />
 
         {/* Comment Button */}
         <Link href={`/r/${subreddit_name}/comments/${post_id}`} className="flex items-center bg-slate-200 px-3 py-1 rounded-2xl hover:bg-slate-300 relative">

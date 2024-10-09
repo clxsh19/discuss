@@ -5,7 +5,15 @@ import { JSDOM } from 'jsdom';
 
 export async function fetchAllPosts(offset : number) {
   try {
+    // const cookieStore = cookies();
+    console.log('fetching with offset  : ', offset);
     const res = await fetch(`http://localhost:5000/api/post/all?offset=${offset}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Cookie: cookies().toString(),
+      },
+      credentials: 'include',
       cache: 'no-cache',
     });
     const data = await res.json();
@@ -20,17 +28,6 @@ export async function fetchAllPosts(offset : number) {
     throw new Error('Failed to fetch all posts data.');
   }
 }
-
-// export async function fetchPostById(postid:string) {
-//   try {
-//     const res = await fetch(`http://localhost:5000/api/poscaht/${postid}`);
-//     const data = await res.json();
-//     return data.posts;
-//   } catch (error) {
-//     console.error('Database Error:', error);
-//     throw new Error('Failed to fetch post by id.');
-//   }
-// }
 
 export async function fetchPostComments(postid: string) {
   try {
@@ -48,11 +45,23 @@ export async function fetchPostComments(postid: string) {
 
 export async function fetchPostById(postid: string) {
   try {
+    const cookieStore = cookies();
+    const allCookies = cookieStore.getAll();
     const post_detail_res = await fetch(`http://localhost:5000/api/post/id/${postid}`, {
       cache: 'no-cache',
+      headers: {
+        'Content-Type': 'application/json',
+        Cookie: allCookies.map(cookie => `${cookie.name}=${cookie.value}`).join('; '),
+      },
+      credentials: 'include',
     });
     const post_comments_res = await fetch(`http://localhost:5000/api/comment/${postid}`, {
       cache: 'no-cache',
+      headers: {
+        'Content-Type': 'application/json',
+        Cookie: allCookies.map(cookie => `${cookie.name}=${cookie.value}`).join('; '),
+      },
+      credentials: 'include',
     });
     const post_data = await post_detail_res.json();
     const comment_data = await post_comments_res.json();

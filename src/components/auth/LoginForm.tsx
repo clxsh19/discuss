@@ -1,6 +1,8 @@
 'use client'
 
-// import { usePathname } from 'next/navigation';
+import { usePathname } from 'next/navigation';
+import { useAuth } from '../context/AuthContext';
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { logIn } from "@/lib/auth_api";
 
@@ -9,9 +11,22 @@ interface LoginFormProps {
 }
 
 const LoginForm = ({ onSwitchToRegister }: LoginFormProps) => {
+  const { updateAuthStatus } = useAuth();
+  const pathname = usePathname();
+  const router = useRouter();
+  const handleSubmit = async(e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const result = await logIn(formData);
+    console.log(result);
+    if (result) {
+      console.log('login callback  succesuful');
+      updateAuthStatus();
+      router.replace(`${pathname}`);
+      router.refresh();
+    }
+  }
 
-  // const pathname = usePathname();
-  // console.log('Current pathname:', pathname);
   return (
     <div className="bg-white h-full w-full rounded-[15px] p-[15px]">
       {/* <div></div>to add later */}
@@ -29,13 +44,16 @@ const LoginForm = ({ onSwitchToRegister }: LoginFormProps) => {
           <div>OR</div>
           <hr />
         </div>
-        <form action={logIn}>
+        <form onSubmit={handleSubmit}>
           <div>
             <input type="text" name="username" placeholder="Email or username" required />
           </div>
           <div>
             <input type="password" name="password" placeholder="Password" required />
           </div>
+
+          <input type="hidden" name="pathname" value={pathname} />
+          
           <div>
             New to Reddit?
             <button onClick={onSwitchToRegister}>Register</button>

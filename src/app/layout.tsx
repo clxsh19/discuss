@@ -1,6 +1,7 @@
 import '@/globals.css';
 import type { Metadata } from 'next';
 import HeaderNav from '@/components/HeaderNav';
+import { AuthProvider } from '@/components/context/AuthContext';
 
 export const metadata: Metadata = {
   title: 'Create Next App',
@@ -16,10 +17,12 @@ export default function RootLayout({
   return (
     <html lang='en'>
       <body>
+        <AuthProvider>
         <HeaderNav />
         <main className='grid grid-cols-1 max-w-7xl mx-auto'>
           {children}
         </main>
+        </AuthProvider>
       </body>
     </html>
   );

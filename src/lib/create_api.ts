@@ -40,20 +40,47 @@ export async function createComment({ post_id, parent_comment_id=null, comment }
 
 export async function submitPostVote(post_id: number, voteType: -1|1) {
   try {
-    const res = await fetch('http://localhost:5000/api/comment/create', {
+    const cookieStore = cookies();
+    const allCookies = cookieStore.getAll();
+    const res = await fetch('http://localhost:5000/api/post/vote', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        Cookie: allCookies.map(cookie => `${cookie.name}=${cookie.value}`).join('; '),
       },
       credentials: 'include',
       body: JSON.stringify({
         post_id,
-        voteType
+        vote_type: voteType
       }),
     });
     const data = await res.json();
     console.log(data);
   } catch (error) {
-    console.error('Couldn\'t submit vote', error);
+    console.error('Couldn\'t submit post vote', error);
   }  
 }
+
+export async function submitCommentVote(comment_id: number, voteType: -1|1) {
+  try {
+    const cookieStore = cookies();
+    const allCookies = cookieStore.getAll();
+    const res = await fetch('http://localhost:5000/api/comment/vote', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Cookie: allCookies.map(cookie => `${cookie.name}=${cookie.value}`).join('; '),
+      },
+      credentials: 'include',
+      body: JSON.stringify({
+        comment_id,
+        vote_type: voteType
+      }),
+    });
+    const data = await res.json();
+    console.log(data);
+  } catch (error) {
+    console.error('Couldn\'t submit comment vote', error);
+  }  
+}
+
