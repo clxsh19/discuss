@@ -6,7 +6,7 @@ export interface PostItemProp {
   vote_type: 1|-1|null,
   created_at: string,
   username: string,
-  subreddit_name: string,
+  subreddit_name: string;
   post_type: 'TEXT' | 'MEDIA' | 'LINK',
   link_url?: string,
   media_url?: string,

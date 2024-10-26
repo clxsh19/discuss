@@ -4,9 +4,14 @@ import { useState, useEffect,  useRef } from 'react';
 import { PostItemProp } from '@/interface/PostProp';
 import { fetchAllPosts } from '@/lib/data_api';
 import { buildPostWithMetaData } from '@/lib/utils';
-import FeedItem from './FeedItem';
+import FeedItem from '@/components/FeedItem';
 
-const InfinitePostFeed = ({ initialPosts }: { initialPosts: PostItemProp[] }) => {
+interface InfinitePostFeedProps { 
+  initialPosts: PostItemProp[], 
+  initialHasMore: boolean 
+}
+
+const InfinitePostFeed = ({ initialPosts, initialHasMore}: InfinitePostFeedProps) => {
   const [posts, setPosts] = useState<PostItemProp[]>([]);
   const [hasMore, setHasMore] = useState(false);
   const [offset, setOffset] = useState(0);
@@ -25,7 +30,7 @@ const InfinitePostFeed = ({ initialPosts }: { initialPosts: PostItemProp[] }) =>
   useEffect(() => {
     setPosts(initialPosts);
     setOffset(initialPosts.length);
-    setHasMore(true);
+    setHasMore(initialHasMore);
   }, [initialPosts]);
 
   useEffect(() => {
@@ -58,7 +63,9 @@ const InfinitePostFeed = ({ initialPosts }: { initialPosts: PostItemProp[] }) =>
 
   return (
     <>
+      
       <div>
+        
         {/* {posts.map((post) => (
           <FeedItem key={post.post_id} {...post} />
         ))} */}

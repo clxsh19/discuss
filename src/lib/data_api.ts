@@ -3,11 +3,17 @@
 import { cookies } from "next/headers";
 import { JSDOM } from 'jsdom';
 
-export async function fetchAllPosts(offset : number) {
+export async function fetchAllPosts(offset : number, sort: string = 'new', t: string = 'day') {
   try {
     // const cookieStore = cookies();
     console.log('fetching with offset  : ', offset);
-    const res = await fetch(`http://localhost:5000/api/post/all?offset=${offset}`, {
+    const queryParams = new URLSearchParams({
+      offset: offset.toString(),
+      sort,
+      t,
+    });
+
+    const res = await fetch(`http://localhost:5000/api/post/all?${queryParams}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -43,6 +49,7 @@ export async function fetchPostComments(postid: string) {
   }
 }
 
+// Posts data for a post
 export async function fetchPostById(postid: string) {
   try {
     const cookieStore = cookies();
@@ -73,6 +80,63 @@ export async function fetchPostById(postid: string) {
   } catch (error) {
     console.error('Database Error:', error);
     throw new Error('Failed to fetch post data.');
+  }
+}
+
+export async function fetchPostsBySub(sub_name: string, offset: number, sort: string = 'new', t: string = 'day') {
+  try {
+    const cookieStore = cookies();
+    console.log(`${sub_name}/${t}`);
+    // Construct the query parameters
+    const queryParams = new URLSearchParams({
+      offset: offset.toString(),
+      sort,
+      t,
+    });
+    console.log('query params: ', queryParams);
+    const res = await fetch(`http://localhost:5000/api/post/${sub_name}?${queryParams}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Cookie: cookieStore.toString(),
+      },
+      credentials: 'include',
+    });
+
+    const data = await res.json();
+
+    return {
+      posts: data.posts,
+      hasMore: data.hasMore,
+    };
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch sub posts.');
+  }
+}
+
+
+export async function fetchSubData(sub_name : string) {
+  try {
+    const cookieStore = cookies();
+    // const allCookies = cookieStore.getAll();
+
+    const res = await fetch(`http://localhost:5000/api/subreddit/${sub_name}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Cookie: cookies().toString(),
+      },
+      credentials: 'include',
+      // cache: 'no-cache',
+    });
+    const data = await res.json();
+    
+    // console.log(data);
+    return data.subreddit_detail;
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch all posts data.');
   }
 }
 

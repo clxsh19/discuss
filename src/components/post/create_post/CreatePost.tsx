@@ -1,7 +1,9 @@
 'use client'
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import PostForm from "./PostForm";
+import { useAuth } from "@/components/context/AuthContext";
+import { redirect } from "next/navigation";
 
 type PostType = 'TEXT' | 'MEDIA' | 'LINK';
 interface CreatePostProps {
@@ -10,10 +12,22 @@ interface CreatePostProps {
 
 const CreatePost = ({ sub_name }: CreatePostProps) => {
   const [postType, SetPostType] = useState<PostType>('TEXT');
+  const { isAuthenticated } = useAuth();
 
   const handleChange = (type : PostType) => {
     SetPostType(type);
   }
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      return redirect("/login");
+    }
+  }, []);
+
+  if (!isAuthenticated) {
+    return null;
+  };
+  
 
   return (
     <div className="max-w-3xl mx-auto bg-white p-6 rounded-md shadow-sm">

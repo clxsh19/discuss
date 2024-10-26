@@ -84,3 +84,47 @@ export async function submitCommentVote(comment_id: number, voteType: -1|1) {
   }  
 }
 
+export async function subscribeUser(subreddit_id: number) {
+  try {
+    const cookieStore = cookies();
+    const allCookies = cookieStore.getAll();
+    const res = await fetch('http://localhost:5000/api/subreddit/join', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Cookie: allCookies.map(cookie => `${cookie.name}=${cookie.value}`).join('; '),
+      },
+      credentials: 'include',
+      body: JSON.stringify({
+        subreddit_id
+      }),
+    });
+    const data = await res.json();
+    console.log(data);
+  } catch (error) {
+    console.error('Couldn\'t join subreddit', error);
+  } 
+}
+
+export async function unsubscribeUser(subreddit_id: number) {
+  try {
+    const cookieStore = cookies();
+    const allCookies = cookieStore.getAll();
+    const res = await fetch('http://localhost:5000/api/subreddit/leave', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Cookie: allCookies.map(cookie => `${cookie.name}=${cookie.value}`).join('; '),
+      },
+      credentials: 'include',
+      body: JSON.stringify({
+        subreddit_id
+      }),
+    });
+    const data = await res.json();
+    console.log(data);
+  } catch (error) {
+    console.error('Couldn\'t leave subreddit', error);
+  } 
+}
+

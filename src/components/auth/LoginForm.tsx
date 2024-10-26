@@ -7,7 +7,7 @@ import Link from "next/link";
 import { logIn } from "@/lib/auth_api";
 
 interface LoginFormProps {
-  onSwitchToRegister: () => void;
+  onSwitchToRegister?: () => void;
 }
 
 const LoginForm = ({ onSwitchToRegister }: LoginFormProps) => {
@@ -56,9 +56,13 @@ const LoginForm = ({ onSwitchToRegister }: LoginFormProps) => {
           
           <div>
             New to Reddit?
-            <button onClick={onSwitchToRegister}>Register</button>
-            {/* <Link href="/register">Register</Link> */}
+            {onSwitchToRegister ? (
+              <button onClick={onSwitchToRegister}>Register</button>
+            ) : (
+              <Link href="/register">Register</Link>
+            )}
           </div>
+
           <div>
             <button type="submit">Log In</button>
           </div>

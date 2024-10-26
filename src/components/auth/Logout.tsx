@@ -17,7 +17,8 @@ const Logout = () => {
       console.error('logout failed');
       throw new Error('Failed to logout.');
     }
-    router.refresh();
+    // router.refresh();
+    router.push('/');
   }
   return (
     <div onClick={logOut}>Log Out</div>

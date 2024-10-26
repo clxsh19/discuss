@@ -20,7 +20,7 @@ const UserDropdown = () => {
         </div>
       </DropdownMenu.Trigger>
 
-      <DropdownMenu.Content sideOffset={5}>
+      <DropdownMenu.Content sideOffset={5} className='z-[1]'>
         <DropdownMenu.Item className="px-4 py-2 hover:bg-gray-100 cursor-pointer">
           View Profile
         </DropdownMenu.Item>

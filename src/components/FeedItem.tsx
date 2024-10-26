@@ -12,18 +12,19 @@ const FeedItem = ({
   total_comments,
   total_votes, 
   vote_type,
+  username,
   subreddit_name,
   link_url, 
   link_img_url,
 }: PostItemProp) => {
-  const timePassed = getTimePassed(created_at);
+  const timePassed = getTimePassed(created_at); 
   const votes_count = total_votes == null ? 0 : total_votes;
   const comments_count = total_comments == null ? 0 : total_comments;
 
   return (
-    <div className="relative w-[32rem] m-4 p-4 border border-slate-300 hover:border-slate-400 rounded-lg transition-all">
+    <div className="relative w-full m-4 p-4 border border-slate-300 hover:border-slate-400 rounded-lg transition-all">
       
-      {/* Main Post Link: Covers the entire post but stays behind other clickable elements */}
+      {/* Post Link: Covers the entire post but stays behind other clickable elements */}
       <Link href={`/r/${subreddit_name}/comments/${post_id}`} className="absolute inset-0" aria-label="Post Link" />
 
       {/* Subreddit and Time Info */}
@@ -79,4 +80,4 @@ const FeedItem = ({
   );
 };
 
-// export default FeedItem;
+export default FeedItem;

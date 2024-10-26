@@ -1,7 +1,23 @@
 import {PostItemProp} from "@/interface/PostProp";
-import { CommentProp, MapCommentProp } from "@/interface/CommentProp";
+import { CommentItemProp, MapCommentProp } from "@/interface/CommentProp";
 import { fetchUrlMetaData } from "./data_api";
 import { Comment } from "postcss";
+
+export const getNumberAbbreviation = (member_count: string): string => {
+  const memberCount = parseInt(member_count, 10);
+  let abbreviatedCount = memberCount;
+  let abbreviation = "";
+
+  if (memberCount >= 1000000) {
+    abbreviatedCount =memberCount / 1000000;
+    abbreviation = "M";
+  } else if (memberCount >= 1000) {
+    abbreviatedCount = memberCount / 1000;
+    abbreviation = "K";
+  }
+  return abbreviatedCount.toFixed(1).replace(/\.0$/, "") + abbreviation;
+};
+
 
 export const getTimePassed = (dateStr:string): string => {
   const currentDate = new Date();
@@ -28,7 +44,19 @@ export const getTimePassed = (dateStr:string): string => {
   }
 }
 
-export const buildCommentTree = (comments: CommentProp[]) => {
+export const getDate = (dateStr:string): string => {
+  const date = new Date(dateStr);
+  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul",
+         "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+  const namedMonth = months[date.getMonth()];
+  const namedYear = date.getFullYear();
+  const dateOfMonth = date.getDate();
+
+  return `${namedMonth} ${dateOfMonth}, ${namedYear}`;
+}
+
+export const buildCommentTree = (comments: CommentItemProp[]) => {
   let commentMap = new Map<number, MapCommentProp>();
   let roots: MapCommentProp[] = [];
 
@@ -51,6 +79,9 @@ export const buildCommentTree = (comments: CommentProp[]) => {
 }
 
 export const buildPostWithMetaData = async(posts: PostItemProp[]) => {
+  if ( typeof posts === 'undefined' || posts.length === 0) {
+    return [];
+  }
   const postWithLinkImg = await Promise.all(
     posts.map(async (post: PostItemProp) => {
       if (post.link_url) {
