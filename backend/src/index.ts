@@ -15,6 +15,8 @@ import subredditRouter from './routes/subreddit';
 import postRouter from './routes/post';
 import commentRouter from './routes/comment';
 
+import path from 'path';
+
 dotenv.config();
 
 const app = express();
@@ -114,6 +116,8 @@ app.use('/api/user', userRouter);
 app.use('/api/subreddit', subredditRouter);
 app.use('/api/post', postRouter);
 app.use('/api/comment', commentRouter);
+// Serve static files from the "uploads" folder
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // app.get('/success', (req, res) => {
 //   if (req.isAuthenticated()) {

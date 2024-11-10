@@ -75,21 +75,26 @@ export const buildCommentTree = (comments: CommentItemProp[]) => {
         roots.push(mapComment);
     }
   });
+  console.log(roots);
   return roots;
 }
 
-export const buildPostWithMetaData = async(posts: PostItemProp[]) => {
-  if ( typeof posts === 'undefined' || posts.length === 0) {
+export const buildPostWithMetaData = async (posts: PostItemProp[] | PostItemProp) => {
+  if (typeof posts === 'undefined') {
     return [];
   }
+
+  const postsArray = Array.isArray(posts) ? posts : [posts];
+
   const postWithLinkImg = await Promise.all(
-    posts.map(async (post: PostItemProp) => {
+    postsArray.map(async (post: PostItemProp) => {
       if (post.link_url) {
         const link_img_url = await fetchUrlMetaData(post.link_url);
         post.link_img_url = link_img_url;
       }
-      return post; 
+      return post;
     })
   );
+
   return postWithLinkImg;
-}
+};

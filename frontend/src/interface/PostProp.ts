@@ -8,6 +8,7 @@ export interface PostItemProp {
   username: string,
   subreddit_name: string;
   post_type: 'TEXT' | 'MEDIA' | 'LINK',
+  text_content: string,
   link_url?: string,
   media_url?: string,
   link_img_url?: string | null,

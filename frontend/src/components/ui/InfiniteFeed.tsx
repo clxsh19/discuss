@@ -19,39 +19,40 @@ const InfiniteFeed = ({ initialPosts, initialHasMore, sub_name }: InfiniteFeedPr
   const [offset, setOffset] = useState(initialPosts.length);
   const [sort, setSort] = useState('new');
   const [timeframe, setTimeframe] = useState('all');
+
   const scrollTrigger = useRef(null);
 
-  const loadMorePosts = async (newOffset = 0) => {
-    if (!hasMore && newOffset !== 0) return;
+  const loadMorePosts = async (reset = false) => {
+    if (!hasMore && !reset) return;
   
     let fetchResult;
     if (sub_name) {
-      console.log('fetchinng with sort ', sort);
-      fetchResult = await fetchPostsBySub(sub_name, newOffset, sort, sort === 'top' ? timeframe : '');
+      fetchResult = await fetchPostsBySub(sub_name, reset? 0: offset, sort, sort === 'top' ? timeframe : '');
     } else {
-      fetchResult = await fetchAllPosts(newOffset, sort, sort === 'top' ? timeframe : '');
+      fetchResult = await fetchAllPosts(reset? 0: offset, sort, sort === 'top' ? timeframe : '');
     }
   
     const { posts: newPosts, hasMore: newHasMore } = fetchResult;
     const postsWithLinkImg = await buildPostWithMetaData(newPosts);
   
-    if (newOffset === 0) {
+    if (reset) {
       setPosts(postsWithLinkImg);
     } else {
       setPosts(prevPosts => [...prevPosts, ...postsWithLinkImg]);
     }
   
     setHasMore(newHasMore);
-    setOffset(prevOffset => prevOffset + newPosts.length);
+    setOffset(reset ? newPosts.length : offset + newPosts.length);
+    // setOffset(prevOffset => prevOffset + newPosts.length);
   };
   
 
   // Initialize with initialPosts
-  useEffect(() => {
-    setPosts(initialPosts);
-    setOffset(initialPosts.length);
-    setHasMore(initialHasMore);
-  }, [initialPosts, initialHasMore]);
+  // useEffect(() => {
+  //   setPosts(initialPosts);
+  //   setOffset(initialPosts.length);
+  //   setHasMore(initialHasMore);
+  // }, [initialPosts, initialHasMore]);
 
   // Observer for infinite scroll
   useEffect(() => {
@@ -61,7 +62,7 @@ const InfiniteFeed = ({ initialPosts, initialHasMore, sub_name }: InfiniteFeedPr
       entries => {
         if (entries[0].isIntersecting && hasMore) {
           console.log('load from infinite scroll');
-          loadMorePosts(offset);
+          loadMorePosts();
         }
       },
       { threshold: 0.5 }
@@ -74,24 +75,34 @@ const InfiniteFeed = ({ initialPosts, initialHasMore, sub_name }: InfiniteFeedPr
     };
   }, [offset, hasMore]);
 
-  // Handle sort and timeframe changes
-  const handleSortChange = (newSort: string, newTimeFrame?: string) => {
-    setSort(newSort);
-    setTimeframe(newSort === 'top' && newTimeFrame ? newTimeFrame : '');
-    setPosts([]);
-    setOffset(0);
-    setHasMore(true);
-  };
-
-  // Reload posts when sort or timeframe changes
   useEffect(() => {
-    console.log('load from reload ', sort)
-    loadMorePosts(0); // Reset and load fresh posts
+    loadMorePosts(true); // Reset and load fresh posts
   }, [sort, timeframe]);
 
+  const handleSortChange = (newSort: string, newTimeFrame?: string) => {
+    setSort(newSort);
+    setTimeframe(newSort === 'top' && newTimeFrame ? newTimeFrame : 'all');
+  };
+
+  // Handle sort and timeframe changes
+  // const handleSortChange = (newSort: string, newTimeFrame?: string) => {
+  //   setSort(newSort);
+  //   setTimeframe(newSort === 'top' && newTimeFrame ? newTimeFrame : '');
+  //   setPosts([]);
+  //   setHasMore(true);
+  //   setOffset(0);
+  //   loadMorePosts(0);
+  // };
+
+  // Reload posts when sort or timeframe changes
+  // useEffect(() => {
+    // setOffset(0);
+     // Reset and load fresh posts
+  // }, [sort, timeframe]);
+
   return (
-    <>
-      <div className="flex w-full ml-4 mb-4 rounded-lg border border-gray-300">
+    <div className='w-11/12 mx-4 lg:w-9/12 overflow-hidden'>
+      <div className="flex bg-white border border-gray-300">
         <button 
           className="ml-4 py-2 rounded-md"
           onClick={() => handleSortChange('hot')}
@@ -107,8 +118,8 @@ const InfiniteFeed = ({ initialPosts, initialHasMore, sub_name }: InfiniteFeedPr
         <SortDropDown onSortChange={handleSortChange} />
       </div>
       <div>
-        {posts.map(post => (
-          <FeedItem key={post.post_id} {...post} />
+        {posts.map((post, index) => (
+          <FeedItem key={`${post.post_id}-${index}`} {...post} />
         ))}
       </div>
       <div>
@@ -118,7 +129,7 @@ const InfiniteFeed = ({ initialPosts, initialHasMore, sub_name }: InfiniteFeedPr
           <p>No more posts to load</p>
         )}
       </div>
-    </>
+    </div>
   );
 };
 

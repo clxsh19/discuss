@@ -6,12 +6,12 @@ import { JSDOM } from 'jsdom';
 export async function fetchAllPosts(offset : number, sort: string = 'new', t: string = 'day') {
   try {
     // const cookieStore = cookies();
-    console.log('fetching with offset  : ', offset);
     const queryParams = new URLSearchParams({
       offset: offset.toString(),
       sort,
       t,
     });
+    console.log('query params: ', queryParams);
 
     const res = await fetch(`http://localhost:5000/api/post/all?${queryParams}`, {
       method: 'GET',
@@ -20,11 +20,10 @@ export async function fetchAllPosts(offset : number, sort: string = 'new', t: st
         Cookie: cookies().toString(),
       },
       credentials: 'include',
-      cache: 'no-cache',
+      // cache: 'no-cache',
     });
     const data = await res.json();
-    
-    // console.log(data);
+
     return {
       posts: data.posts,
       hasMore: data.hasMore,
@@ -38,7 +37,7 @@ export async function fetchAllPosts(offset : number, sort: string = 'new', t: st
 export async function fetchPostComments(postid: string) {
   try {
     const res = await fetch(`http://localhost:5000/api/comment/${postid}`,{
-      cache: 'no-cache',
+      // cache: 'no-cache',
     });
     const data = await res.json();
     console.log(data.comments);
@@ -55,7 +54,7 @@ export async function fetchPostById(postid: string) {
     const cookieStore = cookies();
     const allCookies = cookieStore.getAll();
     const post_detail_res = await fetch(`http://localhost:5000/api/post/id/${postid}`, {
-      cache: 'no-cache',
+      // cache: 'no-cache',
       headers: {
         'Content-Type': 'application/json',
         Cookie: allCookies.map(cookie => `${cookie.name}=${cookie.value}`).join('; '),
@@ -63,7 +62,7 @@ export async function fetchPostById(postid: string) {
       credentials: 'include',
     });
     const post_comments_res = await fetch(`http://localhost:5000/api/comment/${postid}`, {
-      cache: 'no-cache',
+      // cache: 'no-cache',
       headers: {
         'Content-Type': 'application/json',
         Cookie: allCookies.map(cookie => `${cookie.name}=${cookie.value}`).join('; '),
@@ -86,7 +85,6 @@ export async function fetchPostById(postid: string) {
 export async function fetchPostsBySub(sub_name: string, offset: number, sort: string = 'new', t: string = 'day') {
   try {
     const cookieStore = cookies();
-    console.log(`${sub_name}/${t}`);
     // Construct the query parameters
     const queryParams = new URLSearchParams({
       offset: offset.toString(),

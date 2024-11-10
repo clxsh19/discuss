@@ -17,8 +17,13 @@ const LoginButton = () => {
   };
 
   return (
-    <div>
-      <button onClick={onButtonClick}>Login</button>
+    <>
+      <button 
+        onClick={onButtonClick} 
+        className="bg-black font-medium text-white px-5 py-1 mt-2 mr-4 rounded"
+      >
+          Login
+      </button>
 
       {showLoginForm && (
         <Modal closeForm={onButtonClick}>
@@ -29,7 +34,7 @@ const LoginButton = () => {
           )}
         </Modal>
       )}
-    </div>
+    </>
   );
 };
 

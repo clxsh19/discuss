@@ -12,21 +12,18 @@ const HeaderNav = async () => {
 
   return (
     
-    <nav className='h-10 flex flex-row mt-4'>
-      <div className='flex flex-row p-2' >
-        <button className='mx-2'>
-          <MenuIcon />
-        </button>
+    <nav className='flex item-center justify-between flex-row pb-1.5 border bg-white'>
+      <div className='mt-2 ml-4' >
         <Link href="/" className='flex flex-row items-center'>
           <div className='ml-2'><RedditIcon /></div>
           <div className='mx-2'><RedditWord /></div>
         </Link>
       </div>
-      <div className=' w-3/5 flex flex-row items-center border bg-slate-200 rounded-3xl shadow-sm'>
+      <div className=' w-5/12 mt-1 px-1 flex flex-row items-center border bg-[#ececec] rounded-3xl shadow-sm focus-within:border-blue-500'>
         <div className='mx-3'><SearchIcon /></div>
-        <input className='w-3/5 bg-inherit outline-none text-sm placeholder:text-slate-600' type='text' placeholder='Search Reddit'/>
+        <input className='w-3/5 bg-inherit outline-none text-sm font-normal placeholder:text-slate-400' type='text' placeholder='Search'/>
       </div>
-      <div>
+      <div className=''>
       { authStatus ? (
            <UserDropdown/>
         ) : (

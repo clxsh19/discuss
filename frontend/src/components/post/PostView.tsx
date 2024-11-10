@@ -1,87 +1,78 @@
 import { PostItemProp } from "@/interface/PostProp";
 import { MapCommentProp } from "@/interface/CommentProp";
 import { getTimePassed } from '@/lib/utils';
-// import { UpvoteIcon, DownvoteIcon, CommentIcon, ShareIcon, CircleIcon } from "../icons";
-import { UpvoteIcon, DownvoteIcon, CommentIcon, ShareIcon, CircleIcon } from "../Icons";
-import CommentTree from "../comment/CommentTree";
-import CommentForm from "../comment/CommentForm";
+import CommentsView from "../comment/CommentsView";
+import PostCommentForm from "./PostCommentForm";
+import PostActionButtons from "./PostActionButtons";
+import ExpandMedia from "../ui/ExpandMedia";
+import SubHeader from "../SubHeader";
+import Link from "next/link";
+import { submitPostVote } from "@/lib/create_api";
 
-export interface PostViewProp extends PostItemProp {
-  text_content: string,
+export interface PostViewProp {
+  post : PostItemProp[],
   comments: MapCommentProp[]
 }
 
-const PostView = (props : PostViewProp) => {
+const PostView = ({post, comments} : PostViewProp) => {
   const { 
-    subreddit_name, post_id, username, created_at, total_comments,
-    title, total_votes, vote_type, comments, text_content
-  } = props;
+    subreddit_name, post_id, username, created_at, total_comments, title,
+    total_votes, vote_type, post_type, text_content, media_url, link_url,
+    link_img_url
+  } = post[0];
   const timePassed = getTimePassed(created_at);
   const votes_count = (total_votes == null) ? 0 : total_votes;
   const comments_count = (total_comments == null) ? 0 : total_comments;
-  return (
 
-    <div>
-      <div> 
-        <div className='flex justify-between text-12 pt-md pb-2xs px-md relative xs:px-0'>
-          <div className='flex gap-xs items-center pr-xs truncate'>
-            <div className='avatar text-32 items-center overflow-hidden flex-shrink-0 indent-0 w-xl h-xl'>
-              <CircleIcon />
-            </div>
-            <div className='flex gap-0 flex-col truncate'>
-              <div className='flex flex-none items-center flex-row gap-2xs flex-nowrap'>
-                <div className='flex flex-none subreddit-name neutral-content font-bold text-12 whitespace-nowrap'>
-                  r/{subreddit_name}
-                </div>
-                <div className="flex items-center w-2xs text-neutral-content-weak font-normal text-12">
-                  .
-                </div>
-                <time>
-                  {timePassed}
-                </time>
-              </div>
-              <div className="flex flex-none flex-row gap-2xs items-center flex-nowrap">
-                <div className="flex flex-none flex-row gap-2xs items-center flex-nowrap">
-                  {username}
-                </div>
-              </div>
-            </div>
+  let thumbnail_url;
+  let isVideo;
+  if ( post_type === 'MEDIA') {
+    thumbnail_url = `http://localhost:5000/${media_url}` || "";
+    isVideo = media_url?.match(/\.(mp4|webm|ogg)$/i);
+  } else if ( post_type === 'LINK') {
+    thumbnail_url = link_img_url || "";
+  }
+
+  return (
+    <div className="">
+      <SubHeader link_banner_url={thumbnail_url} link_logo_url={thumbnail_url} sub_name={subreddit_name}/>
+      {/* Thummbnail And Post Info */}
+      <div className="flex p-4 mt-4 bg-white w-11/12 mx-4 lg:w-9/12 overflow-hidden">
+        <div className="w-[85px] h-[85px] mr-4 flex-shrink-0 ">
+          {thumbnail_url ? (
+            <Link href={`/`} target="_blank" rel="noopener noreferrer" className="relative z-10">
+              {isVideo ? (
+                <video src={thumbnail_url} className="w-full h-full rounded object-cover"/>
+              ) : (
+                <img src={thumbnail_url} alt="Thumbnail" className="w-full h-full rounded object-cover" />
+              )}
+            </Link>
+          ) : (
+            <div className="w-full h-full bg-gray-200 rounded" />
+          )}
+        </div>
+        {/* Title, Time And Expnad Media*/}
+        <div>
+          <div>
+            {title}
           </div>
+          <div>
+            {`posted by u/${username} ${timePassed}`}
+          </div>
+          {/* Expand Button */}
+          <ExpandMedia post_type={post_type} media_url={thumbnail_url} text_content={text_content}/>
         </div>
-        <h1 className="font-semibold text-neutral-content-strong m-0 text-18 xs:text-24  mb-xs px-md xs:px-0 xs:mb-md ">
-          {title}
-        </h1>
-        <div className="mb-sm  mb-xs px-md xs:px-0">
-          <pre className="md text-14">{text_content}</pre>
-        </div>
+        
       </div>
-      <div className="flex gap-sm flex-row items-center flex-nowrap overflow-hidden justify-start h-2xl mt-md px-md xs:px-0">
-      <div className="flex flex-row m-2 font-[400]">
-        <div className="flex flex-row p-2 mr-2 bg-slate-200 rounded-2xl">
-          <button className="mr-2">
-            <UpvoteIcon />
-          </button>
-          <div className="mr-2 text-xs font-[600]">{votes_count}</div>
-          <button>
-            <DownvoteIcon />
-          </button>
-        </div>
-        <div className="flex flex-row p-2 mr-2 bg-slate-200 rounded-2xl">
-          <button className="mr-2">
-            <CommentIcon />
-          </button>
-          <div className="mr-2 text-xs font-[600]">{comments_count}</div>
-        </div>
-        <div className="flex flex-row p-2 mr-2 bg-slate-200 rounded-2xl">
-          <button className="mr-2">
-            <ShareIcon />
-          </button>
-          <div className="mr-2 text-xs font-[600]">Share</div>
-        </div>
+      <div className="mb-4 p-1 w-11/12 mx-4 lg:w-9/12 overflow-hidden bg-white rounded-b-lg">
+        <PostActionButtons 
+          post_id={post_id} subreddit_name={subreddit_name} 
+          vote_type={vote_type} comments_count={comments_count}
+          votes_count={votes_count} submitVote={submitPostVote}
+        />
       </div>
-      </div>
-      <CommentForm post_id={post_id}/>
-      <CommentTree post_id={post_id} commentTree={comments} />
+      <PostCommentForm post_id={post_id} />
+      <CommentsView post_id={post_id} commentTree={comments} />
     </div>
   )
 };

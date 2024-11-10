@@ -1,21 +1,19 @@
 'use client'
 
 import { useState } from 'react';
-import { createComment } from '@/lib/create_api'; 
+import { createComment } from '@/lib/create_api';
 
-interface CommentBoxProp {
+interface PostCommentProp {
   post_id: number,
-  parent_comment_id?: number,
 } 
 
-const CommentForm = ({ post_id, parent_comment_id }: CommentBoxProp) => {
+const PostCommentForm = ({ post_id }: PostCommentProp) => {
   const [comment, setComment] = useState('');
   const [loading, setLoading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
 
   const handleCommentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setComment(e.currentTarget.value || '');
-    console.log(parent_comment_id);
   };
 
   const handleSubmit = async () => {
@@ -25,7 +23,7 @@ const CommentForm = ({ post_id, parent_comment_id }: CommentBoxProp) => {
 
     try {
       console.log({ post_id, comment});
-      await createComment({ post_id, parent_comment_id, comment});
+      await createComment({ post_id, comment});
       setComment('');
       setIsEditing(false);
     } catch (err) {
@@ -36,26 +34,28 @@ const CommentForm = ({ post_id, parent_comment_id }: CommentBoxProp) => {
   };
 
   return (
-    <div className="comment-box w-full mt-4">
+    <div className="w-11/12 h-1/5 mx-4 lg:w-9/12 rounded-lg overflow-hidden">
       {!isEditing ? (
         <button
-          className="placeholder-button px-4 py-2 bg-gray-100 text-gray-500 rounded-md w-full text-left"
-          onClick={() => setIsEditing(true)}
-        >
-          Add a comment
-        </button>
+        className="placeholder-button p-4 bg-white text-gray-500 w-full text-left"
+        onClick={() => setIsEditing(true)}
+        disabled={loading}
+      >
+        Add a comment...
+      </button>
       ) : (
-        <div className="editor-container">
+        <div className="">
           <textarea
             value={comment}
             onChange={handleCommentChange} 
-            className="editor w-full px-4 py-2 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            rows={4}
-            placeholder="What are your thoughts?"
+            className="w-full py-3 px-3 text-sm font-normal border border-gray-300 rounded-lg focus:ring-2"
+            maxLength={15000}
+            rows={5}
+            placeholder="Type your comment..."
           />
           <div className="actions mt-2 flex justify-end">
             <button
-              className="cancel-btn px-4 py-2 mr-2 bg-gray-300 rounded"
+              className="px-4 py-1 mr-4 border rounded-lg bg-white border-black"
               onClick={() => {
                 setComment('');
                 setIsEditing(false);
@@ -64,7 +64,7 @@ const CommentForm = ({ post_id, parent_comment_id }: CommentBoxProp) => {
               Cancel
             </button>
             <button
-              className={`submit-btn px-4 py-2 bg-blue-500 text-white rounded ${loading ? 'cursor-wait' : ''}`}
+              className={`px-4 py-1 bg-black text-white  rounded-lg ${loading ? 'cursor-wait' : ''}`}
               onClick={handleSubmit}
               disabled={loading}
             >
@@ -73,9 +73,10 @@ const CommentForm = ({ post_id, parent_comment_id }: CommentBoxProp) => {
           </div>
         </div>
       )}
+
     </div>
   );
 };
 
-export default CommentForm;
+export default PostCommentForm;
 

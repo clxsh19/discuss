@@ -1,6 +1,7 @@
 import { fetchPostById } from "@/lib/data_api";
 import PostView from "@/components/post/PostView";
 import { buildCommentTree } from '@/lib/utils';
+import { buildPostWithMetaData } from "@/lib/utils";
 
 interface PostPageProp {
   params: {
@@ -12,6 +13,7 @@ interface PostPageProp {
 export default async function Page({ params } : PostPageProp) {
   const { post_id, sub_name } = params;
   const { post, comments} = await fetchPostById(post_id);
+  const postWithLinkImg = await buildPostWithMetaData(post);
 
 
   //include the sub name from url
@@ -19,6 +21,6 @@ export default async function Page({ params } : PostPageProp) {
   post.post_id = post_id;
   const commentTree = buildCommentTree(comments);
   return (
-    <PostView {...post} comments={commentTree} />
+    <PostView post={postWithLinkImg} comments={commentTree} />
   )
 }

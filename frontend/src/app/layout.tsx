@@ -16,10 +16,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang='en'>
-      <body>
+      <body className='bg-slate-200'>
         <AuthProvider>
         <HeaderNav />
-        <main className='grid grid-cols-1 max-w-7xl mx-auto'>
+        <main >
           {children}
         </main>
         </AuthProvider>

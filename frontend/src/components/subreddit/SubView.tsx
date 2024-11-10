@@ -48,15 +48,10 @@ const SubView = ({ sub_detail, sub_posts, hasMore }: SubViewProps) => {
 
       {/* Sub Main Container */}
       <div className="-mt-2 flex">
-        <div className="w-8/12">
-          {/* Sub Feed */}
-          <div>
-            {/* <InfiniteSubFeed sub_name={sub_name} initialPosts={sub_posts} initialHasMore={hasMore} /> */}
-            <InfiniteFeed sub_name={sub_name} initialPosts={sub_posts} initialHasMore={hasMore}/>
-          </div>
-        </div>
+        {/* Sub Feed */}
+        <InfiniteFeed sub_name={sub_name} initialPosts={sub_posts} initialHasMore={hasMore}/>
         {/* Sub detail */}
-        <div className="w-4/12 ml-10 mr-4">
+        <div className="hidden lg:block lg:w-3/12 lg:ml-10 lg:mr-4">
           <div className="p-4 rounded-lg border border-gray-300">
             <div className="text-[14px] font-bold">
               {sub_name}

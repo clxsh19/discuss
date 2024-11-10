@@ -3,9 +3,9 @@ import { query, body, validationResult } from "express-validator";
 import {query as dbQuery, queryTransaction} from "../db/index";
 import { use } from "passport";
 
-// need to  change post schema to include author-id rather than using join and similar more stuff
+// need to change post schema to include author-id rather than using join and similar more stuff
 
-const create_post= [
+const create_post = [
 
   body('title', 'Post title must not be empty').trim().isLength({min:1}).escape(),
   body('sub_name').not().isEmpty().withMessage('subreddit name cannot be null').trim().escape(),
@@ -71,7 +71,11 @@ const get_post_by_id = [
       p.user_id,
       p.created_at,
       u.username,
-      p.vote_count AS total_votes
+      p.vote_count AS total_votes,
+      p.post_type,
+      p.media_url,
+      p.link_url,
+      p.text_content
 
       FROM posts p
       LEFT JOIN users u ON p.user_id = u.user_id
@@ -108,7 +112,7 @@ const get_all_posts = [
   query('t')
     .optional()
     .trim()
-    .isIn(['day', 'week', 'month', 'year', 'all'])
+    .isIn(['day', 'week', 'month', 'year', 'all', ''])
     .withMessage('Invalid timeframe')
     .escape(),
 
@@ -124,7 +128,7 @@ const get_all_posts = [
     const { offset, sort = 'new', t = 'all' } = req.query;
 
     // Sorting and time conditions
-    let sortCondition = sort === 'new' ? 'ORDER BY p.created_at DESC' : 'ORDER BY p.vote_count DESC';
+    let sortCondition = sort === 'new' ? 'ORDER BY p.created_at DESC, p.post_id DESC' : 'ORDER BY p.vote_count DESC, p.post_id DESC';
     let timeCondition = '';
 
     // Apply time filtering for 'top' sort with `t`
@@ -174,7 +178,6 @@ const get_all_posts = [
       // Check if there are more posts for pagination
       const hasMore = posts_query.rows.length > limit;
       const posts = hasMore ? posts_query.rows.slice(0, limit) : posts_query.rows;
-
       res.status(200).json({
         posts,
         hasMore,
