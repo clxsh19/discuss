@@ -1,17 +1,19 @@
 import { PostItemProp } from "@/interface/PostProp";
-import { MapCommentProp } from "@/interface/CommentProp";
+import { CommentItemProp } from "@/interface/CommentProp";
 import { getTimePassed } from '@/lib/utils';
-import CommentsView from "../comment/CommentsView";
+import CommentViewContainer from "../comment/CommentViewContainer";
+import CommentProviderContainer from "./CommentProviderContainer";
 import PostCommentForm from "./PostCommentForm";
 import PostActionButtons from "./PostActionButtons";
 import ExpandMedia from "../ui/ExpandMedia";
 import SubHeader from "../SubHeader";
-import Link from "next/link";
+
 import { submitPostVote } from "@/lib/create_api";
+import Link from "next/link";
 
 export interface PostViewProp {
   post : PostItemProp[],
-  comments: MapCommentProp[]
+  comments: CommentItemProp[]
 }
 
 const PostView = ({post, comments} : PostViewProp) => {
@@ -71,8 +73,10 @@ const PostView = ({post, comments} : PostViewProp) => {
           votes_count={votes_count} submitVote={submitPostVote}
         />
       </div>
-      <PostCommentForm post_id={post_id} />
-      <CommentsView post_id={post_id} commentTree={comments} />
+      <CommentProviderContainer initialComments={comments} post_id={post_id}/>
+      {/* <PostCommentForm post_id={post_id} />
+
+      <CommentViewContainer initialComments={comments} post_id={post_id} /> */}
     </div>
   )
 };

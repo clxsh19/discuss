@@ -2,10 +2,16 @@
 
 import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { userStatus } from '@/lib/data_api';
-import { useRouter } from 'next/router';
+// import { useRouter } from 'next/router';
+
+interface UserInfo {
+  id: number,
+  username: string
+}
 
 interface AuthContextProps {
   isAuthenticated: boolean,
+  user: UserInfo | null,
   updateAuthStatus: () => void,
 }
 
@@ -13,11 +19,17 @@ const AuthContext = createContext<AuthContextProps | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [authStatus, SetAuthStatus] = useState(false);
+  const [user, setUser] = useState<UserInfo | null>(null);
 
   const fetchUserStatus = async() => {
-    const status = await userStatus();
-    console.log('Auth context status : ',  status);
-    SetAuthStatus(status);
+    const data = await userStatus();
+    if ( data === false) {
+      SetAuthStatus(false);
+      setUser(null);
+      return;
+    }
+    SetAuthStatus(data.status);
+    setUser(data.user)
   };  
 
   useEffect(() => {
@@ -28,6 +40,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     <AuthContext.Provider
       value={{
         isAuthenticated: authStatus,
+        user,
         updateAuthStatus: fetchUserStatus,
       }}
     >

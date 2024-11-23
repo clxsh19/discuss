@@ -2,6 +2,9 @@
 
 import { useState } from 'react';
 import { createComment } from '@/lib/create_api';
+import { showErrorToast } from '../ui/toasts';
+import { useComments } from '../context/CommentContext';
+import { useAuth } from '../context/AuthContext';
 
 interface PostCommentProp {
   post_id: number,
@@ -11,23 +14,52 @@ const PostCommentForm = ({ post_id }: PostCommentProp) => {
   const [comment, setComment] = useState('');
   const [loading, setLoading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const { addComment } = useComments();
+  const { isAuthenticated, user } = useAuth();
 
   const handleCommentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setComment(e.currentTarget.value || '');
   };
 
   const handleSubmit = async () => {
-    if (!comment.trim()) return;
+    if (!comment.trim()) {
+      showErrorToast('Empty comment!');
+      return;
+    }
+  
+    if (!isAuthenticated || !user) {
+      showErrorToast('You must be logged in to comment!');
+      return;
+    }
 
     setLoading(true);
 
     try {
-      console.log({ post_id, comment});
-      await createComment({ post_id, comment});
-      setComment('');
       setIsEditing(false);
+      const comment_id = await createComment({ post_id, comment});
+
+      addComment({
+        user_id: user.id,
+        post_id,
+        comment_id,
+        username: user.username,
+        created_at: '',
+        total_votes: 0,
+        vote_type: null,
+        content: comment
+      });
+      // await showPromiseToast( 
+      //   {
+      //     pending: 'Submitting your comment...',
+      //     success: 'Comment submitted successfully!',
+      //     error: 'Failed to submit the comment.',
+      //   }
+      // );
+      setComment('');
     } catch (err) {
+      showErrorToast('Failed to submit the comment.');
       console.error('Error submitting comment:', err);
+
     } finally {
       setLoading(false);
     }

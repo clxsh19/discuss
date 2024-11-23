@@ -36,7 +36,7 @@ export async function fetchAllPosts(offset : number, sort: string = 'new', t: st
 
 export async function fetchPostComments(postid: string) {
   try {
-    const res = await fetch(`http://localhost:5000/api/comment/${postid}`,{
+    const res = await fetch(`http://localhost:5000/api/comment/${postid}`, {
       // cache: 'no-cache',
     });
     const data = await res.json();
@@ -138,7 +138,14 @@ export async function fetchSubData(sub_name : string) {
   }
 }
 
-export async function userStatus() {
+export async function userStatus(): 
+  Promise< false | 
+  { status:boolean, 
+    user: {
+      id: number,
+      username: string
+    }
+  }> {
   const cookieStore = cookies();
   const hasCookie = cookieStore.has('connect.sid');
   if (!hasCookie) {
@@ -157,8 +164,11 @@ export async function userStatus() {
     });
 
     const data = await res.json();
-    const status = data.authenticated;
-    return status;
+
+    return {
+      status: data.authenticated,
+      user: data.user,
+    };
   } catch (error) {
     console.error('failed fetching status');
     throw new Error('Failed to fetch status.');

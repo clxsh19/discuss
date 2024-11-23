@@ -2,6 +2,8 @@ import '@/globals.css';
 import type { Metadata } from 'next';
 import HeaderNav from '@/components/HeaderNav';
 import { AuthProvider } from '@/components/context/AuthContext';
+import { ToastContainer, Zoom } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 export const metadata: Metadata = {
   title: 'Create Next App',
@@ -19,7 +21,16 @@ export default function RootLayout({
       <body className='bg-slate-200'>
         <AuthProvider>
         <HeaderNav />
-        <main >
+        <ToastContainer 
+          position='bottom-left'
+          hideProgressBar={true}
+          closeOnClick={true}
+          autoClose={false}
+          theme='colored'
+          transition={Zoom}
+          limit={1}
+        />
+        <main>
           {children}
         </main>
         </AuthProvider>

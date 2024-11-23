@@ -11,11 +11,7 @@ export async function createComment({ post_id, parent_comment_id=null, comment }
   try {
     const cookieStore = cookies();
     const allCookies = cookieStore.getAll();
-    console.log({
-      post_id,
-      parent_comment_id,
-      comment,
-    })
+
     const res = await fetch('http://localhost:5000/api/comment/create', {
       method: 'POST',
       headers: {
@@ -29,12 +25,39 @@ export async function createComment({ post_id, parent_comment_id=null, comment }
         comment,
       }),
     });  
+    if (!res.ok) {
+      const errorData = await res.json();  // Read the error message from the response
+      throw new Error(errorData.error || 'Unknown error');
+    }
     const data = await res.json();
-    
     console.log(data);
+    return data.comment_id;
   } catch (error) {
     console.error('Create comment failed', error);
     throw new Error('Failed to create comment.');
+  }
+}
+
+export async function updateComment(comment_id: number, comment: string) {
+  try {
+    const cookieStore = cookies();
+    const allCookies = cookieStore.getAll();
+    const res = await fetch('http://localhost:5000/api/comment/update', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Cookie: allCookies.map(cookie => `${cookie.name}=${cookie.value}`).join('; '),
+      },
+      credentials: 'include',    
+      body: JSON.stringify({
+        comment_id,
+        comment
+      }),
+    });  
+    const data = await res.json();
+  } catch (error) {
+    console.error('update comment failed', error);
+    throw new Error('Failed to update comment.');
   }
 }
 

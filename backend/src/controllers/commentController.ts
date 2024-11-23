@@ -4,10 +4,10 @@ import {query as dbQuery, queryTransaction} from "../db/index";
 
 const create_comment = [
   body('comment', 'Comment content must not be empty').trim().isLength({min:1}).escape(),
-  body('post_id').not().isEmpty().withMessage('comment_id cannot be null').trim().escape(),
+  body('post_id').not().isEmpty().withMessage('comment post_id cannot be null').trim().escape(),
   body('parent_comment_id').optional().trim().escape(),
 
-  asyncHandler(async (req, res, next) => {
+  asyncHandler( async (req, res, next) => {
     const errors = validationResult(req);
     const { comment, post_id } = req.body;
     let { parent_comment_id } = req.body
@@ -27,16 +27,18 @@ const create_comment = [
     } else {
       try {
         const queries = [
-          'INSERT INTO comments (content, user_id, post_id, parent_comment_id) VALUES ($1, $2, $3, $4)',
+          'INSERT INTO comments (content, user_id, post_id, parent_comment_id) VALUES ($1, $2, $3, $4) RETURNING comment_id',
           'UPDATE posts SET comment_count = comment_count + 1 WHERE post_id = $1'
         ];
         const params = [
           [comment, user_id, post_id, parent_comment_id],
           [post_id]
         ]
-        await queryTransaction(queries, params)
+        const result = await queryTransaction(queries, params);
+        const comment_id = result[0].rows[0].comment_id;
         res.status(202).json({
           message: 'comment created successfully',
+          comment_id
         });
       } catch (error) {
         console.error("Error creating comment:", error);
@@ -46,16 +48,44 @@ const create_comment = [
   }),
 ];
 
+const update_comment = [
+  body('comment', 'Comment content must not be empty').trim().isLength({min:1}).escape(),
+  body('comment_id').not().isEmpty().withMessage('comment_id cannot be null').trim().escape(),
+  asyncHandler( async(req, res, next) => {
+    const errors = validationResult(req);
+    const { comment, comment_id } = req.body;  
+  
+    if (!errors.isEmpty()) {
+      res.status(400).json({ 
+        message: 'comment content and comment_id are required',
+        errors: errors.array(),
+        comment,
+        comment_id
+      });
+    } else {
+      const commentExist = await dbQuery(`SELECT 1 from comments where comment_id = $1`, [comment_id]);
+      if (commentExist.rows.length > 0) {
+        await dbQuery(`UPDATE comments SET content = $1 WHERE comment_id = $2`, [comment, comment_id]);
+        res.status(200).json({ message: 'Comment updated' });
+        return;
+      } else {
+        res.status(404).json({ message: 'Comment does not exist' });
+        return;
+      }
+    }
+  })
+]
+
 const get_comments_by_post = asyncHandler( async(req, res, next) => {
   const post_id = req.params.post_id;
   const user_id = req.user?.id;
   const comments_query = await dbQuery(`SELECT
     c.comment_id,
     c.content,
-    c.user_id AS user_id,
+    c.user_id,
     c.parent_comment_id AS parent_id,
     c.created_at,
-    u.username AS username,
+    u.username,
     c.vote_count AS total_votes,
     COALESCE(cv.vote_type, null) AS vote_type
 
@@ -65,7 +95,6 @@ const get_comments_by_post = asyncHandler( async(req, res, next) => {
     AND cv.user_id = $1
     WHERE c.post_id = $2`,
     [user_id, post_id]);
-    console.log('user id ', user_id, ': ',comments_query.rows[0]);
   res.status(200).json({
     comments: comments_query.rows,
   });
@@ -140,5 +169,6 @@ export default {
   create_comment,
   get_comments_by_post,
   comment_vote,
+  update_comment
 }
 

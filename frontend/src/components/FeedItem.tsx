@@ -80,7 +80,12 @@ const FeedItem = ({
         {/* Action Buttons */}
         <div className="flex relative items-center space-x-4 text-xs z-10">
           {/* Voting Button */}
-          <VoteButton id={post_id} votes_count={votes_count} vote_type={vote_type} submitVote={submitPostVote} />
+          <VoteButton 
+          id={post_id} 
+          votes_count={votes_count} 
+          vote_type={vote_type} 
+          submitVote={submitPostVote}
+          className='p-2 mr-2' />
 
           {/* Comment Button */}
           <Link href={`/r/${subreddit_name}/comments/${post_id}`} className="flex items-center bg-slate-200 px-3 py-1 rounded-2xl hover:bg-slate-300 relative">

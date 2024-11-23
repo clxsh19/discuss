@@ -1,19 +1,23 @@
-import { CommentItemProp } from '@/interface/CommentProp';
 import { getTimePassed } from '@/lib/utils';
 import { CircleIcon } from '../Icons';
 import Link from 'next/link';
 
+interface CommentItemProp {
+  comment_id: number,
+  username: string,
+  created_at: string,
+  total_votes: number,
+  content: string,
+}
+
 const CommentItem = ({
-  post_id,
   comment_id,
   created_at,
   username,
   total_votes,
-  vote_type,
   content
 }: CommentItemProp) => {
   const timePassed = getTimePassed(created_at);
-  const votes_amt = (total_votes == null) ? 0 : total_votes;
   return (
   <div className="pl-1 pt-1" id={`${comment_id}`}>
     {/* Header with username, time, and icon */}

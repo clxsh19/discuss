@@ -9,9 +9,10 @@ interface VoteButtonProps {
   votes_count: number,
   vote_type: 1|-1|null,
   submitVote: (id: number, vote_type: 1 | -1) => Promise<void>,
+  className?: string,
 }
 
-const VoteButton = ({ id, votes_count, vote_type, submitVote }: VoteButtonProps) => {
+const VoteButton = ({ id, votes_count, vote_type, submitVote, className }: VoteButtonProps) => {
   const [userVote, setUserVote] = useState<1 | -1 | null>(vote_type);
   const [voteCount, setVoteCount] = useState(votes_count);
   const { isAuthenticated } = useAuth();
@@ -32,7 +33,7 @@ const VoteButton = ({ id, votes_count, vote_type, submitVote }: VoteButtonProps)
       if (userVote === null) {
         newVoteCount = voteCount + vote; 
       } else {
-        newVoteCount = voteCount + (vote * 2)
+        newVoteCount = voteCount + (vote * 2) 
       }
       setUserVote(vote);
     }
@@ -49,7 +50,7 @@ const VoteButton = ({ id, votes_count, vote_type, submitVote }: VoteButtonProps)
   
   return (
     <div 
-      className={`flex flex-row p-2 mr-2 rounded-2xl 
+      className={`flex flex-row  rounded-2xl ${className}
                   ${userVote === 1 ? "bg-orange-500" : userVote === -1 ? "bg-blue-500" : "bg-slate-200"}`}
     >
       <button 

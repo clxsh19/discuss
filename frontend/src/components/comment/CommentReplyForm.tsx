@@ -1,6 +1,9 @@
 'use client'
 
 import { useState } from 'react';
+import { useComments } from '../context/CommentContext';
+import { useAuth } from '../context/AuthContext';
+import { showErrorToast } from '../ui/toasts';
 import { createComment } from '@/lib/create_api';
 
 interface CommentReplyProp {
@@ -9,23 +12,54 @@ interface CommentReplyProp {
   setShowReplyForm: React.Dispatch<React.SetStateAction<boolean>>
 } 
 
-const CommentReplyForm = ({ post_id, parent_comment_id , setShowReplyForm}: CommentReplyProp) => {
+const CommentReplyForm = ( { post_id, parent_comment_id , setShowReplyForm } : CommentReplyProp) => {
   const [comment, setComment] = useState('');
   const [loading, setLoading] = useState(false);
+  const { addComment } = useComments();
+  const { isAuthenticated, user } = useAuth();
 
   const handleCommentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setComment(e.currentTarget.value || '');
-    console.log(parent_comment_id);
   };
 
   const handleSubmit = async () => {
-    if (!comment.trim()) return;
+    if (!comment.trim()) {
+      showErrorToast('Empty comment!');
+      return;
+    }
+  
+    if (!isAuthenticated || !user) {
+      showErrorToast('You must be logged in to comment!');
+      return;
+    }
 
     setLoading(true);
-
+    
     try {
-      console.log({ post_id, comment});
-      await createComment({ post_id, parent_comment_id, comment});
+      const comment_id = await createComment({ post_id, parent_comment_id, comment});
+      console.log({
+        user_id: user.id,
+        post_id,
+        comment_id,
+        parent_id: parent_comment_id,
+        username: user.username,
+        created_at: '',
+        total_votes: 0,
+        vote_type: null,
+        content: comment,
+      })
+
+      addComment({
+        user_id: user.id,
+        post_id,
+        comment_id,
+        parent_id: parent_comment_id,
+        username: user.username,
+        created_at: '',
+        total_votes: 0,
+        vote_type: null,
+        content: comment,
+      })
       setComment('');
       setShowReplyForm(false);
     } catch (err) {

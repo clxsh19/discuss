@@ -64,6 +64,8 @@ const get_post_by_id = [
 
   asyncHandler(async (req, res, next) => {
     const post_id = req.params.id;
+    const user_id = req.user?.id || null;
+
     const post_query = await dbQuery(`SELECT
       p.post_id,
       p.title,
@@ -75,16 +77,14 @@ const get_post_by_id = [
       p.post_type,
       p.media_url,
       p.link_url,
-      p.text_content
+      p.text_content,
+      COALESCE(pv.vote_type, null) AS vote_type
 
       FROM posts p
       LEFT JOIN users u ON p.user_id = u.user_id
-      WHERE p.post_id = $1
-
-      GROUP BY
-        p.post_id,
-        u.username`,
-      [post_id]);
+      LEFT JOIN post_votes pv ON p.post_id = pv.post_id AND pv.user_id = $2
+      WHERE p.post_id = $1`
+      , [post_id, user_id]);
     // console.log(post_query.rows);
     res.status(200).json({
       post: post_query.rows[0]

@@ -19,8 +19,9 @@ export default async function Page({ params } : PostPageProp) {
   //include the sub name from url
   post.subreddit_name = sub_name;
   post.post_id = post_id;
-  const commentTree = buildCommentTree(comments);
+  // console.log(comments);
+  // const commentTree = buildCommentTree(comments);
   return (
-    <PostView post={postWithLinkImg} comments={commentTree} />
+    <PostView post={postWithLinkImg} comments={comments} />
   )
 }
