@@ -1,12 +1,11 @@
 import asyncHandler from "express-async-handler";
-import { query, body, validationResult } from "express-validator";
+import { param, query, body, validationResult } from "express-validator";
 import {query as dbQuery, queryTransaction} from "../db/index";
-import { use } from "passport";
+import { deleteUploadedFile } from "../utils/deleteUploadedFIle";
 
 // need to change post schema to include author-id rather than using join and similar more stuff
 
 const create_post = [
-
   body('title', 'Post title must not be empty').trim().isLength({min:1}).escape(),
   body('sub_name').not().isEmpty().withMessage('subreddit name cannot be null').trim().escape(),
   body('text').optional().trim().escape(),
@@ -33,10 +32,13 @@ const create_post = [
     return true;
   }),
 
-  asyncHandler(async (req, res, next) => {
+  asyncHandler(async (req, res) => {
     const errors = validationResult(req);
 
     if (!errors.isEmpty()) {
+      let filePath = req.file?.path;
+      if (filePath) deleteUploadedFile(filePath);
+
       res.status(400).json({ 
         errors: errors.array()
       });
@@ -54,8 +56,9 @@ const create_post = [
       [title, user_id, sub_id, post_type, text, media_url ,link] );
       res.status(202).json({
         message: 'Post created successfully',
+        file: req.file,
       });
-    };
+    }
   }),
 ];
 
@@ -188,8 +191,6 @@ const get_all_posts = [
   })
 ];
 
-
-
 const get_posts_by_subreddit = [
   query('offset')
     .notEmpty()
@@ -197,8 +198,7 @@ const get_posts_by_subreddit = [
     .trim()
     .isInt({ min: 0 })
     .withMessage('Offset must be a positive integer.')
-    .escape()
-    .toInt(),
+    .escape(),
 
   query('sort')
     .optional()
@@ -212,6 +212,14 @@ const get_posts_by_subreddit = [
     .trim()
     .isIn(['day', 'week', 'month', 'year', 'all', ''])
     .withMessage('not sutaible duration')
+    .escape(),
+
+  param('name')
+    .notEmpty()
+    .withMessage('Subreddit name is required')
+    .isString()
+    .withMessage('Sub name must be string')
+    .trim()
     .escape(),
 
   asyncHandler( async(req, res, next) => {
@@ -293,6 +301,7 @@ const post_vote = [
       res.status(400).json({ 
         errors: errors.array()
       });
+      next();
     } else {
       const { post_id, vote_type} = req.body;
       const user_id = req.user?.id;

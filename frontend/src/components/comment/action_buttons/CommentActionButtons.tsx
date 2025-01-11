@@ -1,8 +1,9 @@
 import { useState} from "react";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../../context/AuthContext";
 import CommentReplyForm from "./CommentReplyForm";
 import CommentEditForm from "./CommentEditForm";
-import VoteButton from "../ui/VoteButton";
+import VoteButton from "../../ui/VoteButton";
+import CommentDeleteConfirm from "./CommentDeleteConfirm";
 
 interface CommentActionButtonsProps {
   comment_id: number,
@@ -20,15 +21,14 @@ const CommentActionButtons = (
   { username, comment_id, user_id, post_id, votes_count, 
     vote_type, submitVote, parent_comment_id, comment
   } : CommentActionButtonsProps) => {
-
-
-  const { user } = useAuth();
+  const { isAuthenticated, user } = useAuth();  
   const [showReplyForm, setShowReplyForm] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const isAuthor = user_id === user?.id;
   
   return (
-    <div className="flex flex-col">
+    <div id={`comment-buttons-${comment_id}`} className="flex flex-col action-buttons">
       <div className="flex items-center  text-xs mt-1">
 
         {/* Vote Button */}
@@ -56,21 +56,45 @@ const CommentActionButtons = (
         <button className="ml-3">
           <span className="text-xs font-semibold text-neutral-600">Share</span>
         </button>
+
+        {/* Delete Button */}
+        {isAuthor && (
+          <button onClick={() => setShowDeleteConfirm((prev) => !prev)} className="ml-3">
+            <span className="text-xs font-semibold text-neutral-600">Delete</span>
+          </button>
+        )}
+        
+        { (isAuthenticated && showDeleteConfirm)  && (
+        <CommentDeleteConfirm 
+          comment_id={comment_id}
+          setShowDeleteConfirm={setShowDeleteConfirm}
+        />
+      )}
       </div>
 
       { showReplyForm && (
         <CommentReplyForm 
+          user={user}
+          isAuthenticated={isAuthenticated}
           post_id={post_id} 
           parent_comment_id={parent_comment_id}
           setShowReplyForm={setShowReplyForm}
         />
       )}
-      { showEditForm && (
+
+      { (isAuthenticated && showEditForm) && (
         <CommentEditForm 
-        comment_id={comment_id}
-        initialComment={comment}
-        setShowEditForm={setShowEditForm}/>
+          user={user}
+          isAuthenticated={isAuthenticated}
+          comment_id={comment_id}
+          initialComment={comment}
+          setShowEditForm={setShowEditForm}
+        />
       )}
+
+      
+
+
     </div>
   )
 }

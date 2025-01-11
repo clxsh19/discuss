@@ -5,6 +5,6 @@ export interface SubProps {
   members_count: string,
   created_at: Date,
   user_role: string,
-  link_banner_url ?: string,
-  link_logo_url ?: string
+  banner_url ?: string,
+  logo_url ?: string
 }

@@ -1,7 +1,7 @@
 'use client'
 
 import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
-import { userStatus } from '@/lib/data_api';
+import { userData } from '@/lib/data_api';
 // import { useRouter } from 'next/router';
 
 interface UserInfo {
@@ -22,12 +22,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<UserInfo | null>(null);
 
   const fetchUserStatus = async() => {
-    const data = await userStatus();
-    if ( data === false) {
-      SetAuthStatus(false);
-      setUser(null);
-      return;
-    }
+    const data = await userData();
+    // if ( data. === false) {
+    //   SetAuthStatus(false);
+    //   setUser(null);
+    //   return;
+    // }
     SetAuthStatus(data.status);
     setUser(data.user)
   };  

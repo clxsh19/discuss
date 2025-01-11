@@ -1,5 +1,5 @@
 import asyncHandler from "express-async-handler";
-import { body, validationResult } from "express-validator";
+import { param, query, body, validationResult } from "express-validator";
 import {query as dbQuery, queryTransaction} from "../db/index";
 
 const create_comment = [
@@ -51,9 +51,11 @@ const create_comment = [
 const update_comment = [
   body('comment', 'Comment content must not be empty').trim().isLength({min:1}).escape(),
   body('comment_id').not().isEmpty().withMessage('comment_id cannot be null').trim().escape(),
+  
   asyncHandler( async(req, res, next) => {
     const errors = validationResult(req);
-    const { comment, comment_id } = req.body;  
+    const { comment, comment_id } = req.body;
+    const user_id = req.user?.id;
   
     if (!errors.isEmpty()) {
       res.status(400).json({ 
@@ -62,43 +64,140 @@ const update_comment = [
         comment,
         comment_id
       });
+    }
+
+    const { rows } = await dbQuery(`SELECT comment_id from comments where comment_id = $1`, [comment_id]);
+    if (rows.length === 0 ) {
+      res.status(404).json({ message: 'Comment does not exist' });
+      return;
+    }
+
+    const comment_user_id = rows[0].user_id;
+    if (user_id !== comment_user_id) { // same user who commented trying to update?
+      res.status(403).json({ message: 'Unauthorized user cannot update' });
+      return;
+    }
+
+    await dbQuery(`UPDATE comments SET content = $1 WHERE comment_id = $2`, [comment, comment_id]);
+    res.status(200).json({ message: 'Comment updated' });
+  })
+]
+
+const delete_comment = [
+  body('comment_id').not().isEmpty().withMessage('comment_id cannot be null').trim().escape(),
+  
+  asyncHandler( async(req, res, next) => {
+    const errors = validationResult(req);
+    const { comment_id } = req.body;
+    const user_id = req.user?.id;  
+  
+    if (!errors.isEmpty()) {
+      res.status(400).json({ 
+        message: 'comment content and comment_id are required',
+        errors: errors.array(),
+        comment_id
+      });
     } else {
-      const commentExist = await dbQuery(`SELECT 1 from comments where comment_id = $1`, [comment_id]);
-      if (commentExist.rows.length > 0) {
-        await dbQuery(`UPDATE comments SET content = $1 WHERE comment_id = $2`, [comment, comment_id]);
-        res.status(200).json({ message: 'Comment updated' });
-        return;
-      } else {
+      const { rows } = await dbQuery(`SELECT parent_comment_id, user_id from comments where comment_id = $1`, [comment_id]);
+     
+      if ( rows.length === 0 ) { //check if comment exist
         res.status(404).json({ message: 'Comment does not exist' });
         return;
       }
+      const { parent_comment_id, user_id:comment_user_id } = rows[0];
+      if ( user_id !== comment_user_id) { // same user who commented trying to delete?
+        res.status(403).json({ message: 'Unauthorized user cannot delete' });
+        return;
+      }
+      // 12 is the deleted user id
+      await dbQuery(`UPDATE comments 
+        SET user_id = 12,
+        content = '', 
+        deleted = TRUE
+        WHERE comment_id = $1`,
+        [comment_id]);
+
+      res.status(200).json({ message: 'Comment deleted' });
+
+      
+      // if ( parent_comment_id ) {
+      //   // await dbQuery(`DELETE FROM comments WHERE comment_id = $1`, [comment_id]);
+      //   res.status(200).json({ message: 'Comment deleted' });
+      // } else {
+      //   res.status(200).json({ message: 'comment soft deleted'})
+      // }
     }
   })
 ]
 
-const get_comments_by_post = asyncHandler( async(req, res, next) => {
-  const post_id = req.params.post_id;
-  const user_id = req.user?.id;
-  const comments_query = await dbQuery(`SELECT
-    c.comment_id,
-    c.content,
-    c.user_id,
-    c.parent_comment_id AS parent_id,
-    c.created_at,
-    u.username,
-    c.vote_count AS total_votes,
-    COALESCE(cv.vote_type, null) AS vote_type
+const get_comments_by_post = [
+  param('post_id')
+    .notEmpty()
+    .withMessage('Post id caanot be empty')
+    .trim()
+    .isInt()
+    .withMessage('id must be a positive integer')
+    .escape(),
 
-    FROM comments c
-    LEFT JOIN users u ON c.user_id = u.user_id
-    LEFT JOIN comment_votes cv ON c.comment_id = cv.comment_id
-    AND cv.user_id = $1
-    WHERE c.post_id = $2`,
-    [user_id, post_id]);
-  res.status(200).json({
-    comments: comments_query.rows,
-  });
-});
+  query('offset')
+    .notEmpty()
+    .withMessage('Offset is required.')
+    .trim()
+    .isInt({ min: 0 })
+    .withMessage('Offset must be a positive integer.')
+    .escape()
+    .toInt(),
+
+  query('sort')
+    .optional()
+    .trim()
+    .isIn(['top', 'new'])
+    .withMessage('Only top and new sort by')
+    .escape(),
+
+  asyncHandler( async(req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      res.status(400).json({ 
+        errors: errors.array()
+      });
+    }
+    const { offset, sort = 'new'} = req.query;
+    const post_id = req.params.post_id;
+    const user_id = req.user?.id;
+
+    let sortCondition = '';
+
+    if (sort === 'new') {
+      sortCondition = 'c.created_at DESC';
+    } else if (sort === 'top') {
+      sortCondition = 'c.vote_count DESC';
+    }
+    const comments_query = await dbQuery(`SELECT
+        c.comment_id,
+        c.content,
+        c.user_id,
+        c.parent_comment_id AS parent_id,
+        c.created_at,
+        u.username,
+        c.vote_count AS total_votes,
+        COALESCE(cv.vote_type, null) AS vote_type,
+        c.deleted
+      FROM comments c
+      LEFT JOIN users u ON c.user_id = u.user_id
+      LEFT JOIN comment_votes cv ON c.comment_id = cv.comment_id AND cv.user_id = $1
+      WHERE c.post_id = $2
+      ORDER BY 
+        c.parent_comment_id IS NULL,         
+        ${sortCondition}`
+      , [user_id, post_id]);
+    res.status(200).json({ 
+      comments: comments_query.rows,
+    });
+  })
+];
+
+
 
 const comment_vote = [
   body('comment_id').not().isEmpty().withMessage('comment_id cannot be null').trim().escape(),
@@ -169,6 +268,8 @@ export default {
   create_comment,
   get_comments_by_post,
   comment_vote,
-  update_comment
+  update_comment,
+  delete_comment
 }
 
+     

@@ -2,16 +2,25 @@
 
 import { useState } from 'react';
 import { updateComment } from '@/lib/create_api';
+import { useComments } from '../../context/CommentContext';
+import { showErrorToast } from '../../ui/toasts';
 
 interface CommentEditProp {
+  user: {
+    id: number,
+    username: string   
+  } | null,
+  isAuthenticated: boolean,
   comment_id: number,
   initialComment: string,
   setShowEditForm: React.Dispatch<React.SetStateAction<boolean>>
 } 
 
-const CommentEditForm = ({ comment_id, initialComment, setShowEditForm}: CommentEditProp) => {
+const CommentEditForm = ({ user, isAuthenticated, comment_id, initialComment, setShowEditForm }: CommentEditProp) => {
   const [comment, setComment] = useState(initialComment);
   const [loading, setLoading] = useState(false);
+  const { updateCommentState } = useComments();
+
 
   const handleCommentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setComment(e.currentTarget.value || '');
@@ -24,7 +33,18 @@ const CommentEditForm = ({ comment_id, initialComment, setShowEditForm}: Comment
 
     try {
       // console.log({ post_id, comment});
+      if (!comment.trim()) {
+        showErrorToast('Empty comment!');
+        return;
+      }
+    
+      if (!isAuthenticated || !user) {
+        showErrorToast('You must be logged in to comment!');
+        return;
+      }
+
       await updateComment(comment_id, comment);
+      updateCommentState(comment_id, comment);
       setComment('');
       setShowEditForm(false);
     } catch (err) {

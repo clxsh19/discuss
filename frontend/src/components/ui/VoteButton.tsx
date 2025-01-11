@@ -9,10 +9,9 @@ interface VoteButtonProps {
   votes_count: number,
   vote_type: 1|-1|null,
   submitVote: (id: number, vote_type: 1 | -1) => Promise<void>,
-  className?: string,
 }
 
-const VoteButton = ({ id, votes_count, vote_type, submitVote, className }: VoteButtonProps) => {
+const VoteButton = ({ id, votes_count, vote_type, submitVote }: VoteButtonProps) => {
   const [userVote, setUserVote] = useState<1 | -1 | null>(vote_type);
   const [voteCount, setVoteCount] = useState(votes_count);
   const { isAuthenticated } = useAuth();
@@ -23,9 +22,7 @@ const VoteButton = ({ id, votes_count, vote_type, submitVote, className }: VoteB
       return;
     }
     let newVoteCount = voteCount;
-    //say user vote -1 already
-    //if user vote -1 to revert their vote null uservote
-    //
+    //say user vote = -1 and if user vote again vote -1, then vote = null 
     if (userVote === vote) {
       newVoteCount = voteCount - vote;
       setUserVote(null);
@@ -49,25 +46,15 @@ const VoteButton = ({ id, votes_count, vote_type, submitVote, className }: VoteB
   }, [vote_type, isAuthenticated]);
   
   return (
-    <div 
-      className={`flex flex-row  rounded-2xl ${className}
-                  ${userVote === 1 ? "bg-orange-500" : userVote === -1 ? "bg-blue-500" : "bg-slate-200"}`}
-    >
-      <button 
-        className={`mr-2 hover:text-orange-500 ${userVote === 1? "bg-white": ""}`} 
-        onClick={() => handleVote(1)}
-      >
-        <UpvoteIcon />
+    <>
+      <button onClick={() => handleVote(1)}>
+        <UpvoteIcon style={`${(userVote == 1) ? 'text-blue-600':' text-gray-400 hover:text-blue-500'} `} />
       </button>
-      <div className="mr-2 text-xs font-[600]">{voteCount}</div>
-      <button
-        className="mr-0.5 hover:text-blue-500"
-        onClick={() => handleVote(-1)}
-      >
-        <DownvoteIcon />
+      <div className="text-sm text-gray-400 font-[500]">{voteCount}</div>
+      <button onClick={() => handleVote(-1)}>
+        <DownvoteIcon style={`${(userVote == 1) ? 'text-red-600':' text-gray-400 hover:text-red-500'} `} />
       </button>
-    </div>
-
+    </>
   )
 }
 

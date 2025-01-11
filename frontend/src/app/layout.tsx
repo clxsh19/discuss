@@ -18,7 +18,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang='en'>
-      <body className='bg-slate-200'>
+      <body className='bg-neutral-950'>
         <AuthProvider>
         <HeaderNav />
         <ToastContainer 

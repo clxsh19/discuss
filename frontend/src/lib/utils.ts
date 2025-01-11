@@ -56,33 +56,6 @@ export const getDate = (dateStr:string): string => {
   return `${namedMonth} ${dateOfMonth}, ${namedYear}`;
 }
 
-// export const buildCommentTree = (comments: CommentItemProp[]): Map<number, MapCommentProp> => {
-//   const commentMap = new Map<number, MapCommentProp>();
-
-//   // Populate the Map with comments and initialize children arrays
-//   comments.forEach(comment => {
-//     commentMap.set(comment.comment_id, { ...comment, children_id: [] });
-//   });
-
-//   // Establish parent-child relationships
-//   comments.forEach(comment => {
-//     const { parent_id, comment_id } = comment;
-
-//     if (parent_id) {
-//       const parent = commentMap.get(parent_id);
-
-//       if (parent) {
-//         // Clone children for immutability and update parent in the map
-//         const updatedChildren = parent.children_id ? [...parent.children_id, comment_id] : [comment_id];
-//         commentMap.set(parent_id, { ...parent, children_id: updatedChildren });
-//       } else {
-//         console.warn(`Orphaned comment detected: ${comment_id} (parent: ${parent_id})`);
-//       }
-//     }
-//   });
-
-//   return commentMap;
-// };
 export const buildCommentTree = (flatComments: CommentItemProp[]): CommentItemProp[] => {
   const commentMap: Record<number, CommentItemProp> = {};
   const tree: CommentItemProp[] = [];
@@ -90,49 +63,31 @@ export const buildCommentTree = (flatComments: CommentItemProp[]): CommentItemPr
   // Create a map with children initialized
   for (const comment of flatComments) {
     comment.children = [];
+    // comment.created_at client side sort maybe
     commentMap[comment.comment_id] = comment;
   }
 
   // Build the tree structure
   for (const comment of flatComments) {
-    if (!comment.parent_id) {
-      tree.push(comment); // Root comments go to the tree
-    } else if (commentMap[comment.parent_id]) {
-      commentMap[comment.parent_id].children!.push(comment); // Use non-null assertion for safe push
+    // if (!comment.parent_id) {
+    //   tree.push(comment); // Root comments go to the tree
+    // } else if (commentMap[comment.parent_id]) {
+    //   commentMap[comment.parent_id].children!.push(comment); // Use non-null assertion for safe push
+    // }
+    if (comment.parent_id) {
+      const parent = commentMap[comment.parent_id];
+      if (parent) {
+        parent.children?.push(comment);
+      }
+    } else {
+      if (!comment.deleted || comment.children!.length > 0) {
+        tree.push(comment)
+      }
     }
   }
 
   return tree;
 };
-
-// export const convertMapToNestedArray = (commentMap: Map<number, MapCommentProp>) => {
-//   const roots:NestedCommentProp[] = [];
-//   const commentCopy = new Map();
-
-//   // Create a deep copy of the commentMap
-//   commentMap.forEach((comment, id) => {
-//       commentCopy.set(id, { ...comment, children: [] });
-//   });
-
-//   // Build the tree structure
-//   commentCopy.forEach((comment) => {
-//     // console.log(comment);    
-//     const { parent_id } = comment;
-
-//     if (parent_id) {
-//         const parent = commentCopy.get(parent_id);
-//         if (parent) {
-//             parent.children.push(comment);
-//             // console.log('parent: ', parent);
-//         }
-//     } else {
-//         roots.push(comment); // Add top-level comments
-//     }
-//   });
-
-//   return roots;
-// };
-
 
 export const buildPostWithMetaData = async (posts: PostItemProp[] | PostItemProp) => {
   if (typeof posts === 'undefined') {

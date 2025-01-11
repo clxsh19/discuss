@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { subscribeUser, unsubscribeUser } from '@/lib/create_api';
-import Link from 'next/link';
+import CreatePostButton from '../post/create_post/CreatePostButton';
 
 const JoinAndCreateSub = ({ sub_name, subreddit_id, user_role }: { sub_name: string, subreddit_id: number, user_role: string }) => {
   // Initialize state based on the user_role prop
@@ -24,9 +24,7 @@ const JoinAndCreateSub = ({ sub_name, subreddit_id, user_role }: { sub_name: str
 
   return (
     <div className="flex flex-col mt-4 border border-gray-300 rounded-lg">
-      <Link href={`/r/${sub_name}/submit`} >
-        Create Post
-      </Link>
+      <CreatePostButton sub_name={sub_name} />
       <button onClick={changeSubStatus}>
         {userSubscribed ? 'Unsubscribe' : 'Subscribe'}
       </button>

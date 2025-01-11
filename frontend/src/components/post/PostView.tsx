@@ -1,9 +1,7 @@
 import { PostItemProp } from "@/interface/PostProp";
 import { CommentItemProp } from "@/interface/CommentProp";
 import { getTimePassed } from '@/lib/utils';
-import CommentViewContainer from "../comment/CommentViewContainer";
 import CommentProviderContainer from "./CommentProviderContainer";
-import PostCommentForm from "./PostCommentForm";
 import PostActionButtons from "./PostActionButtons";
 import ExpandMedia from "../ui/ExpandMedia";
 import SubHeader from "../SubHeader";
@@ -37,6 +35,7 @@ const PostView = ({post, comments} : PostViewProp) => {
 
   return (
     <div className="">
+      {/* Subreddit header */}
       <SubHeader link_banner_url={thumbnail_url} link_logo_url={thumbnail_url} sub_name={subreddit_name}/>
       {/* Thummbnail And Post Info */}
       <div className="flex p-4 mt-4 bg-white w-11/12 mx-4 lg:w-9/12 overflow-hidden">
@@ -64,7 +63,6 @@ const PostView = ({post, comments} : PostViewProp) => {
           {/* Expand Button */}
           <ExpandMedia post_type={post_type} media_url={thumbnail_url} text_content={text_content}/>
         </div>
-        
       </div>
       <div className="mb-4 p-1 w-11/12 mx-4 lg:w-9/12 overflow-hidden bg-white rounded-b-lg">
         <PostActionButtons 
@@ -74,9 +72,6 @@ const PostView = ({post, comments} : PostViewProp) => {
         />
       </div>
       <CommentProviderContainer initialComments={comments} post_id={post_id}/>
-      {/* <PostCommentForm post_id={post_id} />
-
-      <CommentViewContainer initialComments={comments} post_id={post_id} /> */}
     </div>
   )
 };

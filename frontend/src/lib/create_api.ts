@@ -1,5 +1,6 @@
 "use server"
 import { cookies } from 'next/headers';
+// import FormData from 'form-data'; 
 
 interface CreateCommentParams {
   post_id: number;
@@ -38,6 +39,55 @@ export async function createComment({ post_id, parent_comment_id=null, comment }
   }
 }
 
+export async function createCommunity(formData: FormData) {
+  try {
+    const cookieStore = cookies();
+    const allCookies = cookieStore.getAll();
+    
+    // Send the request with form data and headers
+    const res = await fetch('http://localhost:5000/api/subreddit/create', {
+      method: 'POST',
+      headers: {
+        Cookie: allCookies.map(cookie => `${cookie.name}=${cookie.value}`).join('; '),
+      },
+      body: formData, 
+    });
+
+    // Handle the response
+    const responseData = await res.json();
+    return responseData;
+
+  } catch (error) {
+    console.error('Failed to create community:', error);
+    throw new Error('Failed to create community.');
+  }
+}
+
+export async function createPost(formData: FormData, postType: 'TEXT' | 'MEDIA' | 'LINK') {
+  try {
+    const cookieStore = cookies();
+    const allCookies = cookieStore.getAll();
+    
+    // Send the request with form data and headers
+    const res = await fetch(`http://localhost:5000/api/post/create?type=${postType}`, {
+      method: 'POST',
+      headers: {
+        Cookie: allCookies.map(cookie => `${cookie.name}=${cookie.value}`).join('; '),
+      },
+      body: formData, 
+    });
+
+    // Handle the response
+    const responseData = await res.json();
+    return responseData;
+
+  } catch (error) {
+    console.error('Failed to create post:', error);
+    throw new Error('Failed to create post.');
+  }
+}
+
+
 export async function updateComment(comment_id: number, comment: string) {
   try {
     const cookieStore = cookies();
@@ -58,6 +108,28 @@ export async function updateComment(comment_id: number, comment: string) {
   } catch (error) {
     console.error('update comment failed', error);
     throw new Error('Failed to update comment.');
+  }
+}
+
+export async function deleteComment(comment_id: number) {
+  try {
+    const cookieStore = cookies();
+    const allCookies = cookieStore.getAll();
+    const res = await fetch('http://localhost:5000/api/comment/delete', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Cookie: allCookies.map(cookie => `${cookie.name}=${cookie.value}`).join('; '),
+      },
+      credentials: 'include',    
+      body: JSON.stringify({
+        comment_id
+      }),
+    });  
+    const data = await res.json();
+  } catch (error) {
+    console.error('Failed to delete comment', error);
+    throw new Error('Failed to delete comment.');
   }
 }
 

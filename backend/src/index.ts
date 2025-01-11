@@ -16,6 +16,7 @@ import postRouter from './routes/post';
 import commentRouter from './routes/comment';
 
 import path from 'path';
+import ErrorHandler from './midllewares/errorHandler';
 
 dotenv.config();
 
@@ -127,6 +128,7 @@ app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 //   }
 // });
 
+app.use(ErrorHandler);
 
 
 const port: number = Number(process.env.PORT) || 5000;

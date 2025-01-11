@@ -1,5 +1,5 @@
 import { getTimePassed } from '@/lib/utils';
-import { CircleIcon } from '../Icons';
+import { CircleIcon } from '../../Icons';
 import Link from 'next/link';
 
 interface CommentItemProp {
@@ -14,8 +14,6 @@ const CommentItem = ({
   comment_id,
   created_at,
   username,
-  total_votes,
-  content
 }: CommentItemProp) => {
   const timePassed = getTimePassed(created_at);
   return (
@@ -35,9 +33,7 @@ const CommentItem = ({
     </div>
 
     {/* Comment content */}
-    <div className="mt-2 ml-1 bg-neutral-50 text-sm text-neutral-900">
-      <pre className="whitespace-pre-wrap break-words">{content}</pre> {/* Preserve line breaks and ensure content wraps */}
-    </div>
+
   </div>
   )
 };

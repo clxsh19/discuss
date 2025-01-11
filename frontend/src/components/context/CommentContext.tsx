@@ -1,10 +1,14 @@
 // CommentsContext.tsx
 import React, { createContext, useContext, useState, ReactNode } from "react";
 import { CommentItemProp } from "@/interface/CommentProp";
+import { fetchPostComments } from "@/lib/data_api";
 
 interface CommentsContextProps {
-  comments: CommentItemProp[];
-  addComment: (newComment: CommentItemProp) => void;
+  comments: CommentItemProp[],
+  addComment: (newComment: CommentItemProp) => void,
+  updateCommentState: (comment_id: number, newContent: string) => void,
+  softDeleteComment: (comment_id: number) => void,
+  sortComments: (post_id: number, newSort: 'new'| 'old' | 'top') => Promise<void>
 }
 
 interface CommentProviderProps {
@@ -15,41 +19,58 @@ interface CommentProviderProps {
 const CommentsContext = createContext<CommentsContextProps | undefined>(undefined);
 
 export const CommentsProvider = ({ initialComments, children } : CommentProviderProps) => {
-  // intial comments fetched server side of map type
-  // const [comments, setComments] = useState<Map<number, MapCommentProp>>(initialComments);
   const [comments, setComments] = useState<CommentItemProp[]>(initialComments);
 
-  // const addComment = ( newComment: MapCommentProp) => {
-  //   const parent_comment_id = newComment.parent_id;
-
-  //   setComments((prevComments) => {
-  //     // shallow copy of comments 
-  //     const updatedComments = new Map(prevComments);
-  //     if (parent_comment_id) { // if a child with parent id
-  //       const parent = updatedComments.get(parent_comment_id);
-  //       if (parent) {
-  //         const updatedChildren = parent.children_id ? [...parent.children_id, newComment.comment_id] : [newComment.comment_id];
-  //         updatedComments.set(parent_comment_id, { ...parent, children_id: updatedChildren });
-  //       }
-  //     } else { // no parent 
-  //       updatedComments.set(newComment.comment_id, newComment);
-  //     }
-  //     updatedComments.set(newComment.comment_id, newComment);
-  //     return updatedComments;
-  //   });
-  // };
+  const sortComments = async(post_id: number, newSort: 'new'| 'old' | 'top') => {
+    // const shalloCopy = comments.slice();client side sort maybe
+    const newComments = await fetchPostComments(post_id, 0, newSort);
+    console.log(newComments);
+    setComments(newComments);
+  }
+  
   const addComment = (newComment: CommentItemProp) => {
     setComments((prevComments) => {
       return [newComment, ...prevComments]; 
     });
   };
+
+  const updateCommentState = (comment_id: number, newContent: string) => {
+    setComments((prevComments) => {
+      const index = prevComments.findIndex((comment) => comment.comment_id === comment_id);
+      if (index === -1) {
+        return prevComments; // No changes if the comment isn't found
+      }
+      // Create a shallow copy of the array
+      const updatedComments = [...prevComments];
+      // Update the specific comment
+      updatedComments[index] = { ...updatedComments[index], content: newContent };
+      return updatedComments;
+    });
+  };
+
+  const softDeleteComment = (comment_id: number) => {
+    setComments((prevComments) => {
+      const index = prevComments.findIndex((comment) => comment.comment_id === comment_id);
+      if (index === -1) {
+        return prevComments;
+      }
+      const updatedComments = [...prevComments];
+      updatedComments[index] = { ...updatedComments[index], deleted: true };
+      return updatedComments;
+    });
+
+  };
   
-
-  const updateComment = (comment_id: number, newContent: string) => {
-  }
-
   return (
-    <CommentsContext.Provider value={{ comments, addComment }}>
+    <CommentsContext.Provider 
+      value={{ 
+        comments, 
+        addComment, 
+        updateCommentState, 
+        softDeleteComment,
+        sortComments
+      }}
+    >
       {children}
     </CommentsContext.Provider>
   );

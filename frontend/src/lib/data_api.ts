@@ -11,8 +11,7 @@ export async function fetchAllPosts(offset : number, sort: string = 'new', t: st
       sort,
       t,
     });
-    console.log('query params: ', queryParams);
-
+    // console.log('query params: ', queryParams);
     const res = await fetch(`http://localhost:5000/api/post/all?${queryParams}`, {
       method: 'GET',
       headers: {
@@ -34,26 +33,39 @@ export async function fetchAllPosts(offset : number, sort: string = 'new', t: st
   }
 }
 
-export async function fetchPostComments(postid: string) {
-  try {
-    const res = await fetch(`http://localhost:5000/api/comment/${postid}`, {
-      // cache: 'no-cache',
-    });
-    const data = await res.json();
-    console.log(data.comments);
-    return data.comments;
-  } catch (error) {
-    console.error('Database Error:', error);
-    throw new Error('Failed to fetch post comments.');
-  }
-}
-
 // Posts data for a post
-export async function fetchPostById(postid: string) {
+export async function fetchPostDetail(post_id: number) {
   try {
     const cookieStore = cookies();
     const allCookies = cookieStore.getAll();
-    const post_detail_res = await fetch(`http://localhost:5000/api/post/id/${postid}`, {
+
+    const res = await fetch(`http://localhost:5000/api/post/id/${post_id}`, {
+      headers: {
+        'Content-Type': 'application/json',
+        Cookie: allCookies.map(cookie => `${cookie.name}=${cookie.value}`).join('; '),
+      },
+      credentials: 'include',
+    });
+
+    const post_data = await res.json();
+    const data = post_data.post;
+    return data;
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch post data.');
+  }
+}
+
+export async function fetchPostComments(post_id: number, offset: number, sort: string = 'new') {
+  try {
+    const cookieStore = cookies();
+    const allCookies = cookieStore.getAll();
+    const queryParams = new URLSearchParams({
+      offset: offset.toString(),
+      sort
+    });
+
+    const res = await fetch(`http://localhost:5000/api/comment/${post_id}?${queryParams}`, {
       // cache: 'no-cache',
       headers: {
         'Content-Type': 'application/json',
@@ -61,20 +73,8 @@ export async function fetchPostById(postid: string) {
       },
       credentials: 'include',
     });
-    const post_comments_res = await fetch(`http://localhost:5000/api/comment/${postid}`, {
-      // cache: 'no-cache',
-      headers: {
-        'Content-Type': 'application/json',
-        Cookie: allCookies.map(cookie => `${cookie.name}=${cookie.value}`).join('; '),
-      },
-      credentials: 'include',
-    });
-    const post_data = await post_detail_res.json();
-    const comment_data = await post_comments_res.json();
-    const data = {
-      post: post_data.post,
-      comments: comment_data.comments,
-    };
+    const comment_data = await res.json();
+    const data = comment_data.comments;
     return data;
   } catch (error) {
     console.error('Database Error:', error);
@@ -91,7 +91,7 @@ export async function fetchPostsBySub(sub_name: string, offset: number, sort: st
       sort,
       t,
     });
-    console.log('query params: ', queryParams);
+    // console.log('query params: ', queryParams);
     const res = await fetch(`http://localhost:5000/api/post/${sub_name}?${queryParams}`, {
       method: 'GET',
       headers: {
@@ -129,8 +129,8 @@ export async function fetchSubData(sub_name : string) {
       // cache: 'no-cache',
     });
     const data = await res.json();
-    
-    // console.log(data);
+    console.log(`subreddit ${sub_name}`)
+    console.log(data);
     return data.subreddit_detail;
   } catch (error) {
     console.error('Database Error:', error);
@@ -138,19 +138,17 @@ export async function fetchSubData(sub_name : string) {
   }
 }
 
-export async function userStatus(): 
-  Promise< false | 
-  { status:boolean, 
-    user: {
-      id: number,
-      username: string
-    }
+export async function userData(): Promise <{
+    status:boolean, 
+    user: { id: number, username: string } | null,
   }> {
   const cookieStore = cookies();
   const hasCookie = cookieStore.has('connect.sid');
   if (!hasCookie) {
-    // console.log('no cookie');
-    return false
+    return {
+      status: false,
+      user: null,
+    };
   }
   try {
     const res = await fetch('http://localhost:5000/api/user/status', {
@@ -167,7 +165,7 @@ export async function userStatus():
 
     return {
       status: data.authenticated,
-      user: data.user,
+      user: data.authenticated? data.user: null,
     };
   } catch (error) {
     console.error('failed fetching status');

@@ -12,7 +12,9 @@ CREATE TABLE IF NOT EXISTS subreddits (
     name VARCHAR(100) UNIQUE NOT NULL,
     description TEXT CHECK (LENGTH(description) <= 2500),
     members_count INT DEFAULT 0,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    banner_url VARCHAR(255),
+    logo_url VARCHAR(255),
 );
 
 CREATE TABLE IF NOT EXISTS posts (
@@ -36,7 +38,8 @@ CREATE TABLE IF NOT EXISTS comments (
     content TEXT CHECK (LENGTH(content) <= 5000),
     vote_count INTEGER DEFAULT 0,
     parent_comment_id INT REFERENCES comments(comment_id) ON DELETE CASCADE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    deleted BOOLEAN FALSE
 );
 
 CREATE TABLE IF NOT EXISTS post_votes (

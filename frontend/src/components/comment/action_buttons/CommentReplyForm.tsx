@@ -1,22 +1,25 @@
 'use client'
 
 import { useState } from 'react';
-import { useComments } from '../context/CommentContext';
-import { useAuth } from '../context/AuthContext';
-import { showErrorToast } from '../ui/toasts';
+import { useComments } from '../../context/CommentContext';
+import { showErrorToast } from '../../ui/toasts';
 import { createComment } from '@/lib/create_api';
 
 interface CommentReplyProp {
+  user: {
+    id: number,
+    username: string   
+  } |  null,
+  isAuthenticated: boolean,
   post_id: number,
   parent_comment_id?: number,
-  setShowReplyForm: React.Dispatch<React.SetStateAction<boolean>>
+  setShowReplyForm: React.Dispatch<React.SetStateAction<boolean>>,
 } 
 
-const CommentReplyForm = ( { post_id, parent_comment_id , setShowReplyForm } : CommentReplyProp) => {
+const CommentReplyForm = ( { user, isAuthenticated, post_id, parent_comment_id , setShowReplyForm } : CommentReplyProp) => {
   const [comment, setComment] = useState('');
   const [loading, setLoading] = useState(false);
   const { addComment } = useComments();
-  const { isAuthenticated, user } = useAuth();
 
   const handleCommentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setComment(e.currentTarget.value || '');
@@ -37,21 +40,9 @@ const CommentReplyForm = ( { post_id, parent_comment_id , setShowReplyForm } : C
     
     try {
       const comment_id = await createComment({ post_id, parent_comment_id, comment});
-      console.log({
-        user_id: user.id,
-        post_id,
-        comment_id,
-        parent_id: parent_comment_id,
-        username: user.username,
-        created_at: '',
-        total_votes: 0,
-        vote_type: null,
-        content: comment,
-      })
 
       addComment({
         user_id: user.id,
-        post_id,
         comment_id,
         parent_id: parent_comment_id,
         username: user.username,
@@ -59,6 +50,7 @@ const CommentReplyForm = ( { post_id, parent_comment_id , setShowReplyForm } : C
         total_votes: 0,
         vote_type: null,
         content: comment,
+        deleted: false
       })
       setComment('');
       setShowReplyForm(false);

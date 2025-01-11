@@ -1,31 +1,38 @@
 import asyncHandler from "express-async-handler";
 import { body, validationResult } from "express-validator";
 import {query , queryTransaction} from "../db/index";
+import { deleteUploadedFile } from "../utils/deleteUploadedFIle";
 
 const post_create_subreddit = [
-  body('name', 'Subreddit name must not be empty').trim().isLength({min:1}).escape(),
-  body('description').trim().escape(),
-
-  asyncHandler( async(req, res, next) => {
+  body('name', 'Subreddit name must not be empty').not().isEmpty().withMessage('Name cannot be empty').trim().escape(),
+  body('description').not().isEmpty().withMessage('description cannot be empty').trim().escape(),
+  
+  asyncHandler( async(req, res) => {
     const errors = validationResult(req);
     const { name, description } = req.body;
+    const lowerCaseName = name.toLowerCase();
+    const files = req.files as { [fieldname: string] : Express.Multer.File[] };
+    const bannerFilePath =  files.banner?.[0]?.path;
+    const logoFilePath =  files.logo?.[0]?.path;
 
     if (!errors.isEmpty()) {
+      // console.log(files);
+      deleteUploadedFile(bannerFilePath);
+      deleteUploadedFile(logoFilePath);
+
       res.status(400).json({ 
-        message: 'subreedit name required',
-        name: req.body.name,
-        description: req.body.description,
+        errors: errors.array()
       });
     } else {
       const name_exists_query = await query(`SELECT EXISTS (
-        SELECT 1 FROM subreddits WHERE name = $1 )`, [name] 
+        SELECT 1 FROM subreddits WHERE name = $1 )`, [lowerCaseName] 
       );
       const name_exists = name_exists_query.rows[0].exists;
       if (name_exists) {
         res.status(403).json({ error: "Subreddit name already exists"});
       } else {
-        await query(`INSERT INTO subreddits (name, description) VALUES ($1, $2)`, // 0 member count currently
-        [name, description] );
+        await query(`INSERT INTO subreddits (name, description, banner_url, logo_url) VALUES ($1, $2, $3, $4)`, // 0 member count currently
+        [lowerCaseName, description, bannerFilePath, logoFilePath] );
         res.status(202).json({
           message: 'Subreddit registered successfully',
         });
@@ -34,15 +41,17 @@ const post_create_subreddit = [
   }),
 ];
 
-const get_subbreddit_detail = asyncHandler( async(req, res, next) => {
-  const subreddit_name = req.params.name;
-  const user_id = req.user?.id
+const get_subbreddit_detail = asyncHandler( async(req, res) => {
+  const subreddit_name = req.params.name.toLowerCase();
+  const user_id = req.user?.id;
   const subreddit_query = await query(`SELECT 
     s.subreddit_id,
     s.name AS sub_name,
     s.description,
     s.members_count,
     s.created_at,
+    s.logo_url,
+    s.banner_url,
     COALESCE(sm.role, 'none') AS user_role
     FROM subreddits s
     LEFT JOIN subreddit_members sm 
@@ -82,7 +91,7 @@ const user_join_subreddit = [
 
       if (result[0].rows.length === 0 || result[1].rows.length > 0) {
         res.status(409).json({
-          message: "sub doesn't exist or user already subscribed"
+          message: "community doesn't exist or user already subscribed"
         });
         return;
       }
@@ -90,7 +99,7 @@ const user_join_subreddit = [
       const subscribe_query = await query(`INSERT INTO subreddit_members (user_id, subreddit_id) VALUES ($1, $2)`,
         [user_id, subreddit_id]);
       res.status(200).json({ 
-        message: "User subscribed",
+        message: "User subscribed to the community",
         result: subscribe_query.rows[0]
       });
     }

@@ -4,9 +4,10 @@ interface SubHeaderProps {
   sub_name: string,
 }
 
+// maybe use layout in the path
 const SubHeader = ({ link_banner_url, link_logo_url, sub_name} : SubHeaderProps) => {
   return (
-    <div className="relative w-full h-56  bg-white">
+    <div className="relative w-full h-56 bg-white">
       {/* Banner */}
       <div className="w-full h-40">
         {link_banner_url ? (

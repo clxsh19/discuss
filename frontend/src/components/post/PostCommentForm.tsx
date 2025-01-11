@@ -40,21 +40,14 @@ const PostCommentForm = ({ post_id }: PostCommentProp) => {
 
       addComment({
         user_id: user.id,
-        post_id,
         comment_id,
         username: user.username,
         created_at: '',
         total_votes: 0,
         vote_type: null,
-        content: comment
+        content: comment,
+        deleted: false
       });
-      // await showPromiseToast( 
-      //   {
-      //     pending: 'Submitting your comment...',
-      //     success: 'Comment submitted successfully!',
-      //     error: 'Failed to submit the comment.',
-      //   }
-      // );
       setComment('');
     } catch (err) {
       showErrorToast('Failed to submit the comment.');
@@ -62,11 +55,11 @@ const PostCommentForm = ({ post_id }: PostCommentProp) => {
 
     } finally {
       setLoading(false);
-    }
+    } 
   };
 
   return (
-    <div className="w-11/12 h-1/5 mx-4 lg:w-9/12 rounded-lg overflow-hidden">
+    <div className="w-11/12 h-1/5 mx-4 mb-4 lg:w-9/12 rounded-lg overflow-hidden">
       {!isEditing ? (
         <button
         className="placeholder-button p-4 bg-white text-gray-500 w-full text-left"

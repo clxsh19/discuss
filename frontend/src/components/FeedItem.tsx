@@ -1,18 +1,16 @@
 import { PostItemProp } from '@/interface/PostProp';
 import { getTimePassed } from '@/lib/utils';
-import { CommentIcon, ShareIcon } from '@/components/Icons';
+import { CommentIcon, LinkIcon, ShareIcon } from '@/components/Icons';
 import Link from 'next/link';
 import VoteButton from '@/components/ui/VoteButton';
 import { submitPostVote } from '@/lib/create_api';
 
 const FeedItem = ({
-  post_id, title,
-  created_at, total_comments,
-  total_votes, vote_type,
+  post_id, title, created_at, 
+  total_comments, total_votes, vote_type,
   username, subreddit_name,
   post_type, text_content,
-  link_url, link_img_url,
-  media_url
+  link_url, link_img_url, media_url
 }: PostItemProp) => {
   const timePassed = getTimePassed(created_at); 
   const votes_count = total_votes == null ? 0 : total_votes;
@@ -22,25 +20,32 @@ const FeedItem = ({
   let isVideo;
   if ( post_type === 'MEDIA') {
     thumbnail_url = `http://localhost:5000/${media_url}`;
-    isVideo = media_url?.match(/\.(mp4|webm|ogg)$/i);
+    isVideo = media_url?.match(/\.(mp4|webm|ogg)$/i); // check if url is for a video by checking it's format
   } else if ( post_type === 'LINK') {
     thumbnail_url = link_img_url;
   }
 
   return (
-    <div className="flex relative w-full px-4 py-2 border border-slate-300 bg-white hover:border-slate-400 transition-all">
+    <div className="w-full flex pt-2 pb-5 border-b border-neutral-800 ">
       
-      {/* Post Link: Covers the entire post but stays behind other clickable elements */}
-      <Link href={`/r/${subreddit_name}/comments/${post_id}`} className="absolute inset-0" aria-label="Post Link" />
-
+      {/* Voting Button */}
+      <div className='flex flex-col items-center -space-y-1'>
+        <VoteButton 
+          id={post_id} 
+          votes_count={votes_count} 
+          vote_type={vote_type} 
+          submitVote={submitPostVote}
+        />
+      </div>
+      
       {/* Thumbnail */}
-      <div className="w-[85px] h-[85px] mr-4 flex-shrink-0">
+      <div className="w-[80px] h-[80px] ml-2 rounded flex-shrink-0">
         {thumbnail_url ? (
-          <Link href={`/`} target="_blank" rel="noopener noreferrer" className="relative z-10">
+          <Link href={`/`} target="_blank" rel="noopener noreferrer">
             {isVideo ? (
-              <video src={thumbnail_url} className="w-full h-full rounded object-cover"/>
+              <video src={thumbnail_url} className="w-full h-full object-cover"/>
             ) : (
-              <img src={thumbnail_url} alt="Thumbnail" className="w-full h-full rounded object-cover" />
+              <img src={thumbnail_url} alt="Thumbnail" className="w-full h-full object-cover" />
             )}
           </Link>
         ) : (
@@ -48,55 +53,50 @@ const FeedItem = ({
         )}
       </div>
       
-      <div className='flex flex-col'>
+      <div className='flex flex-col space-y-1 ml-3'>
         {/* Title */}
-        <div className="font-medium text-sm flex-grow">
+        <div className="text-gray-100 font-medium text-lg">
           {title}
         </div>
 
         {/* Link */}
-        {link_url ? (
-          <Link href={link_url} className="text-xs text-blue-500">
-            {link_url.length > 30 ? `${link_url.slice(0, 30)}...` : link_url}
-          </Link>
-        ) : null}
+        <div className=''>
+          {link_url ? (
+            <Link href={link_url} className="flex text-xs font-mono italic text-neutral-400 hover:text-neutral-200">
+              <LinkIcon style=""/>
+              <span> {link_url.length > 30 ? `${link_url.slice(0, 30)}...` : link_url} </span>
+            </Link>
+          ) : null}
+        </div>
           
         {/* Sub Name and Time Info */}
-        <div className="flex items-center text-xs mb-2 space-x-1">
+        <div className="flex items-center text-xs font-mono space-x-1">
           {/* Username */}
-          <Link href={`/r/${username}`} className='hover:underline'>
+          <Link href={`/r/${username}`} className='text-green-400 hover:underline'>
             u/{username}
           </Link>
-          <div className='text-slate-600 text-xs'>
+          <div className='text-white text-xs'>
             posted to
           </div>
           <Link href={`/r/${subreddit_name}`} className="font-semibold text-blue-600 hover:underline relative">
             r/{subreddit_name}
           </Link>
-          <span className="text-slate-500">•</span>
-          <span className="text-slate-600">{timePassed} ago</span>
+          <span className="text-white">•</span>
+          <span className="text-white">{timePassed}</span>
         </div>
 
         {/* Action Buttons */}
-        <div className="flex relative items-center space-x-4 text-xs z-10">
-          {/* Voting Button */}
-          <VoteButton 
-          id={post_id} 
-          votes_count={votes_count} 
-          vote_type={vote_type} 
-          submitVote={submitPostVote}
-          className='p-2 mr-2' />
-
+        <div className="flex text-xs space-x-3">
           {/* Comment Button */}
-          <Link href={`/r/${subreddit_name}/comments/${post_id}`} className="flex items-center bg-slate-200 px-3 py-1 rounded-2xl hover:bg-slate-300 relative">
+          <Link href={`/r/${subreddit_name}/comments/${post_id}`} className="flex items-center space-x-1">
             <CommentIcon />
-            <span className="font-semibold">{comments_count}</span>
+            <span className="text-gray-400 font-semibold mb-1">{comments_count}</span>
           </Link>
 
           {/* Share Button */}
-          <button className="flex items-center bg-slate-200 px-3 py-1 rounded-2xl hover:bg-slate-300 relative">
+          <button className="flex space-x-1">
             <ShareIcon />
-            <span className="font-semibold">Share</span>
+            <span className="text-gray-400 font-semibold mb-1">Share</span>
           </button>
         </div>
       </div>

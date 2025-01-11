@@ -1,49 +1,102 @@
-import CommentItem from "./CommentItem";
+import { useEffect } from "react";
+import CommentItem from "./item/CommentItem";
 import NestedComments from "./NestedComments";
-import CommentActionButtons from "./CommentActionButtons";
+import CommentActionButtons from "./action_buttons/CommentActionButtons";
+import DeletedCommentItem from "./item/DeletedCommentItem";
 import { submitCommentVote } from "@/lib/create_api";
 import { useComments } from "../context/CommentContext";
 import { buildCommentTree } from "@/lib/utils";
+import { CommentItemProp } from "@/interface/CommentProp";
 
 interface CommentsViewProp {
-  post_id: number,
+  post_id: number;
 }
 
 const CommentsView = ({ post_id }: CommentsViewProp) => {
   const { comments } = useComments();
   const nestedArray = buildCommentTree(comments);
-  // console.log(nestedArray);
 
-  return (
-    <div className="p-4 bg-white w-11/12 my-4 mx-4 lg:w-9/12 rounded-t-lg overflow-hidden">
-      { nestedArray.map((comment) => {
-        const { user_id, comment_id, username, created_at, total_votes, vote_type, content, children } = comment;  
-        return (
-          <div key={`parent-${comment_id}`} className="mb-1 p- border-l-8 border-l-slate-300">
+  useEffect(() => {
+    const container = document.querySelector("#comments-container");
+  
+    const toggleCollapse = (e: Event) => {
+      const target = e.target as HTMLElement;
+  
+      if (target.classList.contains("comment-border")) {
+        // Get the nearest collapse-wrapper from clicked border.
+        const commentWrapper = target.closest('.comment-wrapper');
+        const contentDiv = commentWrapper?.querySelector('.collapse-wrapper');
+        if (contentDiv) {
+          contentDiv.classList.toggle("hidden"); // Tailwind's hidden class toggles visibility.
+        }
+      }
+    };
+  
+    container?.addEventListener("click", toggleCollapse);
+  
+    return () => {
+      container?.removeEventListener("click", toggleCollapse);
+    };
+  }, []); 
+  
+
+  // Function to render a single comment
+  const renderComment = (comment: CommentItemProp) => {
+    const { user_id, comment_id, username, created_at, total_votes, vote_type, content, children, deleted } = comment;
+
+    return (
+      <div key={`parent-${comment_id}`} className="relative mb-1 p-1 comment-wrapper">
+          <div
+            className="absolute left-0 top-0 h-full w-4 cursor-pointer border-l-8 border-l-slate-300 comment-border"
+          ></div>
+          {deleted ? (
+            <DeletedCommentItem comment_id={comment_id} created_at={created_at} total_votes={total_votes} />
+          ) : (
             <CommentItem
               comment_id={comment_id}
-              username={username} 
+              username={username}
               created_at={created_at}
               total_votes={total_votes}
               content={content}
-            /> {/* remove ... maybe but why? i forgot*/}
-            <CommentActionButtons
-              comment_id={comment_id} user_id={user_id} post_id={post_id} comment={content}
-              votes_count={total_votes} vote_type={vote_type} submitVote={submitCommentVote}
-              username={username} parent_comment_id={comment_id}
             />
-            { children && children.length > 0 && (
-              <NestedComments 
-                post_id={post_id}
-                nestedCommments={children}
-                level={1}
-              /> 
-            )}  
+          )}
+
+          <div className="collapse-wrapper">
+            {deleted ? (
+              <div className="mt-1 ml-1 bg-neutral-50 text-xs text-neutral-700">
+                <div className="">[ Comment deleted by user ]</div> 
+              </div>
+            ) : (
+              <>
+                <div className="mt-2 ml-1 bg-neutral-50 text-sm text-neutral-900">
+                  <pre className="whitespace-pre-wrap break-words">{content}</pre> 
+                </div>
+                <CommentActionButtons
+                  comment_id={comment_id}
+                  user_id={user_id}
+                  post_id={post_id}
+                  comment={content}
+                  votes_count={total_votes}
+                  vote_type={vote_type}
+                  submitVote={submitCommentVote}
+                  username={username}
+                  parent_comment_id={comment_id}
+                />
+              </>
+            )}
+            {children && children.length > 0 && (
+              <NestedComments post_id={post_id} nestedCommments={children} level={1} />
+            )}
           </div>
-        );
-      })}
+      </div>
+    );
+  };
+
+  return (
+    <div id="comments-container" className="p-4 bg-white w-11/12 mb-4 mx-4 lg:w-9/12 overflow-hidden">
+      {nestedArray.map(renderComment)}
     </div>
-  )
+  );
 };
 
 export default CommentsView;

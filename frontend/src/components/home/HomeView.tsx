@@ -1,5 +1,5 @@
 import { PostItemProp } from "@/interface/PostProp";
-import InfiniteFeed from "../ui/InfiniteFeed";
+import InfiniteFeed from "../InfiniteFeed";
 
 interface HomeViewProps {
   posts: PostItemProp[],
@@ -8,11 +8,14 @@ interface HomeViewProps {
 
 const HomeView = ({ posts, hasMore }: HomeViewProps) => {
   return (
-    <div className="mt-4 h-full flex">
+    <div className="w-4/5 flex h-full  mt-2 mx-auto p-2">
       {/* Home Feed */}
-      <InfiniteFeed initialPosts={posts} initialHasMore={hasMore}/>
+      <div className="w-4/6 ">
+        <InfiniteFeed initialPosts={posts} initialHasMore={hasMore}/>
+      </div>
+      
       {/*  Create */}
-      <div className="hidden lg:block border border-gray-300 bg-white w-3/12 h-60 ml-10 mr-4">
+      <div className="w-1/4 h-60 border border-gray-300 ml-auto hidden lg:block ">
         <div>
 
         </div>

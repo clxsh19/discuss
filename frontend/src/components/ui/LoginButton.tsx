@@ -1,7 +1,7 @@
-"use client";
+"use client"
 
 import { useState } from "react";
-import Modal from "./Modal"; // Make sure to import the correct Modal component
+import Modal from "./Modal";
 import LoginForm from "../auth/LoginForm";
 import RegisterForm from "../auth/RegisterForm";
 
@@ -20,7 +20,7 @@ const LoginButton = () => {
     <>
       <button 
         onClick={onButtonClick} 
-        className="bg-black font-medium text-white px-5 py-1 mt-2 mr-4 rounded"
+        className="font-medium text-white "
       >
           Login
       </button>

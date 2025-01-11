@@ -1,5 +1,3 @@
-// import { useRouter } from 'next/router'
-// import HeaderNav from "@/components/HeaderNav";
 import { fetchSubData, fetchPostsBySub } from "@/lib/data_api";
 import { buildPostWithMetaData } from "@/lib/utils";
 import SubView from '@/components/subreddit/SubView';
