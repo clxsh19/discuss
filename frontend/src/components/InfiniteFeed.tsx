@@ -24,21 +24,15 @@ const InfiniteFeed = ({ initialPosts, initialHasMore, sub_name }: InfiniteFeedPr
   const loadMorePosts = async (reset = false) => {
     if (!hasMoreRef.current && !reset) return;
 
-    let fetchResult;
-    if (sub_name) {
-      fetchResult = await fetchPostsBySub(sub_name, reset ? 0 : offsetRef.current, sort, sort === 'top' ? timeframe : '');
-    } else {
-      fetchResult = await fetchAllPosts(reset ? 0 : offsetRef.current, sort, sort === 'top' ? timeframe : '');
-    }
+    const newOffset = reset ? 0 : offsetRef.current;
+    const fetchResult = sub_name 
+      ? await fetchPostsBySub(sub_name, newOffset, sort, sort === 'top' ? timeframe : '')
+      : await fetchAllPosts(newOffset, sort, sort === 'top' ? timeframe : '');
 
     const { posts: newPosts, hasMore: newHasMore } = fetchResult;
     const postsWithLinkImg = await buildPostWithMetaData(newPosts);
 
-    if (reset) {
-      setPosts(postsWithLinkImg);
-    } else {
-      setPosts(prevPosts => [...prevPosts, ...postsWithLinkImg]);
-    }
+    setPosts(prev => reset ? postsWithLinkImg : [...prev, ...postsWithLinkImg]);
 
     hasMoreRef.current = newHasMore; // Update ref
     offsetRef.current = reset ? newPosts.length : offsetRef.current + newPosts.length;
@@ -70,17 +64,37 @@ const InfiniteFeed = ({ initialPosts, initialHasMore, sub_name }: InfiniteFeedPr
     loadMorePosts(true); // Reset and load fresh posts
   }, [sort, timeframe]);
 
-  // const handleSortChange = (newSort: string, newTimeFrame?: string) => {
-  //   setSort(newSort);
-  //   setTimeframe(newSort === 'top' && newTimeFrame ? newTimeFrame : 'all');
-  // };
+  const handleSortChange = (newSort: string, newTimeFrame?: string) => {
+    setSort(newSort);
+    setTimeframe(newSort === 'top' && newTimeFrame ? newTimeFrame : 'all');
+  };
 
   return (
-    <div className=" overflow-hidden">
+    <div className="overflow-hidden">
+      <div className="flex items-center space-x-0.5 mb-2 text-white">
+        <button 
+          className="p-2 rounded-l-lg border border-gray-800 hover:bg-neutral-900"
+          onClick={() => handleSortChange('hot')}
+        >
+          Hot
+        </button>
+        <button 
+          className="p-2 border border-gray-800  hover:bg-neutral-900"
+          onClick={() => handleSortChange('new')}
+        >
+          New
+        </button>
+        <div className="flex items-center p-2 rounded-r-lg border border-gray-800 cursor-default hover:bg-neutral-900">
+          <SortDropDown onSortChange={handleSortChange} />
+        </div>
+      </div>
       <div>
-        {posts.map((post, index) => (
-          <FeedItem key={`${post.post_id}-${index}`} {...post} />
-        ))}
+        {posts.map((post, index) => {
+          post.sub_feed = sub_name? true : false;
+          return (
+            <FeedItem key={`${post.post_id}-${index}`} {...post} />
+          )})
+        }
       </div>
       <div ref={scrollTrigger}>{hasMoreRef.current ? 'Loading...' : 'No more posts'}</div>
     </div>

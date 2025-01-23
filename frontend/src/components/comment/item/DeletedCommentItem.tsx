@@ -15,19 +15,19 @@ const DeletedCommentItem = ({
 }: DeletedCommentItemProp) => {
   const timePassed = getTimePassed(created_at);
   return (
-  <div className="pl-1 pt-0.5 mb-1" id={`${comment_id}`}>
+  <div className="ml-2 pl-1 pt-0.5 mb-1 text-neutral-300" id={`${comment_id}`}>
     {/* Header with username, time, and icon */}
     <div className="flex items-center space-x-2 overflow-hidden">
       <div className="flex-shrink-0">
         <CircleIcon  /> {/* Adjust size to mimic Reddit icon size */}
       </div>
-      <div className="truncate font-semibold text-xs text-neutral-800 hover:underline">
+      <div className="font-semibold text-xs text-red-400 hover:underline">
         [deleted]
       </div>
-      <div className="text-neutral-500">•</div>
-      <div className="text-xs text-neutral-500">{total_votes} points</div>
-      <div className="text-neutral-500">•</div>
-      <div className="text-xs text-neutral-500">
+      <div>•</div>
+      <div className="text-xs ">{total_votes} points</div>
+      <div>•</div>
+      <div className="text-xs ">
         <time>{timePassed}</time>
       </div>
     </div>

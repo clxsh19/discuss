@@ -13,24 +13,29 @@ interface AuthContextProps {
   isAuthenticated: boolean,
   user: UserInfo | null,
   updateAuthStatus: () => void,
+  loading: boolean,
 }
 
 const AuthContext = createContext<AuthContextProps | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [authStatus, SetAuthStatus] = useState(false);
+  const [authStatus, setAuthStatus] = useState(false);
   const [user, setUser] = useState<UserInfo | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const fetchUserStatus = async() => {
-    const data = await userData();
-    // if ( data. === false) {
-    //   SetAuthStatus(false);
-    //   setUser(null);
-    //   return;
-    // }
-    SetAuthStatus(data.status);
-    setUser(data.user)
-  };  
+  const fetchUserStatus = async () => {
+    try {
+      const data = await userData();
+      setAuthStatus(data.status);
+      setUser(data.user);
+    } catch (error) {
+      console.error('Error fetching user status:', error);
+      setAuthStatus(false);
+      setUser(null);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     fetchUserStatus();
@@ -42,6 +47,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         isAuthenticated: authStatus,
         user,
         updateAuthStatus: fetchUserStatus,
+        loading,
       }}
     >
       {children}

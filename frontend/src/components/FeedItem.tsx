@@ -1,16 +1,18 @@
 import { PostItemProp } from '@/interface/PostProp';
 import { getTimePassed } from '@/lib/utils';
-import { CommentIcon, LinkIcon, ShareIcon } from '@/components/Icons';
+import { LinkIcon} from '@/components/Icons';
 import Link from 'next/link';
 import VoteButton from '@/components/ui/VoteButton';
 import { submitPostVote } from '@/lib/create_api';
+import FeedActionButtons from './ui/FeedActionButtons';
 
 const FeedItem = ({
   post_id, title, created_at, 
   total_comments, total_votes, vote_type,
   username, subreddit_name,
   post_type, text_content,
-  link_url, link_img_url, media_url
+  link_url, link_img_url, media_url,
+  sub_feed
 }: PostItemProp) => {
   const timePassed = getTimePassed(created_at); 
   const votes_count = total_votes == null ? 0 : total_votes;
@@ -71,34 +73,33 @@ const FeedItem = ({
           
         {/* Sub Name and Time Info */}
         <div className="flex items-center text-xs font-mono space-x-1">
+          <div className='text-white text-xs'>
+            submitted by
+          </div>
           {/* Username */}
-          <Link href={`/r/${username}`} className='text-green-400 hover:underline'>
+          <Link href={`/d/${username}`} className='text-green-400 hover:underline'>
             u/{username}
           </Link>
-          <div className='text-white text-xs'>
-            posted to
-          </div>
-          <Link href={`/r/${subreddit_name}`} className="font-semibold text-blue-600 hover:underline relative">
-            r/{subreddit_name}
-          </Link>
+          {!sub_feed && (
+            <>
+              <div className="text-white text-xs">
+                to
+              </div>
+              <Link href={`/d/${subreddit_name}`} className="font-semibold text-blue-600 hover:underline relative">
+                r/{subreddit_name}
+              </Link>
+            </>
+          )}
           <span className="text-white">•</span>
           <span className="text-white">{timePassed}</span>
         </div>
 
         {/* Action Buttons */}
-        <div className="flex text-xs space-x-3">
-          {/* Comment Button */}
-          <Link href={`/r/${subreddit_name}/comments/${post_id}`} className="flex items-center space-x-1">
-            <CommentIcon />
-            <span className="text-gray-400 font-semibold mb-1">{comments_count}</span>
-          </Link>
-
-          {/* Share Button */}
-          <button className="flex space-x-1">
-            <ShareIcon />
-            <span className="text-gray-400 font-semibold mb-1">Share</span>
-          </button>
-        </div>
+        <FeedActionButtons 
+          post_type={post_type} sub_name={subreddit_name} post_id={post_id} 
+          media_url={thumbnail_url} isVideo={isVideo} text_content={text_content}
+          comments_count={comments_count} 
+        />
       </div>
     </div>
   );

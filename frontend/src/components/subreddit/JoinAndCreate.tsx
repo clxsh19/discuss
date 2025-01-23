@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { subscribeUser, unsubscribeUser } from '@/lib/create_api';
-import CreatePostButton from '../post/create_post/CreatePostButton';
+import Link from 'next/link';
 
 const JoinAndCreateSub = ({ sub_name, subreddit_id, user_role }: { sub_name: string, subreddit_id: number, user_role: string }) => {
   // Initialize state based on the user_role prop
@@ -23,10 +23,13 @@ const JoinAndCreateSub = ({ sub_name, subreddit_id, user_role }: { sub_name: str
   };
 
   return (
-    <div className="flex flex-col mt-4 border border-gray-300 rounded-lg">
-      <CreatePostButton sub_name={sub_name} />
-      <button onClick={changeSubStatus}>
-        {userSubscribed ? 'Unsubscribe' : 'Subscribe'}
+    <div className="flex flex-col font-serif">
+      {/* <CreatePostButton sub_name={sub_name} /> */}
+      <Link className="p-1 text-lg bg-green-500 border rounded-md hover:bg-green-600" href={`/d/${sub_name}/create_post`}>
+        Create Post
+      </Link>
+      <button className="p-1 text-lg bg-green-500 border rounded-md hover:bg-green-600" onClick={changeSubStatus}>
+        {userSubscribed ? 'Unsubscribe' : 'Subscribe'}  
       </button>
     </div>
   );

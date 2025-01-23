@@ -113,6 +113,26 @@ export async function fetchPostsBySub(sub_name: string, offset: number, sort: st
   }
 }
 
+export async function fetchAllCommunityNames() {
+  try {
+    // const cookieStore = cookies();
+    // const allCookies = cookieStore.getAll();
+    const res = await fetch(`http://localhost:5000/api/subreddit/all_names`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Cookie: cookies().toString(),
+      },
+      credentials: 'include',
+      // cache: 'no-cache',
+    });
+    const data = await res.json();
+    return data.communities;
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch all posts data.');
+  }
+}
 
 export async function fetchSubData(sub_name : string) {
   try {
@@ -129,8 +149,6 @@ export async function fetchSubData(sub_name : string) {
       // cache: 'no-cache',
     });
     const data = await res.json();
-    console.log(`subreddit ${sub_name}`)
-    console.log(data);
     return data.subreddit_detail;
   } catch (error) {
     console.error('Database Error:', error);
@@ -191,8 +209,23 @@ export async function fetchUrlMetaData(url: string) {
     };
     return metadata.image;
   } catch (error) {
-    console.error('failed fetching metadata');
-    throw new Error('Failed to fetch metadata.');
+    console.error(url, " failed meta-data fetching :", error);
+    // throw new Error('Failed to fetch metadata.');
   }
 }
 
+export async function checkIfCommunityExist(name: string) {
+  try {
+    const res = await fetch(`http://localhost:5000/api/subreddit/check_sub?sub_name=${name}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    const data = await res.json();
+    return data.sub;
+  } catch (error) {
+    // console.error('Database Error:', error);
+    throw new Error('Failed to fetch sub status.');
+  }
+}

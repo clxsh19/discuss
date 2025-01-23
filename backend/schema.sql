@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS users (
 CREATE TABLE IF NOT EXISTS subreddits (
     subreddit_id SERIAL PRIMARY KEY,
     name VARCHAR(100) UNIQUE NOT NULL,
+    display_name VARCHAR(100) UNIQUE NOT NULL,
     description TEXT CHECK (LENGTH(description) <= 2500),
     members_count INT DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

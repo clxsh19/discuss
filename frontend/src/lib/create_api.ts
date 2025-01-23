@@ -1,6 +1,5 @@
 "use server"
 import { cookies } from 'next/headers';
-// import FormData from 'form-data'; 
 
 interface CreateCommentParams {
   post_id: number;
@@ -77,6 +76,9 @@ export async function createPost(formData: FormData, postType: 'TEXT' | 'MEDIA' 
       body: formData, 
     });
 
+    if (!res.ok) {
+      console.log('snjdscn')
+    }
     // Handle the response
     const responseData = await res.json();
     return responseData;

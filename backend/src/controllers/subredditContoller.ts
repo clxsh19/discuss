@@ -1,6 +1,6 @@
 import asyncHandler from "express-async-handler";
-import { body, validationResult } from "express-validator";
-import {query , queryTransaction} from "../db/index";
+import { body, query, validationResult } from "express-validator";
+import {query as dbQuery, queryTransaction} from "../db/index";
 import { deleteUploadedFile } from "../utils/deleteUploadedFIle";
 
 const post_create_subreddit = [
@@ -24,14 +24,14 @@ const post_create_subreddit = [
         errors: errors.array()
       });
     } else {
-      const name_exists_query = await query(`SELECT EXISTS (
+      const name_exists_query = await dbQuery(`SELECT EXISTS (
         SELECT 1 FROM subreddits WHERE name = $1 )`, [lowerCaseName] 
       );
       const name_exists = name_exists_query.rows[0].exists;
       if (name_exists) {
         res.status(403).json({ error: "Subreddit name already exists"});
       } else {
-        await query(`INSERT INTO subreddits (name, description, banner_url, logo_url) VALUES ($1, $2, $3, $4)`, // 0 member count currently
+        await dbQuery(`INSERT INTO subreddits (name, description, banner_url, logo_url) VALUES ($1, $2, $3, $4)`, // 0 member count currently
         [lowerCaseName, description, bannerFilePath, logoFilePath] );
         res.status(202).json({
           message: 'Subreddit registered successfully',
@@ -44,7 +44,7 @@ const post_create_subreddit = [
 const get_subbreddit_detail = asyncHandler( async(req, res) => {
   const subreddit_name = req.params.name.toLowerCase();
   const user_id = req.user?.id;
-  const subreddit_query = await query(`SELECT 
+  const subreddit_query = await dbQuery(`SELECT 
     s.subreddit_id,
     s.name AS sub_name,
     s.description,
@@ -96,7 +96,7 @@ const user_join_subreddit = [
         return;
       }
 
-      const subscribe_query = await query(`INSERT INTO subreddit_members (user_id, subreddit_id) VALUES ($1, $2)`,
+      const subscribe_query = await dbQuery(`INSERT INTO subreddit_members (user_id, subreddit_id) VALUES ($1, $2)`,
         [user_id, subreddit_id]);
       res.status(200).json({ 
         message: "User subscribed to the community",
@@ -138,7 +138,7 @@ const user_leave_subreddit = [
         return;
       }
 
-      const unsubscribe_query = await query(`DELETE FROM subreddit_members WHERE user_id = $1 AND subreddit_id = $2`,
+      const unsubscribe_query = await dbQuery(`DELETE FROM subreddit_members WHERE user_id = $1 AND subreddit_id = $2`,
         [user_id, subreddit_id]);
       res.status(200).json({ 
         message: "User unsubscribed",
@@ -148,8 +148,40 @@ const user_leave_subreddit = [
   })
 ]
 
+const get_all_communities = asyncHandler( async(req, res) => {
+  // const user_id = req.user?.id;
+  const name_query = await dbQuery(`SELECT subreddit_id, name FROM subreddits`);
+  res.status(200).json({
+    communities: name_query.rows
+  });
+});
+
+const check_sub_exist = [
+  query('sub_name').not().isEmpty().withMessage('community name cannot be null').trim().escape(),
+  
+  asyncHandler( async(req, res) => {
+    const errors = validationResult(req);
+    const { sub_name } = req.query;  
+
+    if (!errors.isEmpty()) {
+      res.status(400).json({ 
+        errors: errors.array()
+      });
+    } else {
+      const sub_query = await dbQuery(`SELECT 
+        1 FROM subreddits
+        WHERE name = $1`,
+        [sub_name]);
+      res.status(200).json({
+        sub: sub_query.rowCount });
+    }
+})
+]
+
 export default {
   post_create_subreddit,
   get_subbreddit_detail,
-  user_join_subreddit
+  user_join_subreddit,
+  get_all_communities,
+  check_sub_exist
 }

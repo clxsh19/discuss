@@ -48,11 +48,11 @@ const VoteButton = ({ id, votes_count, vote_type, submitVote }: VoteButtonProps)
   return (
     <>
       <button onClick={() => handleVote(1)}>
-        <UpvoteIcon style={`${(userVote == 1) ? 'text-blue-600':' text-gray-400 hover:text-blue-500'} `} />
+        <UpvoteIcon style={`${(userVote === 1) ? 'text-blue-600':' text-neutral-400 hover:text-blue-500'} `} />
       </button>
       <div className="text-sm text-gray-400 font-[500]">{voteCount}</div>
       <button onClick={() => handleVote(-1)}>
-        <DownvoteIcon style={`${(userVote == 1) ? 'text-red-600':' text-gray-400 hover:text-red-500'} `} />
+        <DownvoteIcon style={`${(userVote === -1) ? 'text-red-600':' text-neutral-400 hover:text-red-500'} `} />
       </button>
     </>
   )

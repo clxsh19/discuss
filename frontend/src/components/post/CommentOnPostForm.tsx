@@ -6,11 +6,11 @@ import { showErrorToast } from '../ui/toasts';
 import { useComments } from '../context/CommentContext';
 import { useAuth } from '../context/AuthContext';
 
-interface PostCommentProp {
+interface CommentOnPostFormProp {
   post_id: number,
 } 
 
-const PostCommentForm = ({ post_id }: PostCommentProp) => {
+const CommentOnPostForm = ({ post_id }: CommentOnPostFormProp) => {
   const [comment, setComment] = useState('');
   const [loading, setLoading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -59,28 +59,28 @@ const PostCommentForm = ({ post_id }: PostCommentProp) => {
   };
 
   return (
-    <div className="w-11/12 h-1/5 mx-4 mb-4 lg:w-9/12 rounded-lg overflow-hidden">
+    <div className="mt-4 mb-4 font-mono overflow-hidden">
       {!isEditing ? (
         <button
-        className="placeholder-button p-4 bg-white text-gray-500 w-full text-left"
+        className="w-full p-4 font-semibold text-sm text-left text-neutral-400 border border-neutral-800"
         onClick={() => setIsEditing(true)}
         disabled={loading}
       >
         Add a comment...
       </button>
       ) : (
-        <div className="">
+        <div>
           <textarea
             value={comment}
             onChange={handleCommentChange} 
-            className="w-full py-3 px-3 text-sm font-normal border border-gray-300 rounded-lg focus:ring-2"
+            className="w-full py-3 px-3 bg-neutral-900 text-sm text-neutral-200 border border-neutral-800 outline-none"
             maxLength={15000}
             rows={5}
             placeholder="Type your comment..."
           />
-          <div className="actions mt-2 flex justify-end">
+          <div className="mt-2 flex justify-end space-x-4">
             <button
-              className="px-4 py-1 mr-4 border rounded-lg bg-white border-black"
+              className="px-4 py-1 text-white rounded-md border border-neutral-800 hover:border-neutral-600"
               onClick={() => {
                 setComment('');
                 setIsEditing(false);
@@ -89,7 +89,7 @@ const PostCommentForm = ({ post_id }: PostCommentProp) => {
               Cancel
             </button>
             <button
-              className={`px-4 py-1 bg-black text-white  rounded-lg ${loading ? 'cursor-wait' : ''}`}
+              className={`px-4 py-1 text-white rounded-md border border-neutral-800 hover:border-neutral-600 ${loading ? 'cursor-wait' : ''}`}
               onClick={handleSubmit}
               disabled={loading}
             >
@@ -103,5 +103,5 @@ const PostCommentForm = ({ post_id }: PostCommentProp) => {
   );
 };
 
-export default PostCommentForm;
+export default CommentOnPostForm;
 

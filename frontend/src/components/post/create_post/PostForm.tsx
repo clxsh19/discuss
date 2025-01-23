@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { createPost } from '@/lib/create_api';
+import CommunitySearchBar from './CommunitySearchBar';
 
 interface PostFormProps {
   postType : 'TEXT' | 'MEDIA' | 'LINK',
-  sub_name: string,
+  sub_name?: string,
 }
 
 const PostForm = ({ postType, sub_name }: PostFormProps) => {
@@ -15,34 +16,32 @@ const PostForm = ({ postType, sub_name }: PostFormProps) => {
 
     const formData = new FormData();
     formData.append('title', e.currentTarget.postTitle.value);
-    formData.append('sub_name', sub_name);
+    formData.append('sub_name', e.currentTarget.communityName.value);
 
-    if (postType == 'TEXT') {
-      formData.append('text', e.currentTarget.postText.value);
-    } else if (postType == 'MEDIA') {
-      if (!file || file === null) { // make sure file not null
-        console.log('file state empty');  
+    switch (postType) {
+      case 'TEXT':
+        formData.append('text', e.currentTarget.postText.value);
+        break;
+    
+      case 'MEDIA':
+        if (!file || file === null) { // Ensure file is not null
+          console.log('file state empty');
+          return;
+        }
+        formData.append('file', file); // Same name as multer.single(name)
+        break;
+    
+      case 'LINK':
+        formData.append('link', e.currentTarget.postLink.value);
+        break;
+    
+      default:
+        console.log('Invalid post type');
         return;
-      }
-      formData.append('file', file);// same name as multer.single(name)
-    } else if (postType == 'LINK') {
-      formData.append('link', e.currentTarget.postLink.value);
-    };
-
+    }
+    
     const res = await createPost(formData, postType);
     console.log(res);
-    // try {
-    //   const res = await fetch(`http://localhost:5000/api/post/create?type=${postType}`, {
-    //     method: 'POST',
-    //     body: formData,
-    //     credentials: 'include',
-    //   });
-    //   const res_code = await res.json();
-    //   console.log(res_code);
-    // } catch (error) {
-    //   console.error('failed to create post');
-    //   throw new Error('failed to create post');
-    // }
   };
 
   const onChangeImage = (e : React.ChangeEvent<HTMLInputElement>) => {
@@ -60,55 +59,42 @@ const PostForm = ({ postType, sub_name }: PostFormProps) => {
   }
   return (
     <form onSubmit={submitPost} encType="multipart/form-data">
-      <div className="mb-4">
-        <label htmlFor="subName" className="block text-sm font-medium text-gray-700">
-          Community
-        </label>
-        <input
-          type="text" 
-          id="subName"
-          name="subName"
-          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-          placeholder="Community Name"
-          defaultValue={sub_name}
-          required
-        />
-        <span className="text-xs text-gray-500 float-right">0/300</span>
+      <div className="w-3/6 mb-4">
+        <CommunitySearchBar sub_name={sub_name}/>
       </div>
-      <div className="mb-4">
-        <label htmlFor="postTitle" className="block text-sm font-medium text-gray-700">
+      <div className="w-3/6 mb-4">
+        <label htmlFor="postTitle" className="block text-sm font-medium">
           Title
         </label>
         <input
           type="text" 
           id="postTitle"
           name="title"
-          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-          placeholder="Title"
+          className="w-full mt-2 px-3 py-2 bg-neutral-900 rounded-lg text-white text-sm outline-none"
+          placeholder="Enter the title..."
           required
         />
-        <span className="text-xs text-gray-500 float-right">0/300</span>
       </div>
 
       {postType === 'TEXT' && (
         <div className="mb-4">
-          <label htmlFor="postText" className="block text-sm font-medium text-gray-700">
+          <label htmlFor="postText" className="block text-sm font-medium">
             Text
           </label>
           <textarea
             id="postText"
             name="text"
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            className="mt-2 w-full px-3 py-2 bg-neutral-900 text-white rounded-md text-sm outline-none"
             placeholder="Write your post..."
-            rows={4}
+            rows={5}
           />
         </div>
       )}
 
       {postType === 'MEDIA' && (
         <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700">Upload</label>
-          <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-dashed rounded-md">
+          <label className="block text-sm font-medium ">Upload</label>
+          <div className="mt-2 flex justify-center px-6 pt-5 pb-6 bg-neutral-900 border-2 border-gray-600 border-dashed rounded-md">
             <div className="space-y-1 text-center">
               {imgSrc ? (
                 <img
@@ -118,8 +104,8 @@ const PostForm = ({ postType, sub_name }: PostFormProps) => {
                 />
               ) : (
                 <svg
-                  className="mx-auto h-12 w-12 text-gray-400"
-                  stroke="currentColor"
+                  className="mx-auto h-12 w-12 "
+                  stroke="white"
                   fill="none"
                   viewBox="0 0 48 48"
                   aria-hidden="true"
@@ -132,12 +118,12 @@ const PostForm = ({ postType, sub_name }: PostFormProps) => {
                   />
                 </svg>
               )}
-              <div className="flex text-sm text-gray-600">
+              <div className="flex text-sm ">
                 <label
                   htmlFor="file-upload"
-                  className="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500"
+                  className="cursor-pointer rounded-md font-medium text-blue-300 hover:text-blue-500"
                 >
-                  <span>Drag and Drop images or videos or</span>
+                  <span>Drag or Drop Media</span>
                   <input
                     id="file-upload"
                     name="image"
@@ -155,29 +141,23 @@ const PostForm = ({ postType, sub_name }: PostFormProps) => {
 
       {postType === 'LINK' && (
         <div className="mb-4">
-          <label htmlFor="postLink" className="block text-sm font-medium text-gray-700">
+          <label htmlFor="postLink" className="block text-sm font-medium ">
             Link
           </label>
           <input
             type="url"
             id="postLink"
             name="link"
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            className="mt-2 w-full px-3 py-3 bg-neutral-900 text-white rounded-md text-sm outline-none"
             placeholder="https://example.com"
           />
         </div>
       )}
 
-      <div className="flex justify-end space-x-3">
-        <button
-          type="button"
-          className="bg-gray-200 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-300"
-        >
-          Save draft
-        </button>
+      <div className="flex justify-end">
         <button
           type="submit"
-          className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
+          className="mt-2 mr-auto bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
         >
           Post
         </button>

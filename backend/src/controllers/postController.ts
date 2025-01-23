@@ -47,10 +47,17 @@ const create_post = [
       const user_id = req.user?.id;
       const media_url = req.file?.path; 
       const { type: post_type } = req.query;
+      console.log("sub_name ", sub_name);
 
       //getting subreddit_id from db
-      const { rows } = await dbQuery(`SELECT subreddit_id FROM subreddits WHERE name = $1`, [sub_name]);
-      const  sub_id = rows[0].subreddit_id;
+      const result = await dbQuery(`SELECT subreddit_id FROM subreddits WHERE name = $1`, [sub_name]);
+      if (result.rowCount === 0) {
+        res.status(409).json({
+          message: "community doesn't exist"
+        });
+        return;
+      }
+      const sub_id = result.rows[0].subreddit_id;
       
       await dbQuery(`INSERT INTO posts (title, user_id, subreddit_id, post_type, text_content, media_url, link_url) VALUES ($1, $2, $3, $4, $5, $6, $7)`,
       [title, user_id, sub_id, post_type, text, media_url ,link] );
@@ -138,6 +145,7 @@ const get_all_posts = [
     if (sort === 'top') {
       switch (t) {
         case 'day':
+        
           timeCondition = `AND p.created_at >= NOW() - INTERVAL '1 day'`;
           break;
         case 'week':
@@ -162,6 +170,7 @@ const get_all_posts = [
           p.post_type,
           p.link_url,
           p.media_url,
+          p.text_content,
           p.created_at,
           p.comment_count AS total_comments,
           p.vote_count AS total_votes,

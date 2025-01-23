@@ -151,8 +151,8 @@ const get_comments_by_post = [
   query('sort')
     .optional()
     .trim()
-    .isIn(['top', 'new'])
-    .withMessage('Only top and new sort by')
+    .isIn(['top', 'new', 'old'])
+    .withMessage('Only top,new and old sort by')
     .escape(),
 
   asyncHandler( async(req, res) => {
@@ -172,6 +172,8 @@ const get_comments_by_post = [
       sortCondition = 'c.created_at DESC';
     } else if (sort === 'top') {
       sortCondition = 'c.vote_count DESC';
+    } else if (sort === 'old') {
+      sortCondition == 'c..created_at ASC'
     }
     const comments_query = await dbQuery(`SELECT
         c.comment_id,

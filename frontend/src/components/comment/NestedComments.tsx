@@ -14,11 +14,12 @@ const NestedComments = ({ post_id, nestedCommments, level }: NestedCommentsProp)
 
   const renderNestedComment = (comment: CommentItemProp) => {
     const { user_id, comment_id, username, created_at, total_votes, vote_type, content, children, deleted } = comment;
-
+// style={{ marginLeft: `${level * 4}px` }}
     return (
-      <div key={`${comment_id}-${level}`} style={{ marginLeft: `${level * 4}px` }} className="relative mb-1 p-1 comment-wrapper">
+      <div key={`${comment_id}-${level}`}  className="relative ml-3 my-3 p-1 comment-wrapper border-t border-t-neutral-800">
+        {/* collapsable comment-border */}
         <div
-          className="absolute left-0 top-0 h-full w-4 cursor-pointer border-l-8 border-l-slate-300 comment-border"
+          className={`absolute left-0 top-0 h-full w-4 cursor-pointer border-l-4 ${ (level%2) === 0 ? 'border-l-zinc-500' : 'border-l-neutral-600' } comment-border`}
         ></div>
         
         {deleted ? (
@@ -29,17 +30,16 @@ const NestedComments = ({ post_id, nestedCommments, level }: NestedCommentsProp)
             username={username}
             created_at={created_at}
             total_votes={total_votes}
-            content={content}
           />
         )}
-        <div className="collapse-wrapper">
+        <div className="mt-2 collapse-wrapper">
           {deleted ? (
-            <div className="mt-1 ml-1 bg-neutral-50 text-xs text-neutral-700">
+            <div className="ml-3 text-white text-xs">
               <div className="">[ Comment deleted by user ]</div>
             </div>
           ) : (
             <>
-              <div className="mt-2 ml-1 bg-neutral-50 text-sm text-neutral-900">
+              <div className="ml-3 text-white text-sm">
                 <pre className="whitespace-pre-wrap break-words">{content}</pre> 
               </div>
               <CommentActionButtons

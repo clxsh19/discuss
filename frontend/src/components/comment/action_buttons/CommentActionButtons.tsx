@@ -26,9 +26,19 @@ const CommentActionButtons = (
   const [showEditForm, setShowEditForm] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const isAuthor = user_id === user?.id;
+
+  const openReplyForm  = () => {
+    if (showEditForm) setShowEditForm(false);
+    setShowReplyForm((prev) => !prev)
+  }
+
+  const openEditForm  = () => {
+    if (showReplyForm) setShowReplyForm(false);
+    setShowEditForm((prev) => !prev)
+  }
   
   return (
-    <div id={`comment-buttons-${comment_id}`} className="flex flex-col action-buttons">
+    <div id={`comment-buttons-${comment_id}`} className="flex flex-col font-mono">
       <div className="flex items-center  text-xs mt-1">
 
         {/* Vote Button */}
@@ -37,30 +47,31 @@ const CommentActionButtons = (
           votes_count={votes_count}
           vote_type={vote_type}
           submitVote={submitVote}
-          className="ml-2 py-2 bg-white"
         />
 
         {/* Reply Button */}
-        <button onClick={() => setShowReplyForm((prev) => !prev)} className="ml-3">
-          <span className="text-xs font-semibold text-neutral-600">Reply</span>
+        <button 
+          onClick={openReplyForm} 
+          className="ml-3">
+          <span className="text-sm font-semibold text-neutral-400">Reply</span>
         </button>
 
         {/* Edit Button */}
         {isAuthor && (
-          <button onClick={() => setShowEditForm((prev) => !prev)} className="ml-3">
-            <span className="text-xs font-semibold text-neutral-600">Edit</span>
+          <button onClick={openEditForm} className="ml-3">
+            <span className="text-sm font-semibold text-neutral-400">Edit</span>
           </button>
         )}
 
         {/* Share Button */}
         <button className="ml-3">
-          <span className="text-xs font-semibold text-neutral-600">Share</span>
+          <span className="text-sm font-semibold text-neutral-400">Share</span>
         </button>
 
         {/* Delete Button */}
         {isAuthor && (
           <button onClick={() => setShowDeleteConfirm((prev) => !prev)} className="ml-3">
-            <span className="text-xs font-semibold text-neutral-600">Delete</span>
+            <span className="text-sm font-semibold text-neutral-400">Delete</span>
           </button>
         )}
         
@@ -72,7 +83,7 @@ const CommentActionButtons = (
       )}
       </div>
 
-      { showReplyForm && (
+      { (showReplyForm && !showEditForm) && (
         <CommentReplyForm 
           user={user}
           isAuthenticated={isAuthenticated}
@@ -82,7 +93,7 @@ const CommentActionButtons = (
         />
       )}
 
-      { (isAuthenticated && showEditForm) && (
+      { (isAuthenticated && showEditForm && !showReplyForm) && (
         <CommentEditForm 
           user={user}
           isAuthenticated={isAuthenticated}
@@ -91,10 +102,6 @@ const CommentActionButtons = (
           setShowEditForm={setShowEditForm}
         />
       )}
-
-      
-
-
     </div>
   )
 }

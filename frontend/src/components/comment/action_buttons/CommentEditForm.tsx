@@ -55,18 +55,18 @@ const CommentEditForm = ({ user, isAuthenticated, comment_id, initialComment, se
   };
 
   return (
-    <div className="w-4/6 border rounded-b-lg border-gray-300 mx-4 my-2 focus:ring-2">
+    <div className="w-4/6 mx-4 my-2">
       <textarea
         value={comment}
         onChange={handleCommentChange} 
-        className="w-full py-3 px-3 text-sm font-normal border border-gray-300 "
+        className="w-full py-3 px-3 bg-neutral-900 text-sm text-neutral-100 border border-neutral-800 outline-none"
         maxLength={15000}
         rows={5}
         placeholder="Edit your comment..."
       />
-      <div className="flex bg-slate-200 font-bold text-xs -mt-2 px-2 py-1 justify-end">
+      <div className="flex bg-neutral-800 font-bold text-xs -mt-2 px-2 py-1 justify-end">
         <button
-          className="px-2 py-1 mr-4"
+          className="px-2 py-1 mr-4 text-white rounded-sm border border-neutral-700 hover:border-neutral-600"
           onClick={() => {
             setComment('');
             setShowEditForm(false)
@@ -75,7 +75,7 @@ const CommentEditForm = ({ user, isAuthenticated, comment_id, initialComment, se
           Cancel
         </button>
         <button
-          className={`px-2 py-1 bg-slate-400 text-white rounded-lg ${loading ? 'cursor-wait' : ''}`}
+          className={`px-2 py-1 text-white rounded-sm border border-neutral-700 hover:border-neutral-600 ${loading ? 'cursor-wait' : ''}`}
           onClick={handleSubmit}
           disabled={loading}
         >

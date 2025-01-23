@@ -43,8 +43,8 @@ export async function logIn(formData: FormData) {
       });
     }
     console.log('logged in')
-  const pathname = formData.get('pathname') as string;
-   revalidatePath(pathname || '/');
+  // const pathname = formData.get('pathname') as string;
+  //  revalidatePath(pathname || '/');
   // redirect(pathname || '/');
     return true; // on success returns true
 

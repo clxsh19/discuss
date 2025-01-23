@@ -121,7 +121,33 @@ export const DiscussLogo = () => (
   </svg>
 );
  
-export const MenuIcon= () => (
+export const ExpandIcon = ({ fillColor= "#fff" }) => (
+  <svg 
+    width="18" 
+    height="18"
+    viewBox="0 0 25 25" 
+    fill="none" 
+    xmlns="http://www.w3.org/2000/svg">
+  <g strokeLinecap="round" strokeLinejoin="round"/>
+  <path d="M14 6.5h4.5V11M11 18.5H6.5V14m12-7.5L14 11m-7.5 7.5L11 14" stroke={fillColor} strokeWidth="1.2"/>
+</svg>
+
+)
+
+export const CrossIcon = () => (
+  <svg
+    width="18"
+    height="18" 
+    viewBox="0 0 24 24" 
+    fill="none" 
+    xmlns="http://www.w3.org/2000/svg">
+  <g strokeLinecap="round" strokeLinejoin="round"/>
+  <path d="M6.995 7.006a1 1 0 0 0 0 1.415l3.585 3.585-3.585 3.585a1 1 0 1 0 1.414 1.414l3.585-3.585 3.585 3.585a1 1 0 0 0 1.415-1.414l-3.586-3.585 3.586-3.585a1 1 0 0 0-1.415-1.415l-3.585 3.585L8.41 7.007a1 1 0 0 0-1.414 0" fill="#fff"/>
+  </svg>
+
+)
+
+export const MenuIcon = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     width={18}
@@ -132,16 +158,24 @@ export const MenuIcon= () => (
   </svg>
 )
 
-export const SearchIcon = () => (
+export const DownIcon = () => (
   <svg
+    width={20}
+    height={20}
+    viewBox="0 0 24 24"
+    fill="none"
     xmlns="http://www.w3.org/2000/svg"
-    width={16}
-    height={16}
-    fill="currentColor"
-    aria-hidden="true"
-    viewBox="0 0 20 20"
+    stroke="#fff"
+    strokeWidth={0.24}
   >
-    <path d="M19.5 18.616 14.985 14.1a8.528 8.528 0 1 0-.884.884l4.515 4.515.884-.884ZM1.301 8.553a7.253 7.253 0 1 1 7.252 7.253 7.261 7.261 0 0 1-7.252-7.253Z" />
+    <g strokeWidth={0} />
+    <g strokeLinecap="round" strokeLinejoin="round" />
+    <path
+      fillRule="evenodd"
+      clipRule="evenodd"
+      d="M12.707 14.707a1 1 0 0 1-1.414 0l-5-5a1 1 0 0 1 1.414-1.414L12 12.586l4.293-4.293a1 1 0 1 1 1.414 1.414z"
+      fill="#fff"
+    />
   </svg>
 )
 
@@ -187,6 +221,7 @@ export const CircleIcon = () => (
     className="avatar leading-normal text-center"
     viewBox="0 0 20 20"
   >
-    <path d="M10 0a10 10 0 1 0 10 10A10.011 10.011 0 0 0 10 0Zm.059 5a3.229 3.229 0 1 1 0 6.458 3.229 3.229 0 0 1 0-6.458ZM3.85 16.216a5.32 5.32 0 0 1 5.007-3.162h2.286a5.324 5.324 0 0 1 5.008 3.161 8.73 8.73 0 0 1-12.3 0l-.001.001Z" />
+    <path d="M10 0a10 10 0 1 0 10 10A10.011 10.011 0 0 0 10 0Zm.059 5a3.229 3.229 0 1 1 0 6.458 3.229 3.229 0 0 1 0-6.458ZM3.85 16.216a5.32 5.32 0 0 1 5.007-3.162h2.286a5.324 5.324 0 0 1 5.008 3.161 8.73 8.73 0 0 1-12.3 0l-.001.001Z"
+    fill="#fff" />
   </svg>
 )

@@ -21,6 +21,7 @@ const CommentsView = ({ post_id }: CommentsViewProp) => {
   
     const toggleCollapse = (e: Event) => {
       const target = e.target as HTMLElement;
+      console.log(target)
   
       if (target.classList.contains("comment-border")) {
         // Get the nearest collapse-wrapper from clicked border.
@@ -45,9 +46,10 @@ const CommentsView = ({ post_id }: CommentsViewProp) => {
     const { user_id, comment_id, username, created_at, total_votes, vote_type, content, children, deleted } = comment;
 
     return (
-      <div key={`parent-${comment_id}`} className="relative mb-1 p-1 comment-wrapper">
+      <div key={`parent-${comment_id}`} className="relative mb-1 p-1 comment-wrapper border-t border-t-neutral-800">
+          {/* collapsable comment-border */}
           <div
-            className="absolute left-0 top-0 h-full w-4 cursor-pointer border-l-8 border-l-slate-300 comment-border"
+            className="absolute -left-1 top-0 h-full w-4 cursor-pointer border-l-8 border-l-neutral-700 comment-border"
           ></div>
           {deleted ? (
             <DeletedCommentItem comment_id={comment_id} created_at={created_at} total_votes={total_votes} />
@@ -57,18 +59,17 @@ const CommentsView = ({ post_id }: CommentsViewProp) => {
               username={username}
               created_at={created_at}
               total_votes={total_votes}
-              content={content}
             />
           )}
 
-          <div className="collapse-wrapper">
+          <div className="mt-2 collapse-wrapper">
             {deleted ? (
-              <div className="mt-1 ml-1 bg-neutral-50 text-xs text-neutral-700">
+              <div className="ml-3 text-xs text-neutral-300">
                 <div className="">[ Comment deleted by user ]</div> 
               </div>
             ) : (
               <>
-                <div className="mt-2 ml-1 bg-neutral-50 text-sm text-neutral-900">
+                <div className="ml-3 text-sm text-white">
                   <pre className="whitespace-pre-wrap break-words">{content}</pre> 
                 </div>
                 <CommentActionButtons
@@ -85,7 +86,7 @@ const CommentsView = ({ post_id }: CommentsViewProp) => {
               </>
             )}
             {children && children.length > 0 && (
-              <NestedComments post_id={post_id} nestedCommments={children} level={1} />
+              <NestedComments post_id={post_id} nestedCommments={children} level={2} />
             )}
           </div>
       </div>
@@ -93,7 +94,7 @@ const CommentsView = ({ post_id }: CommentsViewProp) => {
   };
 
   return (
-    <div id="comments-container" className="p-4 bg-white w-11/12 mb-4 mx-4 lg:w-9/12 overflow-hidden">
+    <div id="comments-container" className="my-4 overflow-hidden">
       {nestedArray.map(renderComment)}
     </div>
   );
