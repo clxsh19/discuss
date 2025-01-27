@@ -46,17 +46,18 @@ const PostForm = ({ postType, sub_name }: PostFormProps) => {
 
   const onChangeImage = (e : React.ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();
-    const file = e.target.files?.[0];
-    if (file) {
-      setFile(file);
+    const targetFile = e.target.files?.[0];
+    if (targetFile) {
+      setFile(targetFile);
 
       const reader = new FileReader();
       reader.onloadend = () => {
         setImgSrc(reader.result as string);
       }
-      reader.readAsDataURL(file);
+      reader.readAsDataURL(targetFile);
     }
   }
+
   return (
     <form onSubmit={submitPost} encType="multipart/form-data">
       <div className="w-3/6 mb-4">
