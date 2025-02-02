@@ -11,24 +11,24 @@ const CreateSub = () => {
   const router = useRouter();
 
   
-  // useEffect(() => {
-  //   if (loading) {
-  //     return;
-  //   }
+  useEffect(() => {
+    if (loading) {
+      return;
+    }
 
-  //   if (!isAuthenticated) {
-  //     router.push('/login');
-  //     return;
-  //   }
-  // }, [loading, isAuthenticated]);
+    if (!isAuthenticated) {
+      router.push('/login');
+      return;
+    }
+  }, [loading, isAuthenticated]);
     
-  // if (!isAuthenticated || loading) {
-  //   return <div></div>
-  // }
+  if (!isAuthenticated || loading) {
+    return <div></div>
+  }
 
   return (
     <div className="max-w-2xl mx-auto text-white p-8 rounded-md shadow-sm">
-      <h1 className="text-xl font-semibold mb-4">Create Post</h1>
+      <h1 className="text-xl font-semibold mb-4">Create Community</h1>
         <CreateSubForm/>
     </div>
     

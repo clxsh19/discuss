@@ -3,13 +3,25 @@ import { Request, Response, NextFunction } from "express";
 import multer from "multer";
 
 const fileUpload = (req: Request, res: Response, next: NextFunction) => {
-  upload.single('file')(req, res, (err) => {
+  upload.single("file")(req, res, (err) => {
     if (err instanceof multer.MulterError) {
-      // A Multer error occurred when uploading.
-      return res.status(400).json({ message: `Multer Error: ${err.message}` });
-    } else if (err) {
-      // An unknown error occurred when uploading.
-      return res.status(500).json({ message: `Unknown Error: ${err.message}` });
+      // Handle specific Multer errors
+      let message = "An error occurred while uploading the file.";
+      
+      if (err.code === "LIMIT_FILE_SIZE") {
+        message = "File size exceeds the allowed limit.";
+      } else if (err.code === "LIMIT_UNEXPECTED_FILE") {
+        message = "Unexpected file field.";
+      }
+
+      return res.status(400).json({ message });
+    } 
+    
+    if (err) {
+      // Handle unknown errors (e.g., file format issues)
+      return res.status(400).json({
+        message: err.message || "Something went wrong with the file upload." 
+      });
     }
     next();
   });
@@ -23,15 +35,25 @@ const multipleFileUpload = (req: Request, res: Response, next: NextFunction) => 
 
   uploadFields(req, res, (err) => {
     if (err instanceof multer.MulterError) {
-      return res.status(400).json({ message: `Multer Error: ${err.message}` });
-    } else if (err) {
-      return res.status(500).json({ message: `Unknown Error: ${err.message}` });
+      let message = "An error occurred while uploading the files.";
+
+      if (err.code === "LIMIT_FILE_SIZE") {
+        message = "File size exceeds the allowed limit.";
+      } else if (err.code === "LIMIT_UNEXPECTED_FILE") {
+        message = "Unexpected file field.";
+      }
+
+      return res.status(400).json({ message });
+    } 
+    
+    if (err) {
+      return res.status(400).json({ 
+        message: err.message || "Something went wrong with the file upload." 
+      });
     }
+
     next();
   });
 };
 
-export {
-  fileUpload,
-  multipleFileUpload,
-};
+export { fileUpload, multipleFileUpload };

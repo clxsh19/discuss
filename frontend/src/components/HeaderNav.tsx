@@ -21,7 +21,7 @@ const HeaderNav = async () => {
           <Link href="/create_post" className="">
             Create Post
           </Link>
-          <Link href="/" className="">
+          <Link href="/create_community" className="">
             Create Community
           </Link>
         </div>

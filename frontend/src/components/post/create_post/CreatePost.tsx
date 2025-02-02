@@ -3,17 +3,16 @@
 import { useState, useEffect } from "react"
 import PostForm from "./PostForm";
 import { useAuth } from "@/components/context/AuthContext";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 type PostType = 'TEXT' | 'MEDIA' | 'LINK';
-interface CreatePostProps {
-  sub_name?: string;
-}
 
-const CreatePost = ({ sub_name }: CreatePostProps) => {
+const CreatePost = () => {
   const [postType, setPostType] = useState<PostType>('TEXT');
   const { isAuthenticated, loading } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const sub_name = searchParams.get("sub_name") || "";
 
   const handleChange = (type : PostType) => {
     setPostType(type);
@@ -49,7 +48,7 @@ const CreatePost = ({ sub_name }: CreatePostProps) => {
            onClick={() => handleChange('LINK')}>Link</button>
         </div>
       </div>
-        <PostForm sub_name={sub_name} postType={postType} />
+        <PostForm sub_name={sub_name} post_type={postType} />
     </div>
     
   )

@@ -1,4 +1,5 @@
 "use server"
+import { error } from 'console';
 import { cookies } from 'next/headers';
 
 interface CreateCommentParams {
@@ -38,11 +39,20 @@ export async function createComment({ post_id, parent_comment_id=null, comment }
   }
 }
 
-export async function createCommunity(formData: FormData) {
+export async function createCommunity(prevState:any, formData: FormData) {
   try {
     const cookieStore = cookies();
     const allCookies = cookieStore.getAll();
-    
+    const bannerFile = formData.get("banner");
+    const logoFile = formData.get("logo");
+
+    if ( bannerFile instanceof File && bannerFile.size === 0) {
+      formData.delete("banner")
+    }
+    if ( logoFile instanceof File && logoFile.size === 0) {
+      formData.delete("logo")
+    } 
+
     // Send the request with form data and headers
     const res = await fetch('http://localhost:5000/api/subreddit/create', {
       method: 'POST',
@@ -51,41 +61,71 @@ export async function createCommunity(formData: FormData) {
       },
       body: formData, 
     });
-
-    // Handle the response
     const responseData = await res.json();
-    return responseData;
+
+    if(!res.ok) {
+      if (responseData.errors && Array.isArray(responseData.errors)) {
+        const errorMessages = responseData.errors.map((err:any) => err.msg).join(", ");
+        return {
+          error: errorMessages,
+          message: ''
+        }
+      }
+    }
+
+    return {
+      error: '',
+      message: responseData.message
+    }
 
   } catch (error) {
     console.error('Failed to create community:', error);
-    throw new Error('Failed to create community.');
+    // throw new Error('Failed to create community.');
+    return {
+      error: "Unknown Error: Failed to create community!",
+      message: ''
+    }
   }
 }
 
-export async function createPost(formData: FormData, postType: 'TEXT' | 'MEDIA' | 'LINK') {
+export async function createPost(prevState:any, formData: FormData) {
   try {
     const cookieStore = cookies();
     const allCookies = cookieStore.getAll();
-    
+
+    const post_type = formData.get("post_type");
+
     // Send the request with form data and headers
-    const res = await fetch(`http://localhost:5000/api/post/create?type=${postType}`, {
+    const res = await fetch(`http://localhost:5000/api/post/create?type=${post_type}`, {
       method: 'POST',
       headers: {
         Cookie: allCookies.map(cookie => `${cookie.name}=${cookie.value}`).join('; '),
       },
       body: formData, 
     });
+    const responseData = await res.json();
 
     if (!res.ok) {
-      console.log('snjdscn')
+      if (responseData.errors && Array.isArray(responseData.errors)) {
+        const errorMessages = responseData.errors.map((err:any) => err.msg).join(", ");
+        return {
+          error: errorMessages,
+          message: ''
+        }
+      }
     }
-    // Handle the response
-    const responseData = await res.json();
-    return responseData;
+
+    return {
+      error: '',
+      message: responseData.message
+    }
 
   } catch (error) {
     console.error('Failed to create post:', error);
-    throw new Error('Failed to create post.');
+    return {
+      error: "Unknown Error: Failed to create post.",
+      message: ''
+    }
   }
 }
 

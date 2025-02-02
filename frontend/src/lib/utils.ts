@@ -1,6 +1,32 @@
 import {PostItemProp} from "@/interface/PostProp";
 import { CommentItemProp } from "@/interface/CommentProp";
 import { fetchUrlMetaData } from "./data_api";
+import { fileTypeFromBuffer } from "file-type";
+
+
+export const validateFile = async (file: File, max_size: number, allowed_types: string[]) => {
+  if (file.size > max_size) {
+    return {
+      valid: false,
+      message: 'File size exceeds the 10MB limit.'
+    }
+  }
+
+  const buffer = await file.arrayBuffer();
+  const fileType = await fileTypeFromBuffer(new Uint8Array(buffer));
+
+  if (!fileType || !allowed_types.includes(fileType.mime)) {
+    return {
+      valid: false,
+      message: 'Invalid file type. Only images and videos are allowed.'
+    }
+  }
+
+  return {
+    valid: true,
+    message : "valid file"
+  };
+}
 
 export const getNumberAbbreviation = (member_count: string): string => {
   const memberCount = parseInt(member_count, 10);

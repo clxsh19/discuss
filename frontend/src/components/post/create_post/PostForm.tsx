@@ -1,75 +1,72 @@
 import { useState } from 'react';
+import { useFormState } from 'react-dom';
 import { createPost } from '@/lib/create_api';
+import { DeleteIcon } from '@/components/Icons';
 import CommunitySearchBar from './CommunitySearchBar';
+import { validateFile } from '@/lib/utils';
+import { FileIcon } from '@/components/Icons';
 
 interface PostFormProps {
-  postType : 'TEXT' | 'MEDIA' | 'LINK',
+  post_type : 'TEXT' | 'MEDIA' | 'LINK',
   sub_name?: string,
 }
 
-const PostForm = ({ postType, sub_name }: PostFormProps) => {
-  const [imgSrc, setImgSrc] = useState<string | null>(null);
-  const [file, setFile] = useState<File | null>(null)
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'video/mp4', 'video/mpeg'];
 
-  const submitPost = async(e : React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-
-    const formData = new FormData();
-    formData.append('title', e.currentTarget.postTitle.value);
-    formData.append('sub_name', e.currentTarget.communityName.value);
-
-    switch (postType) {
-      case 'TEXT':
-        formData.append('text', e.currentTarget.postText.value);
-        break;
-    
-      case 'MEDIA':
-        if (!file || file === null) { // Ensure file is not null
-          console.log('file state empty');
-          return;
-        }
-        formData.append('file', file); // Same name as multer.single(name)
-        break;
-    
-      case 'LINK':
-        formData.append('link', e.currentTarget.postLink.value);
-        break;
-    
-      default:
-        console.log('Invalid post type');
-        return;
-    }
-    
-    const res = await createPost(formData, postType);
-    console.log(res);
-  };
-
-  const onChangeImage = (e : React.ChangeEvent<HTMLInputElement>) => {
-    e.preventDefault();
-    const targetFile = e.target.files?.[0];
-    if (targetFile) {
-      setFile(targetFile);
-
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImgSrc(reader.result as string);
-      }
-      reader.readAsDataURL(targetFile);
-    }
+const PostForm = ({ post_type, sub_name }: PostFormProps) => {
+  const intialState = {
+    message: '',
+    error: '',
   }
 
+  const [fileSrc, setFileSrc] = useState<string | null>(null);
+  const [fileType, setFileType] = useState<string | null>(null);
+  const [fileErrMsg, setFileErrMsg] = useState('');
+  const [state, formAction] = useFormState(createPost, intialState);
+
+  const onChangeFile = async(e : React.ChangeEvent<HTMLInputElement>) => {
+    e.preventDefault();
+    const targetFile = e.target.files?.[0];
+    if (!targetFile) {
+      setFileErrMsg("Please select a file");
+      return;
+    }
+
+    const isFileValid = await validateFile(targetFile, MAX_FILE_SIZE, ALLOWED_MIME_TYPES);
+    if ( !isFileValid.valid ) {
+      setFileErrMsg(isFileValid.message);
+      e.target.value = '';
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setFileSrc(reader.result as string);
+      setFileType(targetFile.type);
+    }
+    reader.readAsDataURL(targetFile);
+    setFileErrMsg('');
+    state.error = '';
+  }
+
+  const handleDeleteFile = () => {
+    const fileInput = document.getElementById("file") as HTMLInputElement;
+    if (fileInput) fileInput.value = "";
+    setFileSrc('');
+  };
+
   return (
-    <form onSubmit={submitPost} encType="multipart/form-data">
+    <form action={formAction}>
       <div className="w-3/6 mb-4">
         <CommunitySearchBar sub_name={sub_name}/>
       </div>
       <div className="w-3/6 mb-4">
-        <label htmlFor="postTitle" className="block text-sm font-medium">
+        <label htmlFor="title" className="block text-sm font-medium">
           Title
         </label>
         <input
-          type="text" 
-          id="postTitle"
+          type="text"
           name="title"
           className="w-full mt-2 px-3 py-2 bg-neutral-900 rounded-lg text-white text-sm outline-none"
           placeholder="Enter the title..."
@@ -77,77 +74,77 @@ const PostForm = ({ postType, sub_name }: PostFormProps) => {
         />
       </div>
 
-      {postType === 'TEXT' && (
-        <div className="mb-4">
-          <label htmlFor="postText" className="block text-sm font-medium">
+      <input type="hidden" name="post_type" value={post_type} />
+      <input type="hidden" name="sub_name" value={sub_name} />
+
+      {post_type === 'TEXT' && (
+        <div className="">
+          <label htmlFor="text" className="block text-sm font-medium">
             Text
           </label>
           <textarea
-            id="postText"
             name="text"
             className="mt-2 w-full px-3 py-2 bg-neutral-900 text-white rounded-md text-sm outline-none"
-            placeholder="Write your post..."
+            placeholder="Write your content..."
             rows={5}
           />
         </div>
       )}
 
-      {postType === 'MEDIA' && (
-        <div className="mb-4">
-          <label className="block text-sm font-medium ">Upload</label>
-          <div className="mt-2 flex justify-center px-6 pt-5 pb-6 bg-neutral-900 border-2 border-gray-600 border-dashed rounded-md">
-            <div className="space-y-1 text-center">
-              {imgSrc ? (
-                <img
-                  src={imgSrc}
-                  alt="Image Preview"
-                  className="mx-auto h-48 w-48 object-contain"
+      { post_type === 'MEDIA' && (
+        <div className="">
+        <label 
+          htmlFor="file"
+          className="block text-sm font-medium mb-2">
+            Upload
+        </label>
+        <input
+          id="file"
+          name="file"
+          type="file"
+          accept="image/*,video/*"
+          onChange={onChangeFile}
+          className="w-full text-sm rounded-lg border border-neutral-800 file:mr-4 
+            file:p-2 file:bg-neutral-800 file:text-sm file:font-semibold 
+            file:text-neutral-200 file:border-0 file:hover:bg-neutral-700
+            file:cursor-pointer"
+        />
+        {(fileSrc) && (
+          <div className="space-x-2 flex mt-2">
+            <div className="border border-neutral-700">
+              {fileType?.startsWith("video") ? (
+                <video 
+                  src={fileSrc}
+                  controls
+                  className="w-full h-full object-cover"
                 />
-              ) : (
-                <svg
-                  className="mx-auto h-12 w-12 "
-                  stroke="white"
-                  fill="none"
-                  viewBox="0 0 48 48"
-                  aria-hidden="true"
-                >
-                  <path
-                    d="M28 8h4a2 2 0 012 2v12m-4 4h4m-10 0h4m-10 0h4m-10 0h4M8 22h4"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              )}
-              <div className="flex text-sm ">
-                <label
-                  htmlFor="file-upload"
-                  className="cursor-pointer rounded-md font-medium text-blue-300 hover:text-blue-500"
-                >
-                  <span>Drag or Drop Media</span>
-                  <input
-                    id="file-upload"
-                    name="image"
-                    type="file"
-                    className="sr-only"
-                    accept="image/*,video/*"
-                    onChange={onChangeImage}
-                  />
-                </label>
-              </div>
+                ) : (
+                <img
+                  src={fileSrc}
+                  alt="Image"
+                  className="w-full h-full object-cover"
+                />
+              )} 
             </div>
-          </div>
+            <button
+              type="button"
+              onClick={handleDeleteFile}
+              className='mb-auto'
+            >
+              <DeleteIcon style={`hover:text-red-600`}/>
+            </button>
         </div>
       )}
+      </div>
+      )}
 
-      {postType === 'LINK' && (
-        <div className="mb-4">
-          <label htmlFor="postLink" className="block text-sm font-medium ">
+      {post_type === 'LINK' && (
+        <div className="">
+          <label htmlFor="link" className="block text-sm font-medium ">
             Link
           </label>
           <input
             type="url"
-            id="postLink"
             name="link"
             className="mt-2 w-full px-3 py-3 bg-neutral-900 text-white rounded-md text-sm outline-none"
             placeholder="https://example.com"
@@ -155,10 +152,19 @@ const PostForm = ({ postType, sub_name }: PostFormProps) => {
         </div>
       )}
 
-      <div className="flex justify-end">
+      <div className="flex flex-col justify-end">
+        {(post_type === 'MEDIA' && fileErrMsg) && (
+          <p aria-live="polite" className="p-1 px-2 text-sm font-semibold text-red-500 rounded-md">
+            {`${fileErrMsg}`}
+          </p>
+        )}
+        <p aria-live="polite" className={`p-1 px-2 text-sm rounded-md
+          ${state?.error ? "font-semibold text-red-500" : "sr-only"}`}>
+            {`Error: ${state?.error}`}
+        </p>
         <button
           type="submit"
-          className="mt-2 mr-auto bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
+          className={`mt-2 mr-auto bg-blue-500 text-white px-4 py-2 rounded-lg ${ (!!fileErrMsg || !fileSrc ) ? 'bg-blue-800' : 'hover:bg-blue-600}' }`}
         >
           Post
         </button>

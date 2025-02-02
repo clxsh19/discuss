@@ -74,16 +74,17 @@ const CommunitySearchBar = ({ sub_name }: CommunitySearchBarProps) => {
         className={`block w-full mt-2 px-3 py-2 bg-neutral-900 rounded-lg text-sm
                     ${showDropdown ? 'ring-1 ring-blue-300': 'outline-none '}` }
         value={selectedCommunity}
+        placeholder='Click to select community'
         readOnly
         onClick={() => setShowDropdown((prev) => !prev)} // Toggle dropdown
       />
       {showDropdown && (
-        <div className="absolute w-4/12 mt-2 z-10 bg-neutral-900 rounded-lg">
-          <div className="p-2 border-b">
+        <div className="absolute w-4/12 mt-2 z-10 bg-neutral-900 border border-neutral-500 rounded-lg">
+          <div className="p-2 border-b border-b-neutral-500">
             <input
               type="text"
               placeholder="Search community"
-              className="w-full px-3 py-2 bg-neutral-800 text-sm outline-none rounded-md focus:bg-gray-800"
+              className="w-full px-3 py-2 bg-neutral-800 text-sm outline-none rounded-md hover:bg-gray-800 focus:bg-gray-800"
               onChange={handleSearchChange}
               autoFocus
             />
@@ -97,12 +98,11 @@ const CommunitySearchBar = ({ sub_name }: CommunitySearchBarProps) => {
               filteredCommunities.map((community) => (
                 <li
                   key={community.subreddit_id}
-                  className="px-4 py-2 cursor-pointer hover:bg-gray-600 text-sm"
+                  className="px-4 py-2 cursor-pointer hover:bg-neutral-800 text-sm"
                   onClick={() => {
                     setSelectedCommunity(community.name); // Update selected value
                     setShowDropdown(false); // Close dropdown
                     router.replace(`/create_post?sub_name=${encodeURIComponent(community.name)}`)
-                    
                   }}
           
                 >

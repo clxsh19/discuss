@@ -6,28 +6,30 @@ import { deleteUploadedFile } from "../utils/deleteUploadedFIle";
 // need to change post schema to include author-id rather than using join and similar more stuff
 
 const create_post = [
-  body('title', 'Post title must not be empty').trim().isLength({min:1}).escape(),
-  body('sub_name').not().isEmpty().withMessage('subreddit name cannot be null').trim().escape(),
+  body('title', 'Post title cannot be empty!').trim().isLength({min:1}).escape(),
+  body('sub_name').not().isEmpty().withMessage('Please select a commuity!').trim().escape(),
   body('text').optional().trim().escape(),
-  body('link').optional().trim().isURL().withMessage('Invalid link URL').escape(),
+  body('link').optional().trim().isURL().withMessage('Please enter a valid URL!').escape(),
   query('type').custom((value, { req }) => {
+    console.log(value);
+    console.log(req.file)
     const { text, link } = req.body;
     const validTypes = ['TEXT', 'MEDIA', 'LINK'];
 
     if (!validTypes.includes(value)) {
-      throw new Error('Invalid post type');
+      throw new Error('Invalid post type!');
     }
 
     if (value === 'TEXT' && !text) {
-      throw new Error('Text content is required for TEXT posts');
+      throw new Error('Text content is required for Text posts');
     }
 
     if (value === 'MEDIA' && !req.file) {
-      throw new Error('Media file is required for MEDIA posts');
+      throw new Error('Media file is required for Media posts');
     }
 
     if (value === 'LINK' && !link) {
-      throw new Error('Link content is required for LINK posts');
+      throw new Error('Link content is required for Link posts');
     }
     return true;
   }),
@@ -47,13 +49,12 @@ const create_post = [
       const user_id = req.user?.id;
       const media_url = req.file?.path; 
       const { type: post_type } = req.query;
-      console.log("sub_name ", sub_name);
 
       //getting subreddit_id from db
-      const result = await dbQuery(`SELECT subreddit_id FROM subreddits WHERE name = $1`, [sub_name]);
+      const result = await dbQuery(`SELECT subreddit_id FROM subreddits WHERE name = $1`, [sub_name.toLowerCase()]);
       if (result.rowCount === 0) {
         res.status(409).json({
-          message: "community doesn't exist"
+          message: "Community doesn't exist!"
         });
         return;
       }
@@ -71,7 +72,6 @@ const create_post = [
 
 
 const get_post_by_id = [ 
-
   asyncHandler(async (req, res, next) => {
     const post_id = req.params.id;
     const user_id = req.user?.id || null;

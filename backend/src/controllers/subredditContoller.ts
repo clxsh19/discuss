@@ -4,12 +4,15 @@ import {query as dbQuery, queryTransaction} from "../db/index";
 import { deleteUploadedFile } from "../utils/deleteUploadedFIle";
 
 const post_create_subreddit = [
-  body('name', 'Subreddit name must not be empty').not().isEmpty().withMessage('Name cannot be empty').trim().escape(),
-  body('description').not().isEmpty().withMessage('description cannot be empty').trim().escape(),
+  body('name', 'Name must not be empty').not().isEmpty().withMessage('Name cannot be empty')
+  .matches(/^(?!_+$)[a-zA-Z0-9_]+$/).withMessage("only alphabets,letters and underscore allowed")
+  .trim().escape(),
+  body('displayName', 'Display name must not be empty').not().isEmpty().withMessage('Display Name cannot be empty').trim().escape(),
+  body('description').not().isEmpty().withMessage('Description cannot be empty').trim().escape(),
   
   asyncHandler( async(req, res) => {
     const errors = validationResult(req);
-    const { name, description } = req.body;
+    const { name, displayName, description } = req.body;
     const lowerCaseName = name.toLowerCase();
     const files = req.files as { [fieldname: string] : Express.Multer.File[] };
     const bannerFilePath =  files.banner?.[0]?.path;
@@ -29,12 +32,12 @@ const post_create_subreddit = [
       );
       const name_exists = name_exists_query.rows[0].exists;
       if (name_exists) {
-        res.status(403).json({ error: "Subreddit name already exists"});
+        res.status(403).json({ message: "Community already exists"});
       } else {
-        await dbQuery(`INSERT INTO subreddits (name, description, banner_url, logo_url) VALUES ($1, $2, $3, $4)`, // 0 member count currently
-        [lowerCaseName, description, bannerFilePath, logoFilePath] );
+        await dbQuery(`INSERT INTO subreddits (name, display_name, description, banner_url, logo_url) VALUES ($1, $2, $3, $4, $5)`,
+        [lowerCaseName, displayName, description, bannerFilePath, logoFilePath] );
         res.status(202).json({
-          message: 'Subreddit registered successfully',
+          message: 'Community created successfully',
         });
       };
     };

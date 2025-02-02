@@ -1,4 +1,23 @@
-// UpvoteIcon.js
+export const FileIcon = ({ style = "" }) => (
+  <svg
+    width={28}
+    height={28}
+    viewBox="0 0 20 20"
+    xmlns="http://www.w3.org/2000/svg"
+    fill="#62a0ea"
+    stroke="#62a0ea"
+  >
+    <g
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      stroke="#CCC"
+      strokeWidth={0.4}
+    />
+    <path fill="none" d="M0 0h20v20H0z" stroke="none" />
+    <path d="m12 2 4 4v12H4V2zm0 4h3l-3-3z" stroke="none" />
+  </svg>
+);
+
 export const UpvoteIcon = ({ style = "" }) => (
   <svg
     width={28}
