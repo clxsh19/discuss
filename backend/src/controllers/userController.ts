@@ -81,7 +81,7 @@ const user_login = [
         if (err) {
           return next(err);
         }
-        return res.status(201).json({ msg: 'login successfull' });
+        return res.status(201).json({ message: 'login successfull' });
       });
     })(req, res, next);
   }

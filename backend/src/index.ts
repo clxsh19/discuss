@@ -36,10 +36,10 @@ declare global {
 //cros
 app.use(
   cors({
-    //Allows session cookie from browser to pass through
-    credentials: true, 
-    //Sets the allowed domain to the domain where the front end is hosted, this could be http://localhost:3000 or an actual url
-    origin: process.env.FRONT_END_URL,
+    origin: 'http://localhost:3000', // Change this to your frontend URL
+  credentials: true, // Allow cookies if using authentication
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization']
   })
 );
 

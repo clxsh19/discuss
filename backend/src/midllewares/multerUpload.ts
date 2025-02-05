@@ -14,13 +14,13 @@ const fileUpload = (req: Request, res: Response, next: NextFunction) => {
         message = "Unexpected file field.";
       }
 
-      return res.status(400).json({ message });
+      return res.status(400).json({ error: message });
     } 
     
     if (err) {
       // Handle unknown errors (e.g., file format issues)
-      return res.status(400).json({
-        message: err.message || "Something went wrong with the file upload." 
+      return res.status(415).json({
+        error: err.message || "Something went wrong with the file upload." 
       });
     }
     next();
@@ -43,12 +43,12 @@ const multipleFileUpload = (req: Request, res: Response, next: NextFunction) => 
         message = "Unexpected file field.";
       }
 
-      return res.status(400).json({ message });
+      return res.status(400).json({ error: message });
     } 
     
     if (err) {
       return res.status(400).json({ 
-        message: err.message || "Something went wrong with the file upload." 
+        error: err.message || "Something went wrong with the file upload." 
       });
     }
 
