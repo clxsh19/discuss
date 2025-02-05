@@ -1,13 +1,42 @@
-import Link from "next/link";
+'use client'
+
+import { useAuth } from '../context/AuthContext';
+import { useRouter } from "next/navigation";import Link from "next/link";
 import { userRegister } from "@/lib/auth_api";
+import { showErrorToast} from '../ui/toasts';
+import { useState } from 'react';
 
 const RegisterForm = () => {
+  const { updateAuthStatus } = useAuth();
+  const [ isLoading, setIsLoading ] = useState(false);
+  const router = useRouter();
+
+  const handleSubmit = async(e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (isLoading) return;
+    
+    setIsLoading(true);
+    try {
+      const formData = new FormData(e.currentTarget);
+      const result = await userRegister(formData);
+      if (!result.error) {
+        await updateAuthStatus();
+        router.back();
+      } else {
+        showErrorToast(result.error);
+      }
+    } catch (error) {
+      showErrorToast("An unexpected error occurred!");
+    } finally {
+      setIsLoading(false);
+    }
+  }
 
   return (
     <div className="flex w-full justify-center text-white">
     <div className="mt-10 w-full max-w-md">
       <h1 className="text-2xl font-semibold mb-6">Create Account</h1>
-      <form className="space-y-6" action={userRegister}>
+      <form className="space-y-6" onSubmit={handleSubmit}>
         {/* Username Field */}
         <div className="flex items-center space-x-4">
           <label
@@ -63,8 +92,7 @@ const RegisterForm = () => {
         </div>
       </form>
     </div>
-</div>
-
+  </div>
   );
 };
 

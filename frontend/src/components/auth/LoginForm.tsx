@@ -1,26 +1,35 @@
 'use client'
 
-import { usePathname } from 'next/navigation';
 import { useAuth } from '../context/AuthContext';
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { logIn } from "@/lib/auth_api";
+import { showErrorToast} from '../ui/toasts';
+import { useState } from 'react';
 
 const LoginForm = () => {
   const { updateAuthStatus } = useAuth();
-  // const pathname = usePathname();
+  const [ isLoading, setIsLoading ] = useState(false);
   const router = useRouter();
+
   const handleSubmit = async(e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    const result = await logIn(formData);
-    console.log(result);
-    if (result) {
-      console.log('login callback  succesuful');
-      updateAuthStatus();
-      router.back();
-      // router.replace(`${pathname}`);
-      // router.refresh();
+    if (isLoading) return;
+
+    setIsLoading(true);
+    try {
+      const formData = new FormData(e.currentTarget);
+      const result = await logIn(formData);
+      if (!result.error) {
+        await updateAuthStatus();
+        router.back();
+      } else {
+        showErrorToast(result.error);
+      }
+    } catch (error) {
+      showErrorToast("An unexpected error occurred!");
+    } finally {
+      setIsLoading(false);
     }
   }
 
@@ -77,7 +86,9 @@ const LoginForm = () => {
           <div className="text-end">
             <button
               type="submit"
-              className="px-4 py-2 text-base font-medium bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              disabled={isLoading}
+              className={`px-4 py-2 text-base font-medium  text-white rounded-md 
+                ${isLoading? 'bg-blue-900': 'bg-blue-600 hover:bg-blue-700' }`}
             >
               Login
             </button>

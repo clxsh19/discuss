@@ -1,21 +1,21 @@
 'use client'
 
 // import { logOut } from "@/lib/auth";
-import { useRouter} from "next/navigation";
+// import { useRouter} from "next/navigation";
 import { useAuth } from '../context/AuthContext';
 
 const Logout = () => {
-  const router = useRouter();
-  const { updateAuthStatus } = useAuth();
+  // const router = useRouter();
+  // const { updateAuthStatus } = useAuth();
   const logOut = async() => {
     try {
       const res = await fetch('http://localhost:5000/api/user/logout', {
         method: 'POST',
         credentials: 'include',
       });
-      const res_code = await res.json();
-      console.log(res_code);
-      updateAuthStatus();
+      // const res_code = await res.json();
+      // console.log(res);
+      // updateAuthStatus();
       // router.push('/login')
       // router.refresh();
       window.location.reload();

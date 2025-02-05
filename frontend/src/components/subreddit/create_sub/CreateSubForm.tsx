@@ -32,13 +32,14 @@ const CreateSubForm = () => {
     const isFileValid = await validateFile(targetFile, MAX_FILE_SIZE, ALLOWED_MIME_TYPES);
     if ( !isFileValid.valid ) {
       if (isBanner) {
-        setFileErr(prev => ({ ...prev, bannerErrorMsg: isFileValid.message }));
+        setFileErr({ logoErrorMsg: '', bannerErrorMsg: isFileValid.message });
         setBannerImgSrc('');
       } else {
-        setFileErr(prev => ({ ...prev, logoErrorMsg: isFileValid.message }));
+        setFileErr({ bannerErrorMsg: '', logoErrorMsg: isFileValid.message });
         setLogoImgSrc('');
       }
       e.target.value = '';
+      state.error = '';
       return;
     }
 

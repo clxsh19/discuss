@@ -1,103 +1,76 @@
 'use server'
-import { revalidatePath } from "next/cache";
-import { redirect } from 'next/navigation';
+// import { revalidatePath } from "next/cache";
+// import { redirect } from 'next/navigation';
 import { cookies } from 'next/headers';
 
+const setCookiesFromHeader = (res: Response) => {
+  const setCookieHeader = res.headers.get('Set-Cookie');
+  if (setCookieHeader) {
+    // Split the Set-Cookie header to extract cookies
+    const [cookieNameValue, ...attributes] = setCookieHeader.split(';');
+    const [cookieName, cookieValue] = cookieNameValue.split('=');
+    const decodedCookieValue = decodeURIComponent(cookieValue);
 
-// Login response headers:  [
-//   'connect.sid=s%3A4i2cEYpDTVANrK3RLUTHsoElSmV1VcET.etxnRrb1h02jCFCFMlZBo1lrT2UUPBsUoEyQxggbz%2BU; Path=/; Expires=Thu, 08 Aug 2024 14:53:17 GMT; HttpOnly; SameSite=Strict'
-// ]
+    // Initialize cookie options
+    const cookieOptions: Record<string, any> = {};
+    attributes.forEach((attr) => {
+      const trimmedAttr = attr.trim();
 
-export async function logIn(formData: FormData) {
-  try {
-    const rawFormData = {
-      username: formData.get('username') as string,
-      password: formData.get('password') as string,
-    };
-
-    const res = await fetch('http://localhost:5000/api/user/login', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include',
-      body: JSON.stringify(rawFormData),
+      if (trimmedAttr.toLowerCase() === 'httponly') {
+        cookieOptions.httpOnly = true;
+      } else if (trimmedAttr.toLowerCase().startsWith('samesite=')) {
+        cookieOptions.sameSite = trimmedAttr.split('=')[1] as 'strict' | 'lax' | 'none';
+      } else if (trimmedAttr.toLowerCase().startsWith('path=')) {
+        cookieOptions.path = trimmedAttr.split('=')[1];
+      } else if (trimmedAttr.toLowerCase().startsWith('expires=')) {
+        cookieOptions.expires = new Date(trimmedAttr.split('=')[1]);
+      }
     });
-
-    const data = await res.json();
-
-    if (!res.ok) {
-      throw new Error(data.message || 'Login Failed');
-    }
-
-    const setCookieHeader = res.headers.get('Set-Cookie');
-    if (setCookieHeader) {
-      // Split the Set-Cookie header to extract cookies
-      const [cookieNameValue, ...attributes] = setCookieHeader.split(';');
-      const [cookieName, cookieValue] = cookieNameValue.split('=');
-      const decodedCookieValue = decodeURIComponent(cookieValue);
-
-      // Set the cookie using Next.js `cookies()`
-      cookies().set(cookieName, decodedCookieValue, {
-        httpOnly: true
-      });
-    }
-    console.log('logged in')
-  // const pathname = formData.get('pathname') as string;
-  //  revalidatePath(pathname || '/');
-  // redirect(pathname || '/');
-    return true; // on success returns true
-
-  
-  } catch (error) {
-    console.error('Login failed', error);
-    return false; // false on falieur
+    cookies().set(cookieName, decodedCookieValue, cookieOptions);
   }
 }
 
-
-
-export async function userRegister(formData:FormData) {
-  // 'use server';
+export async function logIn(formData: FormData) {
   try {
-    const rawFormData = {
-      username: formData.get('username') as string,
-      password: formData.get('password') as string,
-    };
-
-    const res = await fetch('http://localhost:5000/api/user/register', {
+    const res = await fetch('http://localhost:5000/api/user/login', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include',    
-      body: JSON.stringify(rawFormData),
+      credentials: 'include',
+      body: formData
     });
     const data = await res.json();
-    const setCookieHeader = res.headers.getSetCookie();
-    console.log(setCookieHeader);
-    console.log("Register response data: ", data);
-    if (setCookieHeader) {
-      setCookieHeader.forEach((cookieHeader) => {
-        // Extract the cookie name and value from the header
-        const [cookieNameValue, ...attributes] = cookieHeader.split(';');
-        const [cookieName, cookieValue] = cookieNameValue.split('=');
-        const decodedCookieValue = decodeURIComponent(cookieValue);
-        const cookieAttributes = attributes.join(';').trim();
-    
-        // Set the cookie with httpOnly attribute
-        cookies().set(cookieName, decodedCookieValue, {
-          httpOnly: true,
-        });
-      });
+
+    if (!res.ok) {
+      return { error: data.error || "Failed to login.", message: "" }
     }
+
+    setCookiesFromHeader(res);
+    return { error: "", message: data.message }
+  } catch(error) {
+    return { error: "Unlown : Failed to login.", message: "" }
+  }
+}
+
+export async function userRegister(formData:FormData) {
+  try {
+    const res = await fetch('http://localhost:5000/api/user/register', {
+      method: 'POST',
+      credentials: 'include',    
+      body: formData,
+    });
+    const data = await res.json();
+    
+    if (!res.ok) {
+      return { error: data.error || "Failed to Register.", message: "" }
+    }
+
+    setCookiesFromHeader(res);
+    // revalidatePath('/');
+    // redirect('/');
+    return { error: "", message: data.message }
   } catch (error) {
     console.error('Registration failed', error);
-    throw new Error('Failed to register.');
+    return { error: "Unknown : Failed to create account.", message: "" }
   }
-  // Assuming you want to revalidate the path after login
-  revalidatePath('/');
-  redirect('/');
 }
 
 export async function logOut() {

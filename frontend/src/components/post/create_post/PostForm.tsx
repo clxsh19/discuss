@@ -35,7 +35,7 @@ const PostForm = ({ post_type, sub_name }: PostFormProps) => {
 
     const isFileValid = await validateFile(targetFile, MAX_FILE_SIZE, ALLOWED_MIME_TYPES);
     if ( !isFileValid.valid ) {
-      setFileErrMsg(isFileValid.message);
+      state.error = isFileValid.message;
       e.target.value = '';
       return;
     }
@@ -87,6 +87,7 @@ const PostForm = ({ post_type, sub_name }: PostFormProps) => {
             className="mt-2 w-full px-3 py-2 bg-neutral-900 text-white rounded-md text-sm outline-none"
             placeholder="Write your content..."
             rows={5}
+            required
           />
         </div>
       )}
@@ -148,6 +149,7 @@ const PostForm = ({ post_type, sub_name }: PostFormProps) => {
             name="link"
             className="mt-2 w-full px-3 py-3 bg-neutral-900 text-white rounded-md text-sm outline-none"
             placeholder="https://example.com"
+            required
           />
         </div>
       )}
@@ -164,7 +166,7 @@ const PostForm = ({ post_type, sub_name }: PostFormProps) => {
         </p>
         <button
           type="submit"
-          className={`mt-2 mr-auto bg-blue-500 text-white px-4 py-2 rounded-lg ${ (!!fileErrMsg || !fileSrc ) ? 'bg-blue-800' : 'hover:bg-blue-600}' }`}
+          className={`mt-2 mr-auto bg-blue-500 text-white px-4 py-2 rounded-lg`}
         >
           Post
         </button>

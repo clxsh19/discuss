@@ -19,18 +19,13 @@ const CreatePost = () => {
   } 
   
   useEffect(() => {
-    if (loading) {
-      return;
-    }
-
-    if (!isAuthenticated) {
+    if (!loading && !isAuthenticated) {
       router.push('/login');
-      return;
     }
   }, [loading, isAuthenticated]);
   
-  if (!isAuthenticated || loading) {
-    return <div></div>
+  if (loading || !isAuthenticated) {
+    return <h1 className="text-white">loading</h1>
   }
 
   return (

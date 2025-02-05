@@ -76,6 +76,7 @@ const CommunitySearchBar = ({ sub_name }: CommunitySearchBarProps) => {
         value={selectedCommunity}
         placeholder='Click to select community'
         readOnly
+        required
         onClick={() => setShowDropdown((prev) => !prev)} // Toggle dropdown
       />
       {showDropdown && (

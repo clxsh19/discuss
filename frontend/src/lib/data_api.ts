@@ -184,7 +184,7 @@ export async function userData(): Promise <{
     return {
       status: data.authenticated,
       user: data.authenticated? data.user: null,
-    };
+    }
   } catch (error) {
     console.error('failed fetching status');
     throw new Error('Failed to fetch status.');

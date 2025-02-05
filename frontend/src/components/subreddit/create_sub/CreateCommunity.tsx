@@ -10,15 +10,9 @@ const CreateSub = () => {
   const { isAuthenticated, loading } = useAuth();
   const router = useRouter();
 
-  
   useEffect(() => {
-    if (loading) {
-      return;
-    }
-
     if (!isAuthenticated) {
       router.push('/login');
-      return;
     }
   }, [loading, isAuthenticated]);
     

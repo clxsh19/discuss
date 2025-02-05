@@ -63,13 +63,16 @@ export async function createCommunity(prevState:any, formData: FormData) {
     });
     const responseData = await res.json();
 
-    if(!res.ok) {
+    if (!res.ok) {
+      let error = "Unknown Server Error: Failed to create community."
       if (responseData.errors && Array.isArray(responseData.errors)) {
-        const errorMessages = responseData.errors.map((err:any) => err.msg).join(", ");
-        return {
-          error: errorMessages,
-          message: ''
-        }
+        error = responseData.errors.map((err:any) => err.msg).join(", ");
+      } else if ( responseData.error) {
+        error = responseData.error;
+      }
+      return {
+        error,
+        message: ''
       }
     }
 
@@ -106,18 +109,21 @@ export async function createPost(prevState:any, formData: FormData) {
     const responseData = await res.json();
 
     if (!res.ok) {
+      let error = "Unknown Server Error: Failed to create post."
       if (responseData.errors && Array.isArray(responseData.errors)) {
-        const errorMessages = responseData.errors.map((err:any) => err.msg).join(", ");
-        return {
-          error: errorMessages,
-          message: ''
-        }
+        error = responseData.errors.map((err:any) => err.msg).join(", ");
+      } else if ( responseData.error) {
+        error = responseData.error;
+      }
+      return {
+        error,
+        message: ''
       }
     }
 
     return {
       error: '',
-      message: responseData.message
+      message: responseData.message || ''
     }
 
   } catch (error) {
