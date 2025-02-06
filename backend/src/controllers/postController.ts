@@ -9,10 +9,8 @@ const create_post = [
   body('title', 'Post title cannot be empty!').trim().isLength({min:1}).escape(),
   body('sub_name').not().isEmpty().withMessage('Please select a commuity!').trim().escape(),
   body('text').optional().trim().escape(),
-  body('link').optional().trim().isURL().withMessage('Please enter a valid URL!').escape(),
+  body('link').optional().trim().isURL().withMessage('Please enter a valid URL!'),
   query('type').custom((value, { req }) => {
-    console.log(value);
-    console.log(req.file)
     const { text, link } = req.body;
     const validTypes = ['TEXT', 'MEDIA', 'LINK'];
 
@@ -46,12 +44,14 @@ const create_post = [
       });
     } else {
       const { sub_name, title, text, link} = req.body;
+      console.log(link);
       const user_id = req.user?.id;
       const media_url = req.file?.path; 
       const { type: post_type } = req.query;
 
       //getting subreddit_id from db
-      const result = await dbQuery(`SELECT subreddit_id FROM subreddits WHERE name = $1`, [sub_name.toLowerCase()]);
+      const result = await dbQuery(`SELECT subreddit_id FROM subreddits WHERE name = $1`
+        , [sub_name.toLowerCase()]);
       if (result.rowCount === 0) {
         res.status(409).json({
           message: "Community doesn't exist!"
@@ -60,11 +60,14 @@ const create_post = [
       }
       const sub_id = result.rows[0].subreddit_id;
       
-      await dbQuery(`INSERT INTO posts (title, user_id, subreddit_id, post_type, text_content, media_url, link_url) VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-      [title, user_id, sub_id, post_type, text, media_url ,link] );
+      const insert_query = await dbQuery(`INSERT INTO posts (title, user_id, subreddit_id, post_type, text_content, media_url, link_url) 
+        VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING post_id`
+        , [title, user_id, sub_id, post_type, text, media_url ,link] );
+      const post_id = insert_query.rows[0].post_id;
+
       res.status(202).json({
         message: 'Post created successfully',
-        file: req.file,
+        post_id
       });
     }
   }),
@@ -272,6 +275,7 @@ const get_posts_by_subreddit = [
       p.link_url,
       p.media_url,
       p.created_at,
+      p.text_content,
       p.comment_count AS total_comments,
       p.vote_count AS total_votes,
       u.username AS username,
