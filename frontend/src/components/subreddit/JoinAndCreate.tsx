@@ -25,7 +25,7 @@ const JoinAndCreateSub = ({ sub_name, subreddit_id, user_role }: { sub_name: str
   return (
     <div className="flex flex-col font-serif">
       {/* <CreatePostButton sub_name={sub_name} /> */}
-      <Link className="p-1 text-lg bg-green-500 border rounded-md hover:bg-green-600" href={`/d/${sub_name}/create_post`}>
+      <Link className="p-1 text-lg bg-green-500 border rounded-md hover:bg-green-600" href={`/create_post?sub_name=${sub_name}`}>
         Create Post
       </Link>
       <button className="p-1 text-lg bg-green-500 border rounded-md hover:bg-green-600" onClick={changeSubStatus}>

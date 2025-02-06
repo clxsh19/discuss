@@ -24,6 +24,6 @@ export default async function Page({ searchParams } : CreatePostProp) {
   }
 
   return (
-    <CreatePost sub_name={sub_name} />
+    <CreatePost />
   )
 }

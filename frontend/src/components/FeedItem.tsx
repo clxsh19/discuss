@@ -86,7 +86,7 @@ const FeedItem = ({
                 to
               </div>
               <Link href={`/d/${subreddit_name}`} className="font-semibold text-blue-600 hover:underline relative">
-                r/{subreddit_name}
+                d/{subreddit_name}
               </Link>
             </>
           )}

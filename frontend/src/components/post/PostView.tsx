@@ -4,9 +4,6 @@ import { getTimePassed } from '@/lib/utils';
 import CommentProviderContainer from "./CommentProviderContainer";
 import FeedItem from "../FeedItem";
 
-import { submitPostVote } from "@/lib/create_api";
-import Link from "next/link";
-
 export interface PostViewProp {
   post : PostItemProp[],
   comments: CommentItemProp[]

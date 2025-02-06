@@ -78,7 +78,7 @@ const FeedActionButtons = ({
             </div>
           ) : (
             <div className="p-3 max-w-none text-gray-300 text-sm leading-6 rounded-md bg-neutral-900">
-              <pre className="-mt-6 whitespace-pre-wrap font-sans">
+              <pre className="-mt-2 whitespace-pre-wrap font-sans">
                 {text_content}
               </pre>
             </div>

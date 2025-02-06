@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from "react"
+import { useEffect } from "react"
 import CreateSubForm from "./CreateSubForm";
 import { useAuth } from "@/components/context/AuthContext";
 import { useRouter } from "next/navigation";
@@ -11,13 +11,13 @@ const CreateSub = () => {
   const router = useRouter();
 
   useEffect(() => {
-    if (!isAuthenticated) {
+    if (!loading && !isAuthenticated) {
       router.push('/login');
     }
   }, [loading, isAuthenticated]);
-    
-  if (!isAuthenticated || loading) {
-    return <div></div>
+  
+  if (loading || !isAuthenticated) {
+    return <h1 className="text-white">loading</h1>
   }
 
   return (

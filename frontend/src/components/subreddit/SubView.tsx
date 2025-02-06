@@ -33,9 +33,9 @@ const SubView = ({ sub_detail, sub_posts, hasMore }: SubViewProps) => {
 
         {/* Logo and Sub Name */}
         <div className="relative transform -translate-y-1/3 flex items-center space-x-4 px-4">
-          <div className="w-20 h-20 bg-white rounded-full border-4 border-white">
+          <div className="w-20 h-20 bg-white rounded-full border border-white">
             {logo_url ? (
-              <img src={logo} alt="Subreddit Logo" className="w-full h-full object-cover rounded-full" />
+              <img src={logo} alt="Community Logo" className="w-full h-full object-cover rounded-full" />
             ) : (
               <div className="w-full h-full bg-gray-300 rounded-full" />
             )}

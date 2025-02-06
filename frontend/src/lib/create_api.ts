@@ -1,6 +1,9 @@
 "use server"
-import { error } from 'console';
+
 import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation'
+import { revalidatePath } from 'next/cache'
+import { isRedirectError } from 'next/dist/client/components/redirect';
 
 interface CreateCommentParams {
   post_id: number;
@@ -75,18 +78,17 @@ export async function createCommunity(prevState:any, formData: FormData) {
         message: ''
       }
     }
-
-    return {
-      error: '',
-      message: responseData.message
-    }
-
+    const name = formData.get("name");
+    redirect(`/d/${name}`);
   } catch (error) {
-    console.error('Failed to create community:', error);
-    // throw new Error('Failed to create community.');
-    return {
-      error: "Unknown Error: Failed to create community!",
-      message: ''
+    if (isRedirectError(error)) {
+      throw error;
+    } else {
+      console.error('Failed to create community:', error);
+      return {
+        error: "Unknown Error: Failed to create community!",
+        message: ''
+      }
     }
   }
 }
@@ -97,6 +99,7 @@ export async function createPost(prevState:any, formData: FormData) {
     const allCookies = cookieStore.getAll();
 
     const post_type = formData.get("post_type");
+    console.log(formData.get("link"))
 
     // Send the request with form data and headers
     const res = await fetch(`http://localhost:5000/api/post/create?type=${post_type}`, {
@@ -109,7 +112,7 @@ export async function createPost(prevState:any, formData: FormData) {
     const responseData = await res.json();
 
     if (!res.ok) {
-      let error = "Unknown Server Error: Failed to create post."
+      let error = "Unknown Server Error: Failed to crreate post."
       if (responseData.errors && Array.isArray(responseData.errors)) {
         error = responseData.errors.map((err:any) => err.msg).join(", ");
       } else if ( responseData.error) {
@@ -120,17 +123,18 @@ export async function createPost(prevState:any, formData: FormData) {
         message: ''
       }
     }
-
-    return {
-      error: '',
-      message: responseData.message || ''
-    }
-
+    const sub_name = formData.get("sub_name");
+    revalidatePath(`/d/${sub_name}`);
+    redirect(`/d/${sub_name}/${responseData.post_id}`);
   } catch (error) {
-    console.error('Failed to create post:', error);
-    return {
-      error: "Unknown Error: Failed to create post.",
-      message: ''
+    if (isRedirectError(error)) {
+      throw error;
+    } else {
+      console.error('Failed to create post:', error);
+      return {
+        error: "Unknown Error: Failed to create post.",
+        message: ''
+      }
     }
   }
 }

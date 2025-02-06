@@ -4,7 +4,7 @@ import { createPost } from '@/lib/create_api';
 import { DeleteIcon } from '@/components/Icons';
 import CommunitySearchBar from './CommunitySearchBar';
 import { validateFile } from '@/lib/utils';
-import { FileIcon } from '@/components/Icons';
+
 
 interface PostFormProps {
   post_type : 'TEXT' | 'MEDIA' | 'LINK',
