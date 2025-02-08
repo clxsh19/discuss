@@ -29,7 +29,8 @@ CREATE TABLE IF NOT EXISTS posts (
     text_content TEXT CHECK (LENGTH(text_content) <= 10000),
     media_url VARCHAR(255),
     link_url VARCHAR(255),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    hotness DOUBLE PRECISION DEFAULT 0;
 );
 
 CREATE TABLE IF NOT EXISTS comments (
@@ -68,6 +69,45 @@ CREATE TABLE IF NOT EXISTS subreddit_members (
     UNIQUE(user_id, subreddit_id)
 );
 
--- INSERT INTO post_votes (user_id, post_id, vote_type)
--- VALUES (4, 25, 1);
+CREATE OR REPLACE FUNCTION calculate_hotness(vote_count INTEGER, created_at TIMESTAMP)
+RETURNS DOUBLE PRECISION AS $$
+DECLARE
+    score_val INTEGER;
+    order_val DOUBLE PRECISION;
+    sign_val INTEGER;
+    seconds DOUBLE PRECISION;
+    epoch_start BIGINT := 1738389915;
+BEGIN 
+    score_val := vote_count + 0.5 *  LOG(GREATEST(ABS(vote_count), 2));
+    order_val := LOG(10, GREATEST(ABS(score_val), 1));
+
+    IF score_val > 0 THEN
+        sign_val := 1;
+    ELSIF score_val < 0 THEN
+        sign_val := -1;
+    ELSE
+        sign_val := 0;
+    END IF;
+
+    seconds := EXTRACT(EPOCH FROM created_at) - epoch_start;
+
+    RETURN ROUND((order_val + sign_val * seconds / 44000)::NUMERIC, 7)::DOUBLE PRECISION;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION update_post_hotness() RETURNS TRIGGER AS $$
+BEGIN
+    UPDATE posts p
+    SET hotness = calculate_hotness(NEW.vote_count, p.created_at)
+    WHERE p.post_id = NEW.post_id;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+  
+CREATE TRIGGER trigger_update_hotness
+AFTER UPDATE OF vote_count ON posts
+FOR EACH ROW
+WHEN (OLD.vote_count IS DISTINCT FROM NEW.vote_count) -- Avoid unnecessary updates
+EXECUTE FUNCTION update_post_hotness();
 

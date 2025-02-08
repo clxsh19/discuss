@@ -3,6 +3,38 @@ import { param, query, body, validationResult } from "express-validator";
 import {query as dbQuery, queryTransaction} from "../db/index";
 import { deleteUploadedFile } from "../utils/deleteUploadedFIle";
 
+const sortAndTimeCondtion = (sort: string, t: string) => {
+  // Sorting and time conditions
+  let sortCondition = sort === 'new' ? 'ORDER BY p.created_at DESC, p.post_id DESC' : '';
+  let timeCondition = '';
+
+  // Apply time filtering for 'top' sort with `t`
+  if (sort === 'top') {
+    sortCondition = 'ORDER BY p.vote_count DESC, p.post_id DESC';
+    switch (t) {
+      case 'day':
+        timeCondition = `AND p.created_at >= NOW() - INTERVAL '1 day'`;
+        break;
+      case 'week':
+        timeCondition = `AND p.created_at >= NOW() - INTERVAL '1 week'`;
+        break;
+      case 'month':
+        timeCondition = `AND p.created_at >= NOW() - INTERVAL '1 month'`;
+        break;
+      case 'year':
+        timeCondition = `AND p.created_at >= NOW() - INTERVAL '1 year'`;
+        break;
+      default:
+        break;
+      // 'all' means no time condition
+    }
+  } else if (sort === 'hot') {
+    sortCondition = 'ORDER BY p.hotness DESC, p.post_id DESC';
+  }
+
+  return {sortCondition, timeCondition}
+}
+
 // need to change post schema to include author-id rather than using join and similar more stuff
 
 const create_post = [
@@ -118,7 +150,7 @@ const get_all_posts = [
   query('sort')
     .optional()
     .trim()
-    .isIn(['top', 'new'])
+    .isIn(['hot', 'top', 'new'])
     .withMessage('Only top and new sort by')
     .escape(),
 
@@ -140,30 +172,7 @@ const get_all_posts = [
     const limit = 5;
     const { offset, sort = 'new', t = 'all' } = req.query;
 
-    // Sorting and time conditions
-    let sortCondition = sort === 'new' ? 'ORDER BY p.created_at DESC, p.post_id DESC' : 'ORDER BY p.vote_count DESC, p.post_id DESC';
-    let timeCondition = '';
-
-    // Apply time filtering for 'top' sort with `t`
-    if (sort === 'top') {
-      switch (t) {
-        case 'day':
-        
-          timeCondition = `AND p.created_at >= NOW() - INTERVAL '1 day'`;
-          break;
-        case 'week':
-          timeCondition = `AND p.created_at >= NOW() - INTERVAL '1 week'`;
-          break;
-        case 'month':
-          timeCondition = `AND p.created_at >= NOW() - INTERVAL '1 month'`;
-          break;
-        case 'year':
-          timeCondition = `AND p.created_at >= NOW() - INTERVAL '1 year'`;
-          break;
-        // 'all' means no time condition
-      }
-    }
-
+    const { sortCondition, timeCondition } = sortAndTimeCondtion(sort as string, t as string);
     try {
       // Query to fetch posts with sorting and time filtering
       const posts_query = await dbQuery(
@@ -215,7 +224,7 @@ const get_posts_by_subreddit = [
   query('sort')
     .optional()
     .trim()
-    .isIn(['top', 'new'])
+    .isIn(['top', 'new', 'hot'])
     .withMessage('Only top and new sort by')
     .escape(),
 
@@ -247,26 +256,7 @@ const get_posts_by_subreddit = [
     const user_id = req.user?.id; // add conditon for user id not existing
     const limit = 5;
 
-    let sortCondition = '';
-    let timeCondition = '';
-
-    // Apply sorting based on the 'sort' parameter
-    if (sort === 'new') {
-      sortCondition = 'ORDER BY p.created_at DESC';
-    } else if (sort === 'top') {
-      sortCondition = 'ORDER BY p.vote_count DESC';
-
-      // Apply time filtering if `t` is provided and `sort` is 'top'
-      if (t === 'day') {
-        timeCondition = `AND p.created_at >= NOW() - INTERVAL '1 day'`;
-      } else if (t === 'week') {
-        timeCondition = `AND p.created_at >= NOW() - INTERVAL '1 week'`;
-      } else if (t === 'month') {
-        timeCondition = `AND p.created_at >= NOW() - INTERVAL '1 month'`;
-      } else if (t === 'year') {
-        timeCondition = `AND p.created_at >= NOW() - INTERVAL '1 year'`;
-      } // 'all' means no time condition
-    }
+    const { sortCondition, timeCondition } = sortAndTimeCondtion(sort as string, t as string);
 
     const posts_query = await dbQuery(`SELECT
       p.post_id,
@@ -280,6 +270,7 @@ const get_posts_by_subreddit = [
       p.vote_count AS total_votes,
       u.username AS username,
       s.name AS subreddit_name,
+      s.display_name AS display_name,
       COALESCE(pv.vote_type, null) AS vote_type
 
       FROM posts p
@@ -323,8 +314,7 @@ const post_vote = [
       // user vote exist on this post say user upvoted 1
       if ( existingVote.rows.length > 0) { 
         const oldVoteType = existingVote.rows[0].vote_type;
-
-        if (oldVoteType === vote_type) {// same as old vote revert it or delete it?
+        if (oldVoteType === vote_type) {// same as old vote, so delete it
           const queries = [
             'DELETE FROM post_votes WHERE user_id = $1 AND post_id = $2',
             'UPDATE posts SET vote_count = vote_count - $1 WHERE post_id = $2'
@@ -333,25 +323,22 @@ const post_vote = [
             [user_id, post_id],
             [vote_type, post_id]
           ];
-          res.status(204).json({ message: 'Deleted the vote'});
           await queryTransaction(queries, params);
+          res.status(200).json({ message: 'Deleted the vote'});
           return;
-          // next();
         }
 
-        const queries = [ // update the vote
+        const queries = [ // update the vote accordinng to new vote
           'UPDATE post_votes SET vote_type = $1 WHERE user_id = $2 AND post_id = $3',
           'UPDATE posts SET vote_count = vote_count + $1 WHERE post_id = $2'
         ];
-
         const params = [
           [vote_type, user_id, post_id],
           [vote_type * 2, post_id]
         ]
-
         await queryTransaction(queries, params);
         res.status(200).json({ message: 'Vote updated successfully' });
-      } else { // new vote add it 
+      } else { // new vote, add the new vote 
         const queries = [
           'INSERT INTO post_votes (user_id, post_id, vote_type) VALUES ($1, $2, $3)',
           'UPDATE posts SET vote_count = vote_count + $1 WHERE post_id = $2'
@@ -360,10 +347,9 @@ const post_vote = [
           [user_id, post_id, vote_type],
           [vote_type, post_id]
         ]
-        console.log('adding new vote : ', vote_type);
         await queryTransaction(queries, params)
         res.status(202).json({
-          message: 'vote created successfully',
+          message: 'Vote created successfully',
         });
       }
     };

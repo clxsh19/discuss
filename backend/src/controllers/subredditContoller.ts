@@ -50,6 +50,7 @@ const get_subbreddit_detail = asyncHandler( async(req, res) => {
   const subreddit_query = await dbQuery(`SELECT 
     s.subreddit_id,
     s.name AS sub_name,
+    s.display_name,
     s.description,
     s.members_count,
     s.created_at,
