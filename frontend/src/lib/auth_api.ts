@@ -46,7 +46,7 @@ export async function logIn(formData: FormData) {
     setCookiesFromHeader(res);
     return { error: "", message: data.message }
   } catch(error) {
-    return { error: "Unlown : Failed to login.", message: "" }
+    return { error: "Unknown : Failed to login.", message: "" }
   }
 }
 

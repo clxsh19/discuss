@@ -1,46 +1,50 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { PostItemProp } from '@/interface/PostProp';
 import { buildPostWithMetaData } from '@/lib/utils';
 import FeedItem from '@/components/FeedItem';
 import SortDropDown from './ui/SortDropDown';
 import { fetchPostsBySub, fetchAllPosts } from '@/lib/data_api';
 
-interface InfiniteFeedProps { 
-  initialPosts: PostItemProp[], 
+type SortType = 'hot' | 'new' | 'top';
+
+interface InfiniteFeedProps {
+  initialPosts: PostItemProp[],
   initialHasMore: boolean,
-  sub_name ?: string,
+  sub_name?: string,
 }
 const InfiniteFeed = ({ initialPosts, initialHasMore, sub_name }: InfiniteFeedProps) => {
   const [posts, setPosts] = useState<PostItemProp[]>(initialPosts);
-  const [sort, setSort] = useState('new');
+  const [sort, setSort] = useState<'new' | 'top' | 'hot'>('new');
+
   const [timeframe, setTimeframe] = useState('all');
 
-  const offsetRef = useRef(initialPosts.length); // Track offset
-  const hasMoreRef = useRef(initialHasMore); // Track hasMore
+  const offsetRef = useRef(initialPosts.length); 
+  const hasMoreRef = useRef(initialHasMore);
   const scrollTrigger = useRef<HTMLDivElement | null>(null);
 
-  const loadMorePosts = async (reset = false) => {
+  const loadMorePosts = useCallback(async (reset = false) => {
     if (!hasMoreRef.current && !reset) return;
-
+  
     const newOffset = reset ? 0 : offsetRef.current;
-    const fetchResult = sub_name 
-      ? await fetchPostsBySub(sub_name, newOffset, sort, sort === 'top' ? timeframe : '')
-      : await fetchAllPosts(newOffset, sort, sort === 'top' ? timeframe : '');
-
+  
+    const fetchResult = sub_name
+      ? await fetchPostsBySub(sub_name, newOffset, sort, timeframe)
+      : await fetchAllPosts(newOffset, sort, timeframe);
+  
     const { posts: newPosts, hasMore: newHasMore } = fetchResult;
     const postsWithLinkImg = await buildPostWithMetaData(newPosts);
-
+  
     setPosts(prev => reset ? postsWithLinkImg : [...prev, ...postsWithLinkImg]);
-
+  
     hasMoreRef.current = newHasMore; // Update ref
     offsetRef.current = reset ? newPosts.length : offsetRef.current + newPosts.length;
-  };
+  }, [sort, timeframe, sub_name]);  
 
   // Infinite Scroll Effect
-  useEffect(() => {
-    if (posts.length === 5 && offsetRef.current === 0) return;
+    useEffect(() => {
+    // if (posts.length === 5 && offsetRef.current === 0) return;
     if (typeof window === "undefined" || !window.IntersectionObserver) return;
 
     const observer = new IntersectionObserver(
@@ -56,47 +60,57 @@ const InfiniteFeed = ({ initialPosts, initialHasMore, sub_name }: InfiniteFeedPr
 
     return () => {
       if (scrollTrigger.current) observer.unobserve(scrollTrigger.current);
+      observer.disconnect();
     };
-  }, []); // Dependency array excludes hasMore, as it's a ref now
+  }, [loadMorePosts]);
+
 
   useEffect(() => {
-    if (posts.length === 5 && offsetRef.current === 0) return;
+    // if (posts.length === 5 && offsetRef.current === 0) return;
     loadMorePosts(true); // Reset and load fresh posts
   }, [sort, timeframe]);
 
-  const handleSortChange = (newSort: string, newTimeFrame?: string) => {
+  const handleSortChange = useCallback((newSort: SortType, newTimeFrame?: string) => {
     setSort(newSort);
     setTimeframe(newSort === 'top' && newTimeFrame ? newTimeFrame : 'all');
-  };
+  }, []);
+  
 
   return (
     <div className="overflow-hidden">
       <div className="flex items-center space-x-0.5 mb-2 text-white">
-        <button 
-          className="p-2 rounded-l-lg border border-gray-800 hover:bg-neutral-900"
+        <button
+          className={`p-2 rounded-l-lg border border-gray-800 
+            ${sort === 'hot' ? 'bg-neutral-800' : 'hover:bg-neutral-900'}`}
           onClick={() => handleSortChange('hot')}
         >
           Hot
         </button>
-        <button 
-          className="p-2 border border-gray-800  hover:bg-neutral-900"
+        <button
+          className={`p-2 border border-gray-800
+            ${sort === 'new' ? 'bg-neutral-800' : 'hover:bg-neutral-900'}`}
           onClick={() => handleSortChange('new')}
         >
           New
         </button>
-        <div className="flex items-center p-2 rounded-r-lg border border-gray-800 cursor-default hover:bg-neutral-900">
+        <div className={`flex items-center p-2 rounded-r-lg border border-gray-800 cursor-pointer
+          ${sort === 'top' ? 'bg-neutral-800' : 'hover:bg-neutral-900'}`}>
           <SortDropDown onSortChange={handleSortChange} />
         </div>
-      </div>
+      </div> 
       <div>
         {posts.map((post, index) => {
-          post.sub_feed = sub_name? true : false;
+          post.sub_feed = sub_name ? true : false;
           return (
             <FeedItem key={`${post.post_id}-${index}`} {...post} />
-          )})
+          )
+        })
         }
       </div>
-      <div ref={scrollTrigger}>{hasMoreRef.current ? 'Loading...' : 'No more posts'}</div>
+      <div 
+        className='mt-2 text-white'
+        ref={scrollTrigger}>{hasMoreRef.current ? 'Loading...' : 'No more posts'}
+      </div>
     </div>
   );
 };

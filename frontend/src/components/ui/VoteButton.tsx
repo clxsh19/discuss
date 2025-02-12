@@ -7,7 +7,7 @@ import { useAuth } from "../context/AuthContext";
 interface VoteButtonProps {
   id: number
   votes_count: number,
-  vote_type: 1|-1|null,
+  vote_type: 1 | -1 | null,
   submitVote: (id: number, vote_type: 1 | -1) => Promise<void>,
 }
 

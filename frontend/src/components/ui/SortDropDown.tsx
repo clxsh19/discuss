@@ -2,7 +2,7 @@ import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { DownIcon } from '../Icons';
 
 interface SortDropDownProps {
-  onSortChange: (sort: string, timeframe?: string) => void;
+  onSortChange: (sort: 'hot' | 'new' | 'top', timeframe?: string) => void;
 }
 
 const SortDropDown = ({ onSortChange }: SortDropDownProps) => {
@@ -10,17 +10,12 @@ const SortDropDown = ({ onSortChange }: SortDropDownProps) => {
 
       <DropdownMenu.Root >
         <DropdownMenu.Trigger asChild>
-          <button className="flex items-end space-x-4 outline-none cursor-default">
+          <button className="flex items-end space-x-4 outline-none">
             <span>Top</span>
             <DownIcon />
           </button>
         </DropdownMenu.Trigger>
         <DropdownMenu.Content sideOffset={10} className='ml-2 bg-neutral-950 rounded-lg' style={{ zIndex: 10 }}>
-          {/* <DropdownMenu.Item 
-            className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
-            onClick={() => onSortChange('top', 'day')}>
-            Hourly
-          </DropdownMenu.Item> */}
           <DropdownMenu.Item 
             className="px-4 py-2 cursor-pointer outline-none rounded-t-lg hover:bg-gray-100 focus:bg-gray-800"
             onClick={() => onSortChange('top', 'day')}

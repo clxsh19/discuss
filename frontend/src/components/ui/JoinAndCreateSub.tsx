@@ -23,12 +23,20 @@ const JoinAndCreateSub = ({ sub_name, subreddit_id, user_role }: { sub_name: str
   };
 
   return (
-    <div className="flex flex-col font-serif">
-      {/* <CreatePostButton sub_name={sub_name} /> */}
-      <Link className="p-1 text-lg bg-green-500 border rounded-md hover:bg-green-600" href={`/create_post?sub_name=${sub_name}`}>
+    <div className="mt-4 flex flex-col space-y-3 text-lg text-white font-serif">
+      {/* Create Post Button */}
+      <Link 
+        className="p-1 bg-green-600 rounded-md hover:bg-green-700 text-center transition"
+        href={`/create_post?sub_name=${sub_name}`}
+      >
         Create Post
       </Link>
-      <button className="p-1 text-lg bg-green-500 border rounded-md hover:bg-green-600" onClick={changeSubStatus}>
+
+      {/* Subscribe/Unsubscribe Button */}
+      <button 
+        className="p-1 t bg-blue-500 rounded-md hover:bg-blue-600 transition"
+        onClick={changeSubStatus}
+      >
         {userSubscribed ? 'Unsubscribe' : 'Subscribe'}  
       </button>
     </div>

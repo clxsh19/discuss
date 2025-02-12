@@ -1,6 +1,7 @@
 import { fetchPostDetail, fetchPostComments } from "@/lib/data_api";
 import PostView from "@/components/post/PostView";
-import { buildCommentTree } from '@/lib/utils';
+// import { buildCommentTree } from '@/lib/utils';
+
 import { buildPostWithMetaData } from "@/lib/utils";
 
 interface PostPageProp {
@@ -15,6 +16,7 @@ export default async function Page({ params } : PostPageProp) {
 
   // fetch with 0 offset for inital comments
   const post = await fetchPostDetail(post_id);
+  
 
   //include the sub name from url
   post.subreddit_name = sub_name;

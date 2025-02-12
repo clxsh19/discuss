@@ -224,6 +224,7 @@ export async function submitCommentVote(comment_id: number, voteType: -1|1) {
         vote_type: voteType
       }),
     });
+    console.log(res)
     const data = await res.json();
     console.log(data);
   } catch (error) {

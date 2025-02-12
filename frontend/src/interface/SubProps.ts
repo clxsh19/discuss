@@ -1,6 +1,7 @@
 export interface SubProps {
   subreddit_id: number,
   sub_name: string,
+  display_name: string
   description: string,
   members_count: string,
   created_at: Date,
