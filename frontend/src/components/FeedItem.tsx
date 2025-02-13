@@ -85,7 +85,7 @@ const FeedItem = ({
               <div className="text-white text-xs">
                 to
               </div>
-              <Link href={`/d/${subreddit_name}`} className="font-semibold text-blue-600 hover:underline relative">
+              <Link href={`/d/${subreddit_name}`} className="font-semibold text-blue-600 hover:underline">
                 d/{subreddit_name}
               </Link>
             </>

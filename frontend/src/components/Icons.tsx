@@ -263,3 +263,38 @@ export const DeleteIcon = ({ style = "" }) => (
   </svg>
 )
 
+export const LoadingIconAnimation = () => {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" 
+      viewBox="0 160 270 100"
+      height= "60"
+      width="60"
+    >
+      <path 
+        fill="#FFF" stroke="#FFF" strokeWidth="14"
+        style={{ fill: "#FFF", stroke: "#FFF" }} //
+        d="M25 85h30v30H25z">
+        <animate attributeName="opacity" calcMode="spline" dur="2s" values="1;0;1;" keySplines=".5 0 .5 1;.5 0 .5 1" repeatCount="indefinite" begin="-0.6s"/>
+      </path>
+      <path 
+        fill="#FFF" stroke="#FFF" strokeWidth="14"
+        style={{ fill: "#FFF", stroke: "#FFF" }} 
+        d="M85 85h30v30H85z">
+        <animate attributeName="opacity" calcMode="spline" dur="2s" values="1;0;1;" keySplines=".5 0 .5 1;.5 0 .5 1" repeatCount="indefinite" begin="-0.4s"/>
+      </path>
+      <path 
+        fill="#FFF" stroke="#FFF" strokeWidth="14"
+        style={{ fill: "#FFF", stroke: "#FFF" }} 
+        d="M145 85h30v30h-30z">
+        <animate attributeName="opacity" calcMode="spline" dur="2s" values="1;0;1;" keySplines=".5 0 .5 1;.5 0 .5 1" repeatCount="indefinite" begin="-0.2s"/>
+      </path>
+      <path 
+        fill="#FFF" stroke="#FFF" strokeWidth="14"
+        style={{ fill: "#FFF", stroke: "#FFF" }} 
+        d="M205 85h30v30h-30z">
+        <animate attributeName="opacity" calcMode="spline" dur="2s" values="1;0;1;" keySplines=".5 0 .5 1;.5 0 .5 1" repeatCount="indefinite" begin="0s"/>
+      </path>
+    </svg>
+  );
+};
+

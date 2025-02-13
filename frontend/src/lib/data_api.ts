@@ -20,7 +20,12 @@ const fetchWithConfig = async (
 
   if (!res.ok) {
     const errorData = await res.json().catch(() => null);
-    throw new Error((errorData?.errors || errorData?.error ) || `HTTP Error ${res.status}`);
+    // const errorMessage = Array.isArray(errorData)
+    // ? errorData.map((err) => err.msg).join(", ")
+    // : errorData?.error || `HTTP Error ${res.status}`;
+    console.error('API error: ', JSON.stringify(errorData, null, 2));
+    // throw `HTTP Error ${res.status}`;
+      
   }
 
   return res.json();
@@ -34,6 +39,7 @@ export async function fetchAllPosts(offset : number, sort: string = 'new', t: st
       t,
     });
     const data = await fetchWithConfig(`post/all?${queryParams}`);
+    // data.hasMore = Array.isArray(data.posts) && data.posts.length > 0;
     return {
       posts: data.posts ?? [],
       hasMore: data.hasMore ?? false,
@@ -82,7 +88,7 @@ export async function fetchPostsBySub(sub_name: string, offset: number, sort: st
       posts: data.posts ?? [],
       hasMore: data.hasMore ?? false,
     };
-  } catch (error) {
+  } catch (error: any) {
     console.error('Unkown Error fetching posts by sub', error);
     // retrun
     throw new Error('An unkonw error occurred while fetching data.');

@@ -16,7 +16,7 @@ const VoteButton = ({ id, votes_count, vote_type, submitVote }: VoteButtonProps)
   const [voteCount, setVoteCount] = useState(votes_count);
   const { isAuthenticated } = useAuth();
   
-  const handleVote = async (vote: 1|-1) => {
+  const handleVote = async (vote: -1 | 1) => {
     if (!isAuthenticated) {
       alert("Log In");
       return;

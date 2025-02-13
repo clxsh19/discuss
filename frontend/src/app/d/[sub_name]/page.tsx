@@ -10,18 +10,17 @@ interface SubPageProp {
 }
 
 export default async function Page({ params } : SubPageProp) {
-  notFound();
   const { sub_name } = params;
-  const sub_res = await fetchSubData(sub_name);
-  if ( sub_res.error ) {
-    
+  const subData = await fetchSubData(sub_name);
+  if (!subData) {
+    notFound();
   }
   const { posts, hasMore } = await fetchPostsBySub(sub_name, 0);
   const postWithLinkImg = await buildPostWithMetaData(posts);
 
   return (
     <>
-      <SubView sub_posts={postWithLinkImg} sub_detail={sub_res} hasMore={hasMore}/>
+      <SubView sub_posts={postWithLinkImg} sub_detail={subData} hasMore={hasMore}/>
     </>
   )
 }

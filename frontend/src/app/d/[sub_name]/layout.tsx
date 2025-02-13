@@ -14,8 +14,10 @@ export default async function SubLayout({
   if (!subData) {
     notFound();
   }
-  const {description, subreddit_id, sub_name,
-    display_name, created_at, members_count, user_role } = subData;
+  const { 
+    description, subreddit_id, sub_name, display_name, 
+    created_at, members_count, user_role 
+  } = subData;
   const createdDate = getDate(created_at.toString());
   const membersCountWithAbv = getNumberAbbreviation(members_count);
   return (
