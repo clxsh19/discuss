@@ -25,7 +25,8 @@ const CreatePost = () => {
   }, [loading, isAuthenticated]);
   
   if (loading || !isAuthenticated) {
-    return <h1 className="text-white">loading</h1>
+    // return <h1 className="text-white">loading</h1>
+    return;
   }
 
   return (

@@ -3,7 +3,8 @@ import HeaderNav from '@/components/HeaderNav';
 import { AuthProvider } from '@/components/context/AuthContext';
 import { ToastContainer, Zoom } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-
+import Loading from './loading';
+import { Suspense } from 'react';
 
 
 export default function RootLayout({
@@ -27,9 +28,11 @@ export default function RootLayout({
           theme='colored'
           transition={Zoom}
         />
+        <Suspense fallback={<Loading/>}>
         <main>
           {children}
         </main>
+        </Suspense>
         </AuthProvider>
       </body>
     </html>

@@ -108,7 +108,13 @@ export async function fetchAllCommunityNames() {
 
 export async function fetchSubData(sub_name : string) {
   try {
-    const data = await fetchWithConfig(`subreddit/${sub_name}`);
+    const data = await fetchWithConfig(`subreddit/${sub_name}`, {
+      headers: { 
+        Cookie: cookies().toString(), 
+      },
+      credentials: 'include',
+      cache: 'no-cache',
+    });
     return data.subreddit_detail;
   } catch (error) {
     console.error('Unknow Error fetching sub data', error);

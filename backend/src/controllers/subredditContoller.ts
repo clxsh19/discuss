@@ -1,5 +1,5 @@
 import asyncHandler from "express-async-handler";
-import { body, query, validationResult } from "express-validator";
+import { body, param, query, validationResult } from "express-validator";
 import {query as dbQuery, queryTransaction} from "../db/index";
 import { deleteUploadedFile } from "../utils/deleteUploadedFIle";
 
@@ -44,29 +44,40 @@ const post_create_subreddit = [
   }),
 ];
 
-const get_subbreddit_detail = asyncHandler( async(req, res) => {
-  const subreddit_name = req.params.name.toLowerCase();
-  const user_id = req.user?.id;
-  const subreddit_query = await dbQuery(`SELECT 
-    s.subreddit_id,
-    s.name AS sub_name,
-    s.display_name,
-    s.description,
-    s.members_count,
-    s.created_at,
-    s.logo_url,
-    s.banner_url,
-    COALESCE(sm.role, 'none') AS user_role
-    FROM subreddits s
-    LEFT JOIN subreddit_members sm 
-      ON s.subreddit_id = sm.subreddit_id 
-      AND sm.user_id = $1
-    WHERE s.name = $2`,
-    [user_id, subreddit_name]);
-  res.status(200).json({
-    subreddit_detail: subreddit_query.rows[0]
-  });
-});
+const get_subbreddit_detail =  [
+  param('name').not().isEmpty().withMessage('Community not found').trim().escape(),
+  asyncHandler( async(req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      res.status(400).json({ 
+        errors: errors.array()
+      });
+      return;
+    }
+    const subreddit_name = req.params.name.toLowerCase();
+    const user_id = req.user?.id;
+    const subreddit_query = await dbQuery(`SELECT 
+      s.subreddit_id,
+      s.name AS sub_name,
+      s.display_name,
+      s.description,
+      s.members_count,
+      s.created_at,
+      s.logo_url,
+      s.banner_url,
+      COALESCE(sm.role, 'none') AS user_role
+      FROM subreddits s
+      LEFT JOIN subreddit_members sm 
+        ON s.subreddit_id = sm.subreddit_id 
+        AND sm.user_id = $1
+      WHERE s.name = $2`,
+      [user_id, subreddit_name]);
+      console.log('row: ',subreddit_query.rows[0])
+    res.status(200).json({
+      subreddit_detail: subreddit_query.rows[0]
+    });
+  })
+];
 
 const user_join_subreddit = [
   body('subreddit_id').not().isEmpty().withMessage('subreddit_id cannot be null').trim().escape(),
@@ -186,6 +197,7 @@ export default {
   post_create_subreddit,
   get_subbreddit_detail,
   user_join_subreddit,
+  user_leave_subreddit,
   get_all_communities,
   check_sub_exist
 }

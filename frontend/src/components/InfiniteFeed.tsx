@@ -56,7 +56,7 @@ const InfiniteFeed = ({ initialPosts, initialHasMore, sub_name }: InfiniteFeedPr
     const observer = new IntersectionObserver(
       entries => {
         if (entries[0].isIntersecting && hasMoreRef.current) {
-          loadMorePosts();
+          loadMorePosts(false);
         }
       },
       { threshold: 0.5 }
@@ -72,7 +72,7 @@ const InfiniteFeed = ({ initialPosts, initialHasMore, sub_name }: InfiniteFeedPr
 
 
   useEffect(() => {
-    // if (posts.length === 5 && offsetRef.current === 0) return;
+    if (posts.length === 5 && offsetRef.current === 0) return;
     loadMorePosts(true); // Reset and load fresh posts
   }, [sort, timeframe]);
 
@@ -113,7 +113,7 @@ const InfiniteFeed = ({ initialPosts, initialHasMore, sub_name }: InfiniteFeedPr
               <LoadingIconAnimation />
             </div>
             {/* Overlay to dim the background */}
-            <div className="absolute inset-0 bg-neutral-950 opacity-80 z-[5]"></div>
+            <div className="absolute inset-0 bg-neutral-950 opacity-100 z-[5]"></div>
           </>
         )}
 
@@ -143,13 +143,3 @@ const InfiniteFeed = ({ initialPosts, initialHasMore, sub_name }: InfiniteFeedPr
 };
 
 export default InfiniteFeed;
-      {/* { isSorting && (
-        <div className='absolute top-0  flex items-center'>
-          <LoadingIconAnimation />
-        </div>
-      )} */}
-      {/* <div className='absolute top-0 left-1/2 flex items-center '>
-          <LoadingIconAnimation />
-        </div>
-      <div className="absolute inset-0  bg-neutral-950"> 
-      </div> */} 
