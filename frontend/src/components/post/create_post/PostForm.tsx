@@ -13,13 +13,11 @@ interface PostFormProps {
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'video/mp4', 'video/mpeg'];
+const intialState = {
+  error: '',
+} 
 
 const PostForm = ({ post_type, sub_name }: PostFormProps) => {
-  const intialState = {
-    message: '',
-    error: '',
-  }
-
   const [fileSrc, setFileSrc] = useState<string | null>(null);
   const [fileType, setFileType] = useState<string | null>(null);
   const [fileErrMsg, setFileErrMsg] = useState('');

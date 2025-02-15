@@ -6,7 +6,6 @@ import { validateFile } from '@/lib/utils';
 
 const intialState = {
   error: '',
-  message: '', 
 }
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB

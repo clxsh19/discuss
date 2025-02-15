@@ -16,8 +16,7 @@ const CommentDeleteConfirm = ({ comment_id, setShowDeleteConfirm }: CommentDelet
       softDeleteComment(comment_id);
       setShowDeleteConfirm(false);
     } catch (err) {
-      showErrorToast('')
-      console.error('Error deleting comment:', err);
+      showErrorToast('Failed to delete comment.')
     }
   }
 

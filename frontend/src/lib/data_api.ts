@@ -97,7 +97,13 @@ export async function fetchPostsBySub(sub_name: string, offset: number, sort: st
 
 export async function fetchAllCommunityNames() {
   try {
-    const data = await fetchWithConfig('subreddit/all_names');
+    const data = await fetchWithConfig('subreddit/all_names', {
+      headers: { 
+        Cookie: cookies().toString(), 
+      },
+      credentials: 'include',
+      cache: 'no-cache',
+    });
     return data.communities;
   } catch (error) {
     console.error('Unknown Error fetching all communities name.', error);

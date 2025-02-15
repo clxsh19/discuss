@@ -28,27 +28,24 @@ const CommentEditForm = ({ user, isAuthenticated, comment_id, initialComment, se
 
   const handleSubmit = async () => {
     if (!comment.trim()) return;
-
     setLoading(true);
 
     try {
-      // console.log({ post_id, comment});
       if (!comment.trim()) {
         showErrorToast('Empty comment!');
         return;
-      }
-    
+      }  
       if (!isAuthenticated || !user) {
         showErrorToast('You must be logged in to comment!');
         return;
       }
-
+      
       await updateComment(comment_id, comment);
       updateCommentState(comment_id, comment);
       setComment('');
       setShowEditForm(false);
     } catch (err) {
-      console.error('Error updating comment:', err);
+      showErrorToast('Failed to update comment.')
     } finally {
       setLoading(false);
     }

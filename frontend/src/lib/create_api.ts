@@ -11,41 +11,58 @@ interface CreateCommentParams {
   comment: string;
 }
 
+
+const fetchWithConfig = async (
+  url: string,
+  data: FormData | string,
+  content_type?: string
+) => {
+  const headers: HeadersInit = {};
+  if (content_type) headers['Content-Type'] = content_type;
+  headers['Cookie'] = cookies().toString();
+
+  const res = await fetch(`http://localhost:5000/api/${url}`, {
+    method: 'POST',
+    headers,
+    credentials: 'include',
+    body: data,
+  });
+
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => null);
+    console.log('in fetch', errorData);
+
+    let error = 'Unknown HTTP Error.';
+    if (errorData?.errors && Array.isArray(errorData.errors)) {
+      error = errorData.errors.map((err: any) => err.msg).join(', ');
+    } else if (errorData?.error) {
+      error = errorData.error;
+    }
+
+    throw new Error(error);
+  }
+
+  return res.json();
+};
+
+
 export async function createComment({ post_id, parent_comment_id=null, comment }: CreateCommentParams) {
   try {
-    const cookieStore = cookies();
-    const allCookies = cookieStore.getAll();
-
-    const res = await fetch('http://localhost:5000/api/comment/create', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Cookie: allCookies.map(cookie => `${cookie.name}=${cookie.value}`).join('; '),
-      },
-      credentials: 'include',    
-      body: JSON.stringify({
-        post_id,
-        parent_comment_id,
-        comment,
-      }),
-    });  
-    if (!res.ok) {
-      const errorData = await res.json();  // Read the error message from the response
-      throw new Error(errorData.error || 'Unknown error');
-    }
-    const data = await res.json();
-    console.log(data);
-    return data.comment_id;
+    const payload = JSON.stringify({
+      post_id,
+      parent_comment_id,
+      comment,
+    })
+    const res = await fetchWithConfig('comment/create', payload, 'application/json');
+    return res.comment_id;
   } catch (error) {
     console.error('Create comment failed', error);
     throw new Error('Failed to create comment.');
   }
 }
 
-export async function createCommunity(prevState:any, formData: FormData) {
+export async function createCommunity(prevState: any, formData: FormData) {
   try {
-    const cookieStore = cookies();
-    const allCookies = cookieStore.getAll();
     const bannerFile = formData.get("banner");
     const logoFile = formData.get("logo");
 
@@ -56,38 +73,17 @@ export async function createCommunity(prevState:any, formData: FormData) {
       formData.delete("logo")
     } 
 
-    // Send the request with form data and headers
-    const res = await fetch('http://localhost:5000/api/subreddit/create', {
-      method: 'POST',
-      headers: {
-        Cookie: allCookies.map(cookie => `${cookie.name}=${cookie.value}`).join('; '),
-      },
-      body: formData, 
-    });
-    const responseData = await res.json();
-
-    if (!res.ok) {
-      let error = "Unknown Server Error: Failed to create community."
-      if (responseData.errors && Array.isArray(responseData.errors)) {
-        error = responseData.errors.map((err:any) => err.msg).join(", ");
-      } else if ( responseData.error) {
-        error = responseData.error;
-      }
-      return {
-        error,
-        message: ''
-      }
-    }
+    const res = await fetchWithConfig('subreddit/create',formData);
     const name = formData.get("name");
+
     redirect(`/d/${name}`);
   } catch (error) {
     if (isRedirectError(error)) {
       throw error;
     } else {
-      console.error('Failed to create community:', error);
+      console.error('Failed to create community,', error);
       return {
-        error: "Unknown Error: Failed to create community!",
-        message: ''
+        error: error instanceof Error ? error.message : 'Failed to create community.'
       }
     }
   }
@@ -95,68 +91,31 @@ export async function createCommunity(prevState:any, formData: FormData) {
 
 export async function createPost(prevState:any, formData: FormData) {
   try {
-    const cookieStore = cookies();
-    const allCookies = cookieStore.getAll();
-
     const post_type = formData.get("post_type");
-    console.log(formData.get("link"))
-
-    // Send the request with form data and headers
-    const res = await fetch(`http://localhost:5000/api/post/create?type=${post_type}`, {
-      method: 'POST',
-      headers: {
-        Cookie: allCookies.map(cookie => `${cookie.name}=${cookie.value}`).join('; '),
-      },
-      body: formData, 
-    });
-    const responseData = await res.json();
-
-    if (!res.ok) {
-      let error = "Unknown Server Error: Failed to crreate post."
-      if (responseData.errors && Array.isArray(responseData.errors)) {
-        error = responseData.errors.map((err:any) => err.msg).join(", ");
-      } else if ( responseData.error) {
-        error = responseData.error;
-      }
-      return {
-        error,
-        message: ''
-      }
-    }
+    const res = await fetchWithConfig(`post/create?type=${post_type}`, formData);
     const sub_name = formData.get("sub_name");
+
     revalidatePath(`/d/${sub_name}`);
-    redirect(`/d/${sub_name}/${responseData.post_id}`);
+    redirect(`/d/${sub_name}/${res.post_id}`);
   } catch (error) {
     if (isRedirectError(error)) {
       throw error;
     } else {
-      console.error('Failed to create post:', error);
+      console.error('Failed to create post,', error);
       return {
-        error: "Unknown Error: Failed to create post.",
-        message: ''
+        error: error instanceof Error ? error.message : 'Failed to create post.'
       }
     }
   }
 }
 
-
 export async function updateComment(comment_id: number, comment: string) {
   try {
-    const cookieStore = cookies();
-    const allCookies = cookieStore.getAll();
-    const res = await fetch('http://localhost:5000/api/comment/update', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Cookie: allCookies.map(cookie => `${cookie.name}=${cookie.value}`).join('; '),
-      },
-      credentials: 'include',    
-      body: JSON.stringify({
-        comment_id,
-        comment
-      }),
-    });  
-    const data = await res.json();
+    const payload = JSON.stringify({
+      comment_id,
+      comment
+    })
+    const res = await fetchWithConfig('comment/update', payload, 'application/json');
   } catch (error) {
     console.error('update comment failed', error);
     throw new Error('Failed to update comment.');
@@ -165,114 +124,63 @@ export async function updateComment(comment_id: number, comment: string) {
 
 export async function deleteComment(comment_id: number) {
   try {
-    const cookieStore = cookies();
-    const allCookies = cookieStore.getAll();
-    const res = await fetch('http://localhost:5000/api/comment/delete', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Cookie: allCookies.map(cookie => `${cookie.name}=${cookie.value}`).join('; '),
-      },
-      credentials: 'include',    
-      body: JSON.stringify({
-        comment_id
-      }),
-    });  
-    const data = await res.json();
+    const payload = JSON.stringify({
+      comment_id
+    });
+    const res = await fetchWithConfig('comment/delete', payload, 'application/json');
   } catch (error) {
-    console.error('Failed to delete comment', error);
+    console.error('Failed to delete comment.', error);
     throw new Error('Failed to delete comment.');
   }
 }
 
 export async function submitPostVote(post_id: number, voteType: -1|1) {
   try {
-    const cookieStore = cookies();
-    const allCookies = cookieStore.getAll();
-    const res = await fetch('http://localhost:5000/api/post/vote', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Cookie: allCookies.map(cookie => `${cookie.name}=${cookie.value}`).join('; '),
-      },
-      credentials: 'include',
-      body: JSON.stringify({
-        post_id,
-        vote_type: voteType
-      }),
+    const payload = JSON.stringify({
+      post_id,
+      // vote_type: voteType
     });
-    const data = await res.json();
-    console.log(data);
+    const res = await fetchWithConfig('post/vote', payload, 'application/json')
   } catch (error) {
-    console.error('Couldn\'t submit post vote', error);
+    console.error('Failed to submit post_vote', error);
+    throw new Error('Failed to submit post_vote.')
   }  
 }
 
 export async function submitCommentVote(comment_id: number, voteType: -1|1) {
   try {
-    const cookieStore = cookies();
-    const allCookies = cookieStore.getAll();
-    const res = await fetch('http://localhost:5000/api/comment/vote', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Cookie: allCookies.map(cookie => `${cookie.name}=${cookie.value}`).join('; '),
-      },
-      credentials: 'include',
-      body: JSON.stringify({
-        comment_id,
-        vote_type: voteType
-      }),
+    const payload = JSON.stringify({
+      comment_id,
+      vote_type: voteType
     });
-    console.log(res)
-    const data = await res.json();
-    console.log(data);
+    const res = await fetchWithConfig('comment/vote', payload, 'application/json')
   } catch (error) {
-    console.error('Couldn\'t submit comment vote', error);
+    console.error('Failed to submit comment_vote', error);
+    throw new Error('Failed to submit comment_vote.')
   }  
 }
 
 export async function subscribeUser(subreddit_id: number) {
   try {
-    const cookieStore = cookies();
-    const allCookies = cookieStore.getAll();
-    const res = await fetch('http://localhost:5000/api/subreddit/join', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Cookie: allCookies.map(cookie => `${cookie.name}=${cookie.value}`).join('; '),
-      },
-      credentials: 'include',
-      body: JSON.stringify({
-        subreddit_id
-      }),
-    });
-    const data = await res.json();
-    console.log(data);
+    const payload = JSON.stringify({
+      subreddit_id
+    })
+    const res = await fetchWithConfig('subreddit/join', payload, 'application/json');
   } catch (error) {
-    console.error('Couldn\'t join subreddit', error);
+    console.error('Failed to join community', error);
+    throw new Error('Failed to leave community.')
   } 
 }
 
 export async function unsubscribeUser(subreddit_id: number) {
   try {
-    const cookieStore = cookies();
-    const allCookies = cookieStore.getAll();
-    const res = await fetch('http://localhost:5000/api/subreddit/leave', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Cookie: allCookies.map(cookie => `${cookie.name}=${cookie.value}`).join('; '),
-      },
-      credentials: 'include',
-      body: JSON.stringify({
-        subreddit_id
-      }),
-    });
-    const data = await res.json();
-    console.log(data);
+    const payload = JSON.stringify({
+      subreddit_id
+    })
+    const res = await fetchWithConfig('subreddit/leave', payload, 'application/json');
   } catch (error) {
-    console.error('Couldn\'t leave subreddit', error);
+    console.error('Failed to leave community', error);
+    throw new Error('Failed to leave community.')
   } 
 }
 

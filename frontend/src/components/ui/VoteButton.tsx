@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { DownvoteIcon, UpvoteIcon } from "../Icons";
 import { useAuth } from "../context/AuthContext";
+import { showErrorToast } from "./toasts";
 
 interface VoteButtonProps {
   id: number
@@ -18,27 +19,34 @@ const VoteButton = ({ id, votes_count, vote_type, submitVote }: VoteButtonProps)
   
   const handleVote = async (vote: -1 | 1) => {
     if (!isAuthenticated) {
-      alert("Log In");
+      showErrorToast("You must be logged in to vote.");
       return;
     }
+    
     let newVoteCount = voteCount;
+    let newVote = null;
     //say user vote = -1 and if user vote again vote -1, then vote = null 
     if (userVote === vote) {
       newVoteCount = voteCount - vote;
-      setUserVote(null);
+      newVote = null;
     } else {
       if (userVote === null) {
         newVoteCount = voteCount + vote; 
       } else {
         newVoteCount = voteCount + (vote * 2) 
       }
-      setUserVote(vote);
+      newVote = vote;
     }
-    await submitVote(id, vote);
-    setVoteCount(newVoteCount);
-    console.log("Submiting Vote : ", vote)
-    
+
+    try {
+      await submitVote(id, vote);
+      setVoteCount(newVoteCount);
+      setUserVote(newVote);
+    } catch (err) {
+      showErrorToast('Failed to vote.')
+    }
   };
+
   useEffect(() => {
     // console.log('effect: ', vote_type)
     setUserVote(vote_type);

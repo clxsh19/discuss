@@ -7,7 +7,6 @@ import { showErrorToast } from './toasts';
 import Link from 'next/link';
 
 const JoinAndCreateSub = ({ sub_name, subreddit_id, user_role }: { sub_name: string, subreddit_id: number, user_role: string }) => {
-  // Initialize state based on the user_role prop
   const [userSubscribed, setUserSubscribed] = useState(user_role === 'member');
   const { isAuthenticated } = useAuth();
 
@@ -20,12 +19,11 @@ const JoinAndCreateSub = ({ sub_name, subreddit_id, user_role }: { sub_name: str
       showErrorToast("User not logged in.")
       return;
     }
-    if (userSubscribed) {
-      await unsubscribeUser(subreddit_id);
-      setUserSubscribed(false);  // Update state after unsubscribing
-    } else {
-      await subscribeUser(subreddit_id);
-      setUserSubscribed(true);   // Update state after subscribing
+    try {
+      userSubscribed ? await unsubscribeUser(subreddit_id) : await subscribeUser(subreddit_id);
+      setUserSubscribed(prev => !prev);
+    } catch (err) {
+      showErrorToast(`Failed to ${userSubscribed? 'leave' : 'join' } the community`);
     }
   };
 

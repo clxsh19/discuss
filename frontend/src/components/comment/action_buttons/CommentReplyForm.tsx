@@ -9,7 +9,7 @@ interface CommentReplyProp {
   user: {
     id: number,
     username: string   
-  } |  null,
+  } | null,
   isAuthenticated: boolean,
   post_id: number,
   parent_comment_id?: number,
@@ -27,12 +27,12 @@ const CommentReplyForm = ( { user, isAuthenticated, post_id, parent_comment_id ,
 
   const handleSubmit = async () => {
     if (!comment.trim()) {
-      showErrorToast('Empty comment!');
+      showErrorToast('Empty comment.');
       return;
     }
   
     if (!isAuthenticated || !user) {
-      showErrorToast('You must be logged in to comment!');
+      showErrorToast('You must be logged in to comment.');
       return;
     }
 
@@ -40,7 +40,6 @@ const CommentReplyForm = ( { user, isAuthenticated, post_id, parent_comment_id ,
     
     try {
       const comment_id = await createComment({ post_id, parent_comment_id, comment});
-
       addComment({
         user_id: user.id,
         comment_id,
@@ -55,7 +54,7 @@ const CommentReplyForm = ( { user, isAuthenticated, post_id, parent_comment_id ,
       setComment('');
       setShowReplyForm(false);
     } catch (err) {
-      console.error('Error submitting comment:', err);
+      showErrorToast('Failed to create comment.');
     } finally {
       setLoading(false);
     }
