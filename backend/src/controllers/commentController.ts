@@ -15,35 +15,26 @@ const create_comment = [
     if (parent_comment_id === "" ) {
       parent_comment_id = null;
     }
-    // console.log(parent_comment_id);      
-  
+
     if (!errors.isEmpty()) {
       res.status(400).json({ 
-        message: 'comment content, user_id and comment_id are required',
-        comment,
-        parent_comment_id,  
-        post_id
+        errors: errors.array()
       });
     } else {
-      try {
-        const queries = [
-          'INSERT INTO comments (content, user_id, post_id, parent_comment_id) VALUES ($1, $2, $3, $4) RETURNING comment_id',
-          'UPDATE posts SET comment_count = comment_count + 1 WHERE post_id = $1'
-        ];
-        const params = [
-          [comment, user_id, post_id, parent_comment_id],
-          [post_id]
-        ]
-        const result = await queryTransaction(queries, params);
-        const comment_id = result[0].rows[0].comment_id;
-        res.status(202).json({
-          message: 'comment created successfully',
-          comment_id
-        });
-      } catch (error) {
-        console.error("Error creating comment:", error);
-        res.status(500).json({ message: 'Internal Server Error' });
-      }
+      const queries = [
+        'INSERT INTO comments (content, user_id, post_id, parent_comment_id) VALUES ($1, $2, $3, $4) RETURNING comment_id',
+        'UPDATE posts SET comment_count = comment_count + 1 WHERE post_id = $1'
+      ];
+      const params = [
+        [comment, user_id, post_id, parent_comment_id],
+        [post_id]
+      ]
+      const result = await queryTransaction(queries, params);
+      const comment_id = result[0].rows[0].comment_id;
+      res.status(202).json({
+        message: 'comment created successfully',
+        comment_id
+      });
     };
   }),
 ];
@@ -59,22 +50,20 @@ const update_comment = [
   
     if (!errors.isEmpty()) {
       res.status(400).json({ 
-        message: 'comment content and comment_id are required',
-        errors: errors.array(),
-        comment,
-        comment_id
+        errors: errors.array()
       });
+      return;
     }
 
     const { rows } = await dbQuery(`SELECT comment_id from comments where comment_id = $1`, [comment_id]);
     if (rows.length === 0 ) {
-      res.status(404).json({ message: 'Comment does not exist' });
+      res.status(404).json({ error: 'Comment does not exist' });
       return;
     }
 
     const comment_user_id = rows[0].user_id;
     if (user_id !== comment_user_id) { // same user who commented trying to update?
-      res.status(403).json({ message: 'Unauthorized user cannot update' });
+      res.status(403).json({ error: 'Unauthorized user cannot update' });
       return;
     }
 
@@ -93,20 +82,18 @@ const delete_comment = [
   
     if (!errors.isEmpty()) {
       res.status(400).json({ 
-        message: 'comment content and comment_id are required',
-        errors: errors.array(),
-        comment_id
+        errors: errors.array()
       });
     } else {
-      const { rows } = await dbQuery(`SELECT parent_comment_id, user_id from comments where comment_id = $1`, [comment_id]);
+      const { rows } = await dbQuery(`SELECT user_id from comments where comment_id = $1`, [comment_id]);
      
       if ( rows.length === 0 ) { //check if comment exist
-        res.status(404).json({ message: 'Comment does not exist' });
+        res.status(404).json({ error: 'Comment does not exist' });
         return;
       }
-      const { parent_comment_id, user_id:comment_user_id } = rows[0];
+      const { user_id:comment_user_id } = rows[0];
       if ( user_id !== comment_user_id) { // same user who commented trying to delete?
-        res.status(403).json({ message: 'Unauthorized user cannot delete' });
+        res.status(403).json({ error: 'Unauthorized user cannot delete' });
         return;
       }
       // 12 is the deleted user id
@@ -118,14 +105,6 @@ const delete_comment = [
         [comment_id]);
 
       res.status(200).json({ message: 'Comment deleted' });
-
-      
-      // if ( parent_comment_id ) {
-      //   // await dbQuery(`DELETE FROM comments WHERE comment_id = $1`, [comment_id]);
-      //   res.status(200).json({ message: 'Comment deleted' });
-      // } else {
-      //   res.status(200).json({ message: 'comment soft deleted'})
-      // }
     }
   })
 ]

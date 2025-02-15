@@ -32,7 +32,7 @@ const post_create_subreddit = [
       );
       const name_exists = name_exists_query.rows[0].exists;
       if (name_exists) {
-        res.status(403).json({ message: "Community already exists"});
+        res.status(403).json({ error: "Community already exists"});
       } else {
         await dbQuery(`INSERT INTO subreddits (name, display_name, description, banner_url, logo_url) VALUES ($1, $2, $3, $4, $5)`,
         [lowerCaseName, displayName, description, bannerFilePath, logoFilePath] );
