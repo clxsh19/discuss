@@ -1,7 +1,7 @@
 import asyncHandler from "express-async-handler";
 import { param, query, body, validationResult } from "express-validator";
 import {query as dbQuery, queryTransaction} from "../db/index";
-import { deleteUploadedFile } from "../utils/deleteUploadedFIle";
+import { deleteUploadedFile } from "../utils/deleteUploadedFile";
 
 const sortAndTimeCondtion = (sort: string, t: string) => {
   // Sorting and time conditions
@@ -173,42 +173,38 @@ const get_all_posts = [
     const { offset, sort = 'new', t = 'all' } = req.query;
 
     const { sortCondition, timeCondition } = sortAndTimeCondtion(sort as string, t as string);
-    try {
-      // Query to fetch posts with sorting and time filtering
-      const posts_query = await dbQuery(
-        `SELECT
-          p.post_id,
-          p.title,
-          p.post_type,
-          p.link_url,
-          p.media_url,
-          p.text_content,
-          p.created_at,
-          p.comment_count AS total_comments,
-          p.vote_count AS total_votes,
-          u.username AS username,
-          s.name AS subreddit_name,
-          COALESCE(pv.vote_type, null) AS vote_type
-        FROM posts p
-        JOIN subreddits s ON p.subreddit_id = s.subreddit_id
-        LEFT JOIN users u ON p.user_id = u.user_id
-        LEFT JOIN post_votes pv ON p.post_id = pv.post_id AND pv.user_id = $1
-        WHERE TRUE ${timeCondition}  -- Dynamic time filtering
-        ${sortCondition}  -- Dynamic sorting
-        LIMIT $2 OFFSET $3`,
-        [user_id, limit + 1, offset]
-      );
+    // Query to fetch posts with sorting and time filtering
+    const posts_query = await dbQuery(
+      `SELECT
+        p.post_id,
+        p.title,
+        p.post_type,
+        p.link_url,
+        p.media_url,
+        p.text_content,
+        p.created_at,
+        p.comment_count AS total_comments,
+        p.vote_count AS total_votes,
+        u.username AS username,
+        s.name AS subreddit_name,
+        COALESCE(pv.vote_type, null) AS vote_type
+      FROM posts p
+      JOIN subreddits s ON p.subreddit_id = s.subreddit_id
+      LEFT JOIN users u ON p.user_id = u.user_id
+      LEFT JOIN post_votes pv ON p.post_id = pv.post_id AND pv.user_id = $1
+      WHERE TRUE ${timeCondition}  -- Dynamic time filtering
+      ${sortCondition}  -- Dynamic sorting
+      LIMIT $2 OFFSET $3`,
+      [user_id, limit + 1, offset]
+    );
 
-      // Check if there are more posts for pagination
-      const hasMore = posts_query.rows.length > limit;
-      const posts = hasMore ? posts_query.rows.slice(0, limit) : posts_query.rows;
-      res.status(200).json({
-        posts,
-        hasMore,
-      });
-    } catch (error) {
-      next(error);
-    }
+    // Check if there are more posts for pagination
+    const hasMore = posts_query.rows.length > limit;
+    const posts = hasMore ? posts_query.rows.slice(0, limit) : posts_query.rows;
+    res.status(200).json({
+      posts,
+      hasMore,
+    });
   })
 ];
 

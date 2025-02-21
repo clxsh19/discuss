@@ -1,6 +1,6 @@
 import express from 'express';
 import commentController from '../controllers/commentController';
-import  isAuthenticated from '../midllewares/checkAuth';
+import  isAuthenticated from '../middlewares/checkAuth';
 const router = express.Router();
 
 router.post('/create', isAuthenticated, commentController.create_comment);

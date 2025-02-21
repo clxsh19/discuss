@@ -1,15 +1,20 @@
 import express from 'express';
-import isAuthenticated from '../midllewares/checkAuth';
-import subController from '../controllers/subredditContoller';
-import { multipleFileUpload } from '../midllewares/multerUpload';
-
+import isAuthenticated from '../middlewares/checkAuth';
+import subController from '../controllers/subredditController';
+import { multipleFileUpload } from '../middlewares/multerUpload';
+import { 
+  ValidateCreateSubreddit, 
+  ValidateName, 
+  ValidateSubId, 
+  ValidateSubName 
+} from "../validators/subredditValidators";
 const router = express.Router();
 
-router.post('/create', isAuthenticated, multipleFileUpload, subController.post_create_subreddit);
-router.post('/join', isAuthenticated, subController.user_join_subreddit);
-router.post('/leave', isAuthenticated, subController.user_leave_subreddit);
-router.get('/all_names', isAuthenticated, subController.get_all_communities);
-router.get('/check_sub', subController.check_sub_exist);
-router.get('/:name', subController.get_subbreddit_detail);
+router.post('/create', isAuthenticated, multipleFileUpload, ValidateCreateSubreddit, subController.postCreate);
+router.post('/join', isAuthenticated, ValidateSubId, subController.postSubscribe);
+router.post('/leave', isAuthenticated, ValidateSubId, subController.postUnsubscribe);
+router.get('/all_names', isAuthenticated, subController.getAllName);
+router.get('/check_sub', ValidateSubName, subController.getSubExist);
+router.get('/:name', ValidateName, subController.getInfo);
 
 export default router;

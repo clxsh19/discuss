@@ -1,7 +1,7 @@
 import express from 'express';
 import postController from '../controllers/postController';
-import { fileUpload } from '../midllewares/multerUpload';
-import isAuthenticated from '../midllewares/checkAuth';
+import { fileUpload } from '../middlewares/multerUpload';
+import isAuthenticated from '../middlewares/checkAuth';
 
 const router = express.Router();
 

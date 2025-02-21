@@ -1,6 +1,6 @@
 import express from 'express';
 import userController from '../controllers/userController';
-import {isAuthenticated} from '../midllewares/checkAuth';
+import {isAuthenticated} from '../middlewares/checkAuth';
 import multer from 'multer';
 
 const router = express.Router();

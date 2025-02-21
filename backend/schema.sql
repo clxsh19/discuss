@@ -44,6 +44,18 @@ CREATE TABLE IF NOT EXISTS comments (
     deleted BOOLEAN DEFAULT FALSE
 );
 
+CREATE TABLE IF NOT EXISTS tags (
+    tag_id SERIAL PRIMARY KEY,
+    name VARCHAR(50) UNIQUE NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS subreddit_tags (
+    subreddit_id INT REFERENCES subreddits(subreddit_id) ON DELETE CASCADE,
+    tag_id INT REFERENCES tags(tag_id) ON DELETE CASCADE,
+    PRIMARY KEY (subreddit_id, tag_id)
+);
+
+
 CREATE TABLE IF NOT EXISTS post_votes (
     vote_id SERIAL PRIMARY KEY,
     user_id INT REFERENCES users(user_id) ON DELETE CASCADE NOT NULL,
@@ -111,3 +123,29 @@ FOR EACH ROW
 WHEN (OLD.vote_count IS DISTINCT FROM NEW.vote_count) -- Avoid unnecessary updates
 EXECUTE FUNCTION update_post_hotness();
 
+-- INSERT INTO tags (name) VALUES 
+-- ('Internet Culture'),
+-- ('Games'),
+-- ('Q&As & Stories'),
+-- ('Technology'),
+-- ('Movies & TV'),
+-- ('Places & Travel'),
+-- ('Pop Culture'),
+-- ('News & Politics'),
+-- ('Business & Finance'),
+-- ('Education & Career'),
+-- ('Sports'),
+-- ('Music'),
+-- ('Fashion & Beauty'),
+-- ('Humanities & Law'),
+-- ('Vehicles'),
+-- ('Home & Garden'),
+-- ('Food & Drinks'),
+-- ('Art'),
+-- ('Anime & Cosplay'),
+-- ('Reading & Writing'),
+-- ('Sciences'),
+-- ('Wellness'),
+-- ('Collectibles & Other Hobbies'),
+-- ('Spooky'),
+-- ('Nature & Outdoors');

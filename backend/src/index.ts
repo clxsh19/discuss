@@ -16,7 +16,7 @@ import postRouter from './routes/post';
 import commentRouter from './routes/comment';
 
 import path from 'path';
-import ErrorHandler from './midllewares/errorHandler';
+import ErrorHandler from './middlewares/errorHandler';
 
 dotenv.config();
 
@@ -36,7 +36,7 @@ declare global {
 //cros
 app.use(
   cors({
-    origin: 'http://localhost:3000', // Change this to your frontend URL
+    origin: 'http://localhost:3000',
   credentials: true, // Allow cookies if using authentication
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization']
