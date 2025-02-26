@@ -123,6 +123,7 @@ FOR EACH ROW
 WHEN (OLD.vote_count IS DISTINCT FROM NEW.vote_count) -- Avoid unnecessary updates
 EXECUTE FUNCTION update_post_hotness();
 
+-- INSERT INTO users (user_id, username, password_hash) need to insert deleted user with -1 user id then resync the serial
 -- INSERT INTO tags (name) VALUES 
 -- ('Internet Culture'),
 -- ('Games'),

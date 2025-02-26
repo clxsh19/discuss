@@ -1,32 +1,23 @@
-import { body, param, query } from "express-validator";
+import { body } from "express-validator";
+import ValidateFieldNotEmpty from "./validateFieldNotEmpty";
 
-export const ValidateCreateSubreddit = [
-  body('name')
+const ValidateSubIdNotEmpty = ValidateFieldNotEmpty('sub_id', 'Subreddit Id');
+const ValidateSubNameNotEmpty = ValidateFieldNotEmpty('sub_name', 'Subname');
+
+const ValidateCreateSubreddit = [
+  body('sub_name')
     .notEmpty().withMessage('Sub name cannot be empty')
+    .trim()
     .matches(/^(?!_+$)[a-zA-Z0-9_]+$/).withMessage("only alphabets,letters and underscore allowed")
-    .trim().escape(),
-  body('displayName')
-    .notEmpty().withMessage('Display name cannot be empty')
-    .trim().escape(),
-  body('description')
-    .notEmpty().withMessage('Description cannot be empty')
-    .trim().escape(),
+    .escape(),
+  ValidateFieldNotEmpty('display_name', 'Dispaly Name'),
+  ValidateFieldNotEmpty('description', 'Description')
 ]
 
-export const ValidateName = [
-  param('name')
-    .notEmpty().withMessage('name cannot be empty')
-    .trim().escape(),
-]
 
-export const ValidateSubId = [
-  body('subreddit_id')
-    .notEmpty().withMessage('subreddit_id cannot be wmpty')
-    .trim().escape(),
-]
+export {
+  ValidateSubIdNotEmpty,
+  ValidateSubNameNotEmpty,
+  ValidateCreateSubreddit
+}
 
-export const ValidateSubName = [
-  query('sub_name')
-    .notEmpty().withMessage('community name cannot be empty')
-    .trim().escape(),
-]

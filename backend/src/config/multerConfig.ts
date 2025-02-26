@@ -1,4 +1,4 @@
-import multer from "multer";
+import multer, { MulterError } from "multer";
 import path from "path";
 
 const storage = multer.diskStorage({
@@ -13,15 +13,16 @@ const fileFilter = (req: Express.Request, file: Express.Multer.File, cb: multer.
   const allowedMimeTypes = ["image/jpeg", "image/png", "image/gif", "image/webp", "video/mp4", "video/mpeg"];
 
   if (!allowedMimeTypes.includes(file.mimetype)) {
-    return cb(new Error("Only images and videos are allowed!"));
+    return cb(new MulterError("LIMIT_UNEXPECTED_FILE"));
   }
 
   if (file.size === 0) {
-    return cb(new Error("File size cannot be 0 bytes."));
+    return cb(new MulterError("LIMIT_FILE_SIZE"));
   }
 
   cb(null, true);
 };
+
 
 const upload = multer({
   storage: storage,

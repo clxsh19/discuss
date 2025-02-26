@@ -1,256 +1,91 @@
 import asyncHandler from "express-async-handler";
-import { param, query, body, validationResult } from "express-validator";
-import {query as dbQuery, queryTransaction} from "../db/index";
+import handleValidationErrors from "../utils/handleValidationErrors";
+import { 
+  createComment,
+  updateComment,
+  deleteComment,
+  getCommentsByPostId,
+  userVoteComment
+} from "../services/commentServices";
 
-const create_comment = [
-  body('comment', 'Comment content must not be empty').trim().isLength({min:1}).escape(),
-  body('post_id').not().isEmpty().withMessage('comment post_id cannot be null').trim().escape(),
-  body('parent_comment_id').optional().trim().escape(),
-
-  asyncHandler( async (req, res, next) => {
-    const errors = validationResult(req);
-    const { comment, post_id } = req.body;
-    let { parent_comment_id } = req.body
-    const user_id = req.user?.id;
-    if (parent_comment_id === "" ) {
-      parent_comment_id = null;
-    }
-
-    if (!errors.isEmpty()) {
-      res.status(400).json({ 
-        errors: errors.array()
-      });
-    } else {
-      const queries = [
-        'INSERT INTO comments (content, user_id, post_id, parent_comment_id) VALUES ($1, $2, $3, $4) RETURNING comment_id',
-        'UPDATE posts SET comment_count = comment_count + 1 WHERE post_id = $1'
-      ];
-      const params = [
-        [comment, user_id, post_id, parent_comment_id],
-        [post_id]
-      ]
-      const result = await queryTransaction(queries, params);
-      const comment_id = result[0].rows[0].comment_id;
-      res.status(202).json({
-        message: 'comment created successfully',
-        comment_id
-      });
-    };
-  }),
-];
-
-const update_comment = [
-  body('comment', 'Comment content must not be empty').trim().isLength({min:1}).escape(),
-  body('comment_id').not().isEmpty().withMessage('comment_id cannot be null').trim().escape(),
+const postCreate = asyncHandler( async(req, res, next) => {
+  handleValidationErrors(req, "commentController/postCreate");
+  const { comment, post_id:postId } = req.body;
+  const userId = req.user?.id;
+  let parentId = req.body.parent_comment_id;
   
-  asyncHandler( async(req, res, next) => {
-    const errors = validationResult(req);
-    const { comment, comment_id } = req.body;
-    const user_id = req.user?.id;
-  
-    if (!errors.isEmpty()) {
-      res.status(400).json({ 
-        errors: errors.array()
-      });
-      return;
-    }
+  if (parentId === "" ) parentId = null;
 
-    const { rows } = await dbQuery(`SELECT comment_id from comments where comment_id = $1`, [comment_id]);
-    if (rows.length === 0 ) {
-      res.status(404).json({ error: 'Comment does not exist' });
-      return;
-    }
+  const result = await createComment({ comment, userId, postId, parentId});
+  res.status(202).json({
+    success: true,
+    comment_id: result.data
+  });
+});
 
-    const comment_user_id = rows[0].user_id;
-    if (user_id !== comment_user_id) { // same user who commented trying to update?
-      res.status(403).json({ error: 'Unauthorized user cannot update' });
-      return;
-    }
+const postUpdate = asyncHandler( async(req, res, next) => {
+  handleValidationErrors(req, "commentController/postUpdate");
+  const { comment, comment_id:commentId } = req.body;
+  const userId = req.user?.id;
 
-    await dbQuery(`UPDATE comments SET content = $1 WHERE comment_id = $2`, [comment, comment_id]);
-    res.status(200).json({ message: 'Comment updated' });
-  })
-]
+  const result = await updateComment({ userId, comment, commentId });
+  res.status(200).json({ 
+    success: true, 
+    message: result.message 
+  });
+});
 
-const delete_comment = [
-  body('comment_id').not().isEmpty().withMessage('comment_id cannot be null').trim().escape(),
-  
-  asyncHandler( async(req, res, next) => {
-    const errors = validationResult(req);
-    const { comment_id } = req.body;
-    const user_id = req.user?.id;  
-  
-    if (!errors.isEmpty()) {
-      res.status(400).json({ 
-        errors: errors.array()
-      });
-    } else {
-      const { rows } = await dbQuery(`SELECT user_id from comments where comment_id = $1`, [comment_id]);
-     
-      if ( rows.length === 0 ) { //check if comment exist
-        res.status(404).json({ error: 'Comment does not exist' });
-        return;
-      }
-      const { user_id:comment_user_id } = rows[0];
-      if ( user_id !== comment_user_id) { // same user who commented trying to delete?
-        res.status(403).json({ error: 'Unauthorized user cannot delete' });
-        return;
-      }
-      // 12 is the deleted user id
-      await dbQuery(`UPDATE comments 
-        SET user_id = 12,
-        content = '', 
-        deleted = TRUE
-        WHERE comment_id = $1`,
-        [comment_id]);
+const postDelete = asyncHandler( async(req, res, next) => {
+  handleValidationErrors(req, "commentController/postDelete")
+  const commentId = req.body.comment_id;
+  const userId = req.user?.id;  
 
-      res.status(200).json({ message: 'Comment deleted' });
-    }
-  })
-]
+  const result = await deleteComment({ commentId, userId });
+  res.status(200).json({ 
+    success: true, 
+    message: result.message 
+  });
+});
 
-const get_comments_by_post = [
-  param('post_id')
-    .notEmpty()
-    .withMessage('Post id caanot be empty')
-    .trim()
-    .isInt()
-    .withMessage('id must be a positive integer')
-    .escape(),
+const allowedSorts: Record<string, string> = {
+  new: "ORDER BY p.created_at DESC, p.post_id DESC",
+  top: "ORDER BY p.vote_count DESC, p.post_id DESC",
+  hot: "ORDER BY p.hotness DESC, p.post_id DESC"
+};
 
-  query('offset')
-    .notEmpty()
-    .withMessage('Offset is required.')
-    .trim()
-    .isInt({ min: 0 })
-    .withMessage('Offset must be a positive integer.')
-    .escape()
-    .toInt(),
+const getByPostId =  asyncHandler( async(req, res, next) => {
+  handleValidationErrors(req, "commentController/getByPostId");
+  const sort = req.query.sort || "new";
+  const postId = Number(req.params.post_id);
+  const userId = req.user?.id;
 
-  query('sort')
-    .optional()
-    .trim()
-    .isIn(['top', 'new', 'old'])
-    .withMessage('Only top,new and old sort by')
-    .escape(),
+  const sortCondition = allowedSorts[sort as string];
+  const result = await getCommentsByPostId({ postId, userId, sortCondition});
+  res.status(200).json({ 
+    success: true,
+    comments: result.data,
+  });
+});
 
-  asyncHandler( async(req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      res.status(400).json({ 
-        errors: errors.array()
-      });
-    }
-    const { offset, sort = 'new'} = req.query;
-    const post_id = req.params.post_id;
-    const user_id = req.user?.id;
+const postVote = asyncHandler(async (req, res, next) => {
+  handleValidationErrors(req, "commentController/postVote");
 
-    let sortCondition = '';
+  const { comment_id:commentId, vote_type:voteType} = req.body;
+  const userId = req.user?.id;
 
-    if (sort === 'new') {
-      sortCondition = 'c.created_at DESC';
-    } else if (sort === 'top') {
-      sortCondition = 'c.vote_count DESC';
-    } else if (sort === 'old') {
-      sortCondition == 'c..created_at ASC'
-    }
-    const comments_query = await dbQuery(`SELECT
-        c.comment_id,
-        c.content,
-        c.user_id,
-        c.parent_comment_id AS parent_id,
-        c.created_at,
-        u.username,
-        c.vote_count AS total_votes,
-        COALESCE(cv.vote_type, null) AS vote_type,
-        c.deleted
-      FROM comments c
-      LEFT JOIN users u ON c.user_id = u.user_id
-      LEFT JOIN comment_votes cv ON c.comment_id = cv.comment_id AND cv.user_id = $1
-      WHERE c.post_id = $2
-      ORDER BY 
-        c.parent_comment_id IS NULL,         
-        ${sortCondition}`
-      , [user_id, post_id]);
-    res.status(200).json({ 
-      comments: comments_query.rows,
-    });
-  })
-];
-
-
-
-const comment_vote = [
-  body('comment_id').not().isEmpty().withMessage('comment_id cannot be null').trim().escape(),
-  body('vote_type').notEmpty().withMessage('vote_type cannot be null').isIn([1, -1]).withMessage('vote_type must be either 1 or -1').toInt(),
-
-  asyncHandler(async (req, res, next) => {
-    const errors = validationResult(req);
-
-    if (!errors.isEmpty()) {
-      res.status(400).json({ 
-        errors: errors.array()
-      });
-    } else {
-      const { comment_id, vote_type} = req.body;
-      const user_id = req.user?.id;
-
-      const existingVote = await dbQuery(`SELECT vote_type FROM comment_votes WHERE user_id=$1 AND comment_id = $2`, [user_id, comment_id]);
-      // user vote exist on this post
-      if ( existingVote.rows.length > 0) { 
-        const oldVoteType = existingVote.rows[0].vote_type;
-
-        if (oldVoteType === vote_type) {// same as old vote
-          const queries = [
-            'DELETE FROM comment_votes WHERE user_id = $1 AND comment_id = $2',
-            'UPDATE comments SET vote_count = vote_count - $1 WHERE comment_id = $2'
-          ];
-          const params = [
-            [user_id, comment_id],
-            [vote_type, comment_id]
-          ];
-          res.status(200).json({ message: 'Deleted the vote'});
-          await queryTransaction(queries, params);
-          return;
-          // next();
-        }
-
-        const queries = [ // update the vote
-          'UPDATE comment_votes SET vote_type = $1 WHERE user_id = $2 AND comment_id = $3',
-          'UPDATE comments SET vote_count = vote_count + $1 WHERE comment_id = $2'
-        ];
-        const params = [
-          [vote_type, user_id, comment_id],
-          [vote_type * 2, comment_id]
-        ]
-
-        await queryTransaction(queries, params);
-        res.status(200).json({ message: 'Vote updated successfully' });
-      } else { // new vote add it 
-        const queries = [
-          'INSERT INTO comment_votes (user_id, comment_id, vote_type) VALUES ($1, $2, $3)',
-          'UPDATE comments SET vote_count = vote_count + $1 WHERE comment_id = $2'
-        ];
-        const params = [
-          [user_id, comment_id, vote_type],
-          [vote_type, comment_id]
-        ]
-
-        await queryTransaction(queries, params)
-        res.status(202).json({
-          message: 'comment vote created successfully',
-        });
-      }
-    };
-  })
-];
+  const result = await userVoteComment({ userId, commentId, voteType});
+  res.status(202).json({
+    success: true,
+    message: result.message,
+  });
+});
 
 export default {
-  create_comment,
-  get_comments_by_post,
-  comment_vote,
-  update_comment,
-  delete_comment
+  postCreate,
+  postDelete,
+  postUpdate,
+  postVote,
+  getByPostId
 }
 
      

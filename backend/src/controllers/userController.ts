@@ -1,9 +1,9 @@
 import asyncHandler from "express-async-handler";
-import { body, validationResult } from "express-validator";
-import {query} from "../db/index";
-import bcrypt from "bcrypt";
-import passport, { session } from "passport";
+import passport from "passport";
 import { Request, Response, NextFunction } from 'express';
+import handleValidationErrors from "../utils/handleValidationErrors";
+import { createUser } from "../services/userServices";
+import CustomError from "../utils/customError";
 
 type UserBody = {
   username: string,
@@ -14,145 +14,96 @@ type Info = {
     message: string;
 };
 
-const user_register = [
-  body('username', 'Username must not be empty').trim().isLength({min:1}).escape(),
-  body('password', 'Password must not be empty').trim().isLength({min:1}).escape(),
-
-  asyncHandler(async(req, res, next) => {
-      const errors = validationResult(req);
-      const { username, password } = req.body;
-      console.log(username);
-      console.log(password);
-
-      if (!errors.isEmpty()) {
-          res.status(400).json({ 
-              message: 'Username and password are required',
-              username: req.body.username,
-              password: req.body.password,
-          });
-      };
-      const user_exists_query = await query(`SELECT EXISTS (
-        SELECT 1 FROM users WHERE username = $1 )`, [username] 
+const loginUser = (req: Request, res: Response, next: NextFunction) => {
+  passport.authenticate("local", (err: Error, user: UserBody | null, info: Info) => {
+    if (err) {
+      return next(
+        new CustomError("Unknown Error", 500, {
+          errors: info?.message || "Authentication error",
+          location: "/userController/loginUser",
+        })
       );
-      const user_exists = user_exists_query.rows[0].exists;
-      if (user_exists) {
-        res.status(403).json({ error: 'User registration failed' });
-      } else { // add user to db
-        const hashedPassword = bcrypt.hashSync(password, 10);
-        await query("INSERT INTO users (username, password_hash) VALUES ($1, $2)",
-        [username, hashedPassword]);
-        // res.status(202).json({
-        //     message: 'User registered successfully',
-        // });
-        //login user after adding to db
-        passport.authenticate('local', (err: Error, user: UserBody, info: Info) => {
-          if (err) {
-            return res.status(500).json({ error: 'An error occurred during authentication' });
-          }
-          if (!user) {
-            return res.status(401).json({ error: info.message || 'Authentication failed' });
-          }
-          // This part is needed to establish a session manually, otherwise, `req.user` will not be set.
-          req.logIn(user, (err) => {
-            if (err) {
-              return next(err);
-            }
-            return res.status(201).json({ msg: 'user registration and login successfull'});
-          });
-        })(req, res, next);
-      };
-  }), 
-];
+    }
+    if (!user) {
+      return next(
+        new CustomError("Authentication failed", 401, {
+          errors: info?.message || "Invalid credentials",
+          location: "/userController/loginUser",
+        })
+      );
+    }
 
-const user_login = [
-  body('username', 'Username must not be empty').trim().isLength({min:1}).escape(),
-  body('password', 'Password must not be empty').trim().isLength({min:1}).escape(),
-  (req: Request, res: Response, next: NextFunction) => {
-    passport.authenticate('local', (err: Error, user: UserBody, info: Info) => {
-      if (err) {
-        return res.status(500).json({ error: 'An error occurred during authentication' });
-      }
-      if (!user) {
-        return res.status(401).json({ error: info.message || 'Authentication failed' });
-      }
-  
-      // This part is needed to establish a session manually, otherwise, `req.user` will not be set.
-      req.logIn(user, (err) => {
-        if (err) {
-          return next(err);
-        }
-        return res.status(201).json({ message: 'login successfull' });
+    // Establish session manually because callback provided to passport
+    req.logIn(user, (loginErr) => {
+      if (loginErr) return next(loginErr);
+
+      res.status(200).json({
+        success: true,
+        message: "User authentication successful",
       });
-    })(req, res, next);
-  }
-];
+    });
+  })(req, res, next); // invoking the callback
+};
 
-// const user_login = (req: Request, res: Response, next: NextFunction) => {
-//   passport.authenticate('local', (err: Error, user: UserBody, info: Info) => {
-//     if (err) {
-//       return res.status(500).json({ error: 'An error occurred during authentication' });
-//     }
-//     if (!user) {
-//       return res.status(401).json({ error: info.message || 'Authentication failed' });
-//     }
 
-//     // This part is needed to establish a session manually, otherwise, `req.user` will not be set.
-//     req.logIn(user, (err) => {
-//       if (err) {
-//         return next(err);
-//       }
-//       return res.status(201).json({ msg: 'h7' });
-//     });
-//   })(req, res, next);
-// };
+const postRegister = asyncHandler(async(req, res, next) => {
+  handleValidationErrors(req, "userController/postRegister")
+  const { username, password } = req.body;
+  await createUser({ username, password });
 
-// const user_logout = (req: Request, res: Response) => {
-//   req.logout((err) => {
-//     if (err) {
-//       return res.status(500).json({ error: 'An error occurred during logout' });
-//     }
-//     res.clearCookie('connect.sid', { httpOnly: true, secure: false, sameSite: 'strict' });
-//     res.status(200).json({ msg: 'Logout successful' });
-//   });
-// };
+  //login user after adding to db
+  loginUser(req, res, next);
+});
 
-const user_logout = (req: Request, res: Response) => {
+const postLogin = asyncHandler(async(req, res, next) => {
+  handleValidationErrors(req, "userController/postLogin")
+  loginUser(req, res, next);
+});
+
+const postLogout = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
   req.logout((err) => {
     if (err) {
-      return res.status(500).json({ error: 'An error occurred during logout' });
+      return next(new CustomError("Unknown Error", 500, {
+        errors: "An error occurred during logout.",
+        location: "userController/postLogout",
+      }));
     }
 
     req.session.destroy((err) => {
       if (err) {
-        return res.status(500).json({ error: 'Failed to destroy session' });
+        return next(new CustomError("Unknown Error", 500, {
+          errors: "Failed to destroy session.",
+          location: "userController/postLogout",
+        }));
       }
+      console.log("After logout : ", req.session);
 
-      res.clearCookie('connect.sid', { path: '/', httpOnly: true, secure: false, sameSite: 'strict' });
-      res.status(200).json({ msg: 'Logout successful' });
+      res.clearCookie("connect.sid", {
+        path: "/",
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+      });
+
+      res.status(200).json({ success: true, message: "User logout successful" });
     });
   });
-};
+});
 
-
-const user_status = (req: Request, res: Response) => {
+const getAuthStatus = (req: Request, res: Response) => {
   const cookies = req.headers.cookie;
   if (cookies) {
     const cookie = cookies.split('; ');
-    console.log('User Cookies:', cookies);
+    console.log('User Cookies:', cookie);
   } else {
     console.log('User Status No Cookies')
   }  
-  res.json({ authenticated: true, user: req.user });
+  res.json({ success: true, authenticated: true, user: req.user });
 };
-// const user_login = [ passport.authenticate('local'),
-//   (err:Error, req: Request, res: Response) => {
-//     res.status(201).json({ msg: "h7" });
-//   }
-// ];
 
 export default {
-  user_register,
-  user_login,
-  user_logout,
-  user_status
+  postRegister,
+  postLogin,
+  postLogout,
+  getAuthStatus,
 }

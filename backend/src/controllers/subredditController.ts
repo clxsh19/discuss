@@ -1,8 +1,8 @@
 import asyncHandler from "express-async-handler";
-import { Request } from "express";
 import { validationResult } from "express-validator";
 import { deleteUploadedFile } from "../utils/deleteUploadedFile";
 import CustomError from "../utils/customError";
+import handleValidationErrors from "../utils/handleValidationErrors";
 import { 
   checkSubExist,
   createSub, 
@@ -13,19 +13,10 @@ import {
 } from "../services/subredditServices";
 
 
-const handleValidationErrors = (req: Request, location: string): void => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    throw new CustomError("Validation Error", 400, {
-      detail: errors.array(),
-      location,
-    });
-  }
-};
 
-const postCreate = asyncHandler( async(req, res) => {
+const postCreate = asyncHandler( async(req, res, next) => {
   const errors = validationResult(req);
-  const { name, displayName, description } = req.body;
+  const { sub_name:subName, display_name:displayName, description } = req.body;
   const files = req.files as { [fieldname: string] : Express.Multer.File[] };
   const bannerFilePath =  files.banner?.[0]?.path;
   const logoFilePath =  files.logo?.[0]?.path;
@@ -35,19 +26,19 @@ const postCreate = asyncHandler( async(req, res) => {
     if (logoFilePath) deleteUploadedFile(logoFilePath);
 
     throw new CustomError("Validation Error", 400, {
-      detail: errors.array(),
+      errors: errors.array(),
       location: "subController/postCreate "
     });
   }
 
-  const result = await createSub({ name, displayName, description, bannerFilePath, logoFilePath });
+  const result = await createSub({ subName, displayName, description, bannerFilePath, logoFilePath });
   res.status(202).json({ success: true, message: result.message });
 });
 
-const getInfo = asyncHandler( async(req, res) => {
+const getInfo = asyncHandler( async(req, res, next) => {
   handleValidationErrors(req, "subController/getInfo");
   
-  const subName = req.params.name;
+  const subName = req.params.sub_name;
   const userId = req.user?.id;
   const result = await getSubInfo({ userId, subName })
   res.status(200).json({ success: true, subreddit_detail: result.data });
@@ -56,7 +47,7 @@ const getInfo = asyncHandler( async(req, res) => {
 const postSubscribe = asyncHandler( async(req, res, next) => {
   handleValidationErrors(req, "subController/postSubscribe");
 
-  const subId = req.body.subreddit_id;
+  const subId = req.body.sub_id;
   const userId = req.user?.id; 
   const result = await subscribeUserToSub({ userId, subId });
   res.status(200).json({ success: true,  message: result.message });
@@ -65,20 +56,19 @@ const postSubscribe = asyncHandler( async(req, res, next) => {
 const postUnsubscribe = asyncHandler( async(req, res, next) => {
   handleValidationErrors(req, "subController/postUnsubscribe");
 
-  const subId = req.body.subreddit_id;
+  const subId = req.body.sub_id;
   const userId = req.user?.id; 
-
   const result = await unsubscribeUserToSub({ userId, subId });
   res.status(200).json({ success: true, message: result.message });
 });
 
-const getAllName= asyncHandler( async(req, res) => {
+const getAllName= asyncHandler( async(req, res,next) => {
   // const user_id = req.user?.id;
   const result = await getAllSubName();
   res.status(200).json({ success: true, communities: result.data });
 });
 
-const getSubExist = asyncHandler( async(req, res) => {
+const getSubExist = asyncHandler( async(req, res, next) => {
   handleValidationErrors(req, "subController/checkIfSubExist");
   
   const subName = req.query.sub_name as string;  

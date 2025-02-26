@@ -1,7 +1,7 @@
 import { ValidationError } from "express-validator/src";
 
 interface customErrorProps {
-  detail: ValidationError[] | string;
+  errors: ValidationError[] | string;
   location: string;
 }
 

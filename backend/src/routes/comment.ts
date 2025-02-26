@@ -1,16 +1,22 @@
 import express from 'express';
 import commentController from '../controllers/commentController';
 import  isAuthenticated from '../middlewares/checkAuth';
+import { 
+  ValidateCommentIdNotEmpty,
+  ValidateCreateComment,
+  ValidateUpdateComment,
+  ValidateGetCommentsByPost,
+  ValidateVoteComment
+} from '../validators/commentValidators';
+
+
 const router = express.Router();
 
-router.post('/create', isAuthenticated, commentController.create_comment);
-router.post('/update', isAuthenticated, commentController.update_comment);
-router.post('/delete', isAuthenticated, commentController.delete_comment);
-router.post('/vote', isAuthenticated, commentController.comment_vote);
-router.get('/test', function(req, res, next) {
-  res.json({name: "op"});
-});
-router.get('/:post_id', commentController.get_comments_by_post);
+router.post('/create', isAuthenticated, ValidateCreateComment, commentController.postCreate);
+router.post('/update', isAuthenticated, ValidateUpdateComment, commentController.postUpdate);
+router.post('/delete', isAuthenticated, ValidateCommentIdNotEmpty, commentController.postDelete);
+router.post('/vote', isAuthenticated, ValidateVoteComment, commentController.postVote);
+router.get('/:post_id', ValidateGetCommentsByPost, commentController.getByPostId);
 
 export default router;
 

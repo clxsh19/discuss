@@ -1,28 +1,32 @@
 import upload from "../config/multerConfig";
 import { Request, Response, NextFunction } from "express";
 import multer from "multer";
+import CustomError from "../utils/customError"; // Ensure you import your CustomError
 
 const fileUpload = (req: Request, res: Response, next: NextFunction) => {
   upload.single("file")(req, res, (err) => {
     if (err instanceof multer.MulterError) {
-      // Handle specific Multer errors
       let message = "An error occurred while uploading the file.";
-      
+
       if (err.code === "LIMIT_FILE_SIZE") {
         message = "File size exceeds the allowed limit.";
       } else if (err.code === "LIMIT_UNEXPECTED_FILE") {
         message = "Unexpected file field.";
       }
 
-      return res.status(400).json({ error: message });
+      return next(new CustomError("File Upload Error", 400, {
+        errors: message,
+        location: "middleware/fileUpload"
+      }));
     } 
-    
+
     if (err) {
-      // Handle unknown errors (e.g., file format issues)
-      return res.status(415).json({
-        error: err.message || "Something went wrong with the file upload." 
-      });
+      return next(new CustomError("File Upload Error", 415, {
+        errors: err.message || "Something went wrong with the file upload.",
+        location: "middleware/fileUpload"
+      }));
     }
+
     next();
   });
 };
@@ -35,21 +39,25 @@ const multipleFileUpload = (req: Request, res: Response, next: NextFunction) => 
 
   uploadFields(req, res, (err) => {
     if (err instanceof multer.MulterError) {
-      let message = "An error occurred while uploading the files.";
+      let message = err.message;
 
       if (err.code === "LIMIT_FILE_SIZE") {
         message = "File size exceeds the allowed limit.";
       } else if (err.code === "LIMIT_UNEXPECTED_FILE") {
         message = "Unexpected file field.";
       }
-
-      return res.status(400).json({ error: message });
+      // message=err.message;
+      return next(new CustomError("File Upload Error", 400, {
+        errors: message,
+        location: "middleware/multipleFileUpload"
+      }));
     } 
     
     if (err) {
-      return res.status(400).json({ 
-        error: err.message || "Something went wrong with the file upload." 
-      });
+      return next(new CustomError("File Upload Error", 400, {
+        errors: err.message || "Something went wrong with the file upload.",
+        location: "middleware/multipleFileUpload"
+      }));
     }
 
     next();

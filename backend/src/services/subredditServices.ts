@@ -2,7 +2,7 @@ import { query, queryTransaction } from "../db";
 import CustomError from "../utils/customError";
 
 interface CreateSubParams {
-  name: string;
+  subName: string;
   displayName: string;
   description: string;
   bannerFilePath: string;
@@ -19,15 +19,14 @@ interface CheckUserSubParams {
   subId: string;
 }
 
-const checkSubExist = async (lowerCaseName: string) => {
-  const existQuery = await query(
-    `SELECT EXISTS (SELECT 1 FROM subreddits WHERE name = $1 LIMIT 1)`,
-    [lowerCaseName]
+const checkSubExist = async(lowerCaseName: string) => {
+  const existQuery = await query( `SELECT EXISTS ( SELECT 1 FROM subreddits 
+    WHERE name = $1)`, [lowerCaseName]
   );
   return existQuery.rows[0].exists;
 };
 
-const checkUserSubscription = async ({ userId, subId } : CheckUserSubParams) => {
+const checkUserSubscription = async({ userId, subId } : CheckUserSubParams) => {
   const queries = [
     'SELECT 1 FROM subreddits WHERE subreddit_id = $1',
     'SELECT 1 from subreddit_members WHERE user_id = $1 AND subreddit_id = $2'
@@ -40,15 +39,15 @@ const checkUserSubscription = async ({ userId, subId } : CheckUserSubParams) => 
   return { userSubStatus, subNotExist };
 }
 
-const createSub = async ({ 
-  name, displayName, description, bannerFilePath, logoFilePath }: CreateSubParams
+const createSub = async({ 
+  subName, displayName, description, bannerFilePath, logoFilePath }: CreateSubParams
 ) => {
-  const lowerCaseName = name.toLowerCase();
+  const lowerCaseName = subName.toLowerCase();
   const exists = await checkSubExist(lowerCaseName);
   if (exists) {
     throw new CustomError("Community already exists", 403, {
-      detail: "the community exists query returns true",
-      location: "subController/postCreate/createSub "
+      errors: "the community exists query returns true",
+      location: "subController/postCreate/createSub"
     });
   }
 
@@ -61,7 +60,7 @@ const createSub = async ({
   return { message: "Community created successfully" };
 };
 
-const getSubInfo = async ({ userId, subName } : GetSubInfoParams) => {
+const getSubInfo = async({ userId, subName } : GetSubInfoParams) => {
   const lowerCaseName = subName.toLowerCase();
   const infoQuery = await query(`SELECT 
     s.subreddit_id,
@@ -83,13 +82,13 @@ const getSubInfo = async ({ userId, subName } : GetSubInfoParams) => {
   return { data: infoQuery.rows[0] };
 ;}
 
-const subscribeUserToSub = async ({ userId, subId } : CheckUserSubParams) => {
+const subscribeUserToSub = async({ userId, subId } : CheckUserSubParams) => {
   const { userSubStatus, subNotExist } = await checkUserSubscription({userId, subId});
 
   if (subNotExist || userSubStatus) {
     throw new CustomError("Community doesn't exist or User already subscribed",
       409, {
-      detail: `userSubStatus : ${userSubStatus}, subNotExist: ${subNotExist}`,
+      errors: `userSubStatus : ${userSubStatus}, subNotExist: ${subNotExist}`,
       location: "subController/postSubscribe/subscribeUserToSub/"
     });
   }
@@ -99,20 +98,20 @@ const subscribeUserToSub = async ({ userId, subId } : CheckUserSubParams) => {
   return { message: "User joined the community"}
 }
 
-const unsubscribeUserToSub = async ({ userId, subId } : CheckUserSubParams) => {
+const unsubscribeUserToSub = async({ userId, subId } : CheckUserSubParams) => {
   const { userSubStatus, subNotExist } = await checkUserSubscription({userId, subId});
 
   if (subNotExist || !userSubStatus) {
     throw new CustomError("Community doesn't exist or User already unsubscribed",
       409, {
-      detail: `userSubStatus : ${userSubStatus}, subNotExist: ${subNotExist}`,
+      errors: `userSubStatus : ${userSubStatus}, subNotExist: ${subNotExist}`,
       location: "subController/postSubscribe/unsubscribeUserToSub/"
     });
   }
   await query(`DELETE FROM subreddit_members WHERE user_id = $1 
     AND subreddit_id = $2`, [userId, subId]);
 
-  return { message: "User left the community"}
+  return { message: "User left the community" } 
 }
 
 const getAllSubName = async() => {
