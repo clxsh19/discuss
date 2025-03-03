@@ -10,8 +10,8 @@ interface SubViewProps {
 
 const SubView = ({ sub_detail, sub_posts, hasMore }: SubViewProps) => {
   const { banner_url, logo_url, sub_name, display_name } = sub_detail;
-  const banner = `http://localhost:5000/${banner_url}`;
-  const logo = `http://localhost:5000/${logo_url}`;
+  const banner = `${process.env.MEDIA_API_URL}/${banner_url}`;
+  const logo = `${process.env.MEDIA_API_URL}/${logo_url}`;
     
   return (
     <>

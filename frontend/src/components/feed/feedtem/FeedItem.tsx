@@ -21,7 +21,7 @@ const FeedItem = ({
   let thumbnail_url;
   let isVideo;
   if ( post_type === 'MEDIA') {
-    thumbnail_url = `http://localhost:5000/${media_url}`;
+    thumbnail_url = `${process.env.MEDIA_API_URL}/${media_url}`;
     isVideo = media_url?.match(/\.(mp4|webm|ogg)$/i); // check if url is for a video by checking it's format
   } else if ( post_type === 'LINK') {
     thumbnail_url = link_img_url;

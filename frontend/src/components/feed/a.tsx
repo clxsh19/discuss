@@ -4,7 +4,7 @@
  import { useState, useEffect, useRef, useCallback, useTransition } from 'react';
 import { PostItemProp } from '@/interface/PostProps';
 import { buildPostWithMetaData } from '@/lib/utils';
-import FeedItem from '@/components/feed/feedtem/FeedItem';
+import FeedItem from '@/components/feed/FeedItem';
 import SortDropDown from './SortDropDown';
 import { fetchPostsBySub, fetchAllPosts } from '@/lib/data_api';
 import { LoadingIconAnimation } from '../Icons';

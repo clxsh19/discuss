@@ -20,7 +20,7 @@ const fetchWithConfig = async (
   if (content_type) headers['Content-Type'] = content_type;
   headers['Cookie'] = cookies().toString();
 
-  const res = await fetch(`http://localhost:5000/api/${url}`, {
+  const res = await fetch(`${process.env.BACKEND_API_URL}/api/${url}`, {
     method: 'POST',
     headers,
     credentials: 'include',

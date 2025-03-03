@@ -2,7 +2,7 @@ import multer, { MulterError } from "multer";
 import path from "path";
 
 const storage = multer.diskStorage({
-  destination: "./uploads/",
+  destination: process.env.MEDIA_API_URL,
   filename: function (req, file, cb) {
     cb(null, file.fieldname + "-" + Date.now() + path.extname(file.originalname));
   }

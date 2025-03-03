@@ -7,7 +7,7 @@ const fetchWithConfig = async (
   url: string,
   options: RequestInit = {}
 ) => {
-  const res = await fetch(`http://localhost:5000/api/${url}`, {
+  const res = await fetch(`${process.env.BACKEND_API_URL}/api/${url}`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
