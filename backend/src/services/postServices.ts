@@ -178,7 +178,6 @@ const userVotePost = async({ userId, postId, voteType} : UserVotePostParams) => 
     voteQuery = 'INSERT INTO post_votes (user_id, post_id, vote_type) VALUES ($1, $2, $3)';
     voteQueryParams = [userId, postId, voteType];
   }
-
   await queryTransaction(
     [voteQuery, voteCountQuery], [ 
     voteQueryParams, [voteDiff, postId]

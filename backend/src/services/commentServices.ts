@@ -99,24 +99,27 @@ const deleteComment = async({ commentId, userId } : alterCommentParams) => {
 
 const getCommentsByPostId = async({ postId, userId, sortCondition }: getCommentsByPostIdParmas) => {
   const getCommentsQuery = await query(`SELECT
-    c.comment_id,
-    c.content,
-    c.user_id,
-    c.parent_comment_id AS parent_id,
-    c.created_at,
-    u.username,
-    c.vote_count AS total_votes,
-    COALESCE(cv.vote_type, null) AS vote_type,
-    c.deleted
-  FROM comments c
-  LEFT JOIN users u ON c.user_id = u.user_id
-  LEFT JOIN comment_votes cv ON c.comment_id = cv.comment_id AND cv.user_id = $1
-  WHERE c.post_id = $2
-  ORDER BY 
-    c.parent_comment_id IS NULL,         
-    ${sortCondition}`
-  , [userId, postId]);
-
+      c.comment_id,
+      c.content,
+      c.user_id,
+      c.parent_comment_id AS parent_id,
+      c.created_at,
+      u.username,
+      c.vote_count AS total_votes,
+      cv.vote_type,
+      c.deleted
+    FROM comments c
+    LEFT JOIN users u ON c.user_id = u.user_id
+    LEFT JOIN (
+      SELECT DISTINCT ON (comment_id) comment_id, vote_type 
+      FROM comment_votes 
+      WHERE user_id = $1
+    ) cv ON c.comment_id = cv.comment_id
+    WHERE c.post_id = $2
+    ORDER BY 
+      CASE WHEN c.parent_comment_id IS NULL THEN 0 ELSE 1 END, 
+      ${sortCondition}`, // Use validated column, not user input
+    [userId, postId]);
   return ({ data: getCommentsQuery.rows }); 
 }
 

@@ -48,9 +48,9 @@ const postDelete = asyncHandler( async(req, res, next) => {
 });
 
 const allowedSorts: Record<string, string> = {
-  new: "ORDER BY p.created_at DESC, p.post_id DESC",
-  top: "ORDER BY p.vote_count DESC, p.post_id DESC",
-  hot: "ORDER BY p.hotness DESC, p.post_id DESC"
+  new: "c.created_at DESC, c.comment_id DESC",
+  top: "c.vote_count DESC, c.comment_id DESC",
+  hot: "c.hotness DESC, c.comment_id DESC"
 };
 
 const getByPostId =  asyncHandler( async(req, res, next) => {

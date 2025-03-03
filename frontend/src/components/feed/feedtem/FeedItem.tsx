@@ -1,10 +1,10 @@
-import { PostItemProp } from '@/interface/PostProp';
+import { PostItemProp } from '@/interface/PostProps';
 import { getTimePassed } from '@/lib/utils';
 import { LinkIcon} from '@/components/Icons';
 import Link from 'next/link';
 import VoteButton from '@/components/ui/VoteButton';
 import { submitPostVote } from '@/lib/create_api';
-import FeedActionButtons from './ui/FeedActionButtons';
+import FeedActionButtons from './FeedActionButtons';
 
 const FeedItem = ({
   post_id, title, created_at, 
@@ -31,29 +31,28 @@ const FeedItem = ({
     <div className="w-full flex pt-2 pb-5 border-b border-neutral-800 ">
       
       {/* Voting Button */}
-      <div className='flex flex-col items-center -space-y-1'>
-        <VoteButton 
-          id={post_id} 
-          votes_count={votes_count} 
-          vote_type={vote_type} 
-          submitVote={submitPostVote}
-        />
-      </div>
+      <VoteButton 
+        id={post_id} 
+        votes_count={votes_count} 
+        vote_type={vote_type} 
+        submitVote={submitPostVote}
+      />
       
       {/* Thumbnail */}
       <div className="w-[80px] h-[80px] ml-2 rounded flex-shrink-0">
-        {thumbnail_url ? (
-          <Link href={`/`} target="_blank" rel="noopener noreferrer">
-            {isVideo ? (
-              <video src={thumbnail_url} className="w-full h-full object-cover"/>
+        <Link href={`/d/${subreddit_name}/${post_id}`}>
+          {thumbnail_url ? (
+            isVideo ? (
+              <video src={thumbnail_url} className="w-full h-full object-cover" />
             ) : (
               <img src={thumbnail_url} alt="Thumbnail" className="w-full h-full object-cover" />
-            )}
-          </Link>
-        ) : (
-          <div className="w-full h-full bg-gray-200 rounded" />
-        )}
+            )
+          ) : (
+            <div className="w-full h-full bg-gray-200 rounded" />
+          )}
+        </Link>
       </div>
+
       
       <div className='flex flex-col space-y-1 ml-3'>
         {/* Title */}
@@ -63,12 +62,12 @@ const FeedItem = ({
 
         {/* Link */}
         <div className=''>
-          {link_url ? (
+          {link_url && (
             <Link href={link_url} className="flex text-xs font-mono italic text-neutral-400 hover:text-neutral-200">
               <LinkIcon style=""/>
               <span> {link_url.length > 30 ? `${link_url.slice(0, 30)}...` : link_url} </span>
             </Link>
-          ) : null}
+          )}
         </div>
           
         {/* Sub Name and Time Info */}

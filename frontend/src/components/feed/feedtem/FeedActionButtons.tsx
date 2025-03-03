@@ -3,16 +3,8 @@
 import { CommentIcon, ShareIcon, ExpandIcon, CrossIcon } from '@/components/Icons';
 import Link from 'next/link';
 import { useState } from 'react';
+import { FeedActionButtonsProps } from '@/interface/feed/FeedActionButtonProps';
 
-interface FeedActionButtonsProps {
-  post_type: "TEXT" | "MEDIA" | "LINK",
-  sub_name: string,
-  post_id: number,
-  comments_count: number,
-  media_url?: string | null,
-  isVideo?: RegExpMatchArray | null,
-  text_content: string,
-}
 
 const FeedActionButtons = ({
   post_type, sub_name, post_id,
@@ -37,10 +29,8 @@ const FeedActionButtons = ({
         >
           {isLinkPost ? (
             <ExpandIcon fillColor="#4f4949" />
-          ) : isExpanded ? (
-            <CrossIcon />
-          ) : (
-            <ExpandIcon />
+          ) : ( 
+            isExpanded ? <CrossIcon /> : <ExpandIcon />
           )}
         </button>
 
@@ -75,7 +65,7 @@ const FeedActionButtons = ({
                   className="w-full h-auto rounded object-cover"
                 />
               )}
-            </div>
+            </div>  
           ) : (
             <div className="p-3 max-w-none text-gray-300 text-sm leading-6 rounded-md bg-neutral-900">
               <pre className="-mt-2 whitespace-pre-wrap font-sans">

@@ -2,7 +2,7 @@
 
 import { CommentsProvider } from "../context/CommentContext";
 import CommentsView from "../comment/CommentsView";
-import { CommentItemProp } from "@/interface/CommentProp";
+import { CommentItemProp } from "@/interface/CommentProps";
 import CommentOnPostForm from "./CommentOnPostForm";
 import SortComments from "../comment/SortComments";
 

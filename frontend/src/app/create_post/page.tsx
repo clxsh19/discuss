@@ -1,4 +1,4 @@
-import CreatePost from "@/components/post/create_post/CreatePost";
+import CreatePost from "@/components/create/create_post/CreatePost";
 import { checkIfCommunityExist } from "@/lib/data_api";
 import { notFound } from "next/navigation";
 

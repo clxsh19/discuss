@@ -1,6 +1,6 @@
 // CommentsContext.tsx
 import React, { createContext, useContext, useState, ReactNode } from "react";
-import { CommentItemProp } from "@/interface/CommentProp";
+import { CommentItemProp } from "@/interface/CommentProps";
 import { fetchPostComments } from "@/lib/data_api";
 
 interface CommentsContextProps {

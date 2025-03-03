@@ -6,7 +6,7 @@ import DeletedCommentItem from "./item/DeletedCommentItem";
 import { submitCommentVote } from "@/lib/create_api";
 import { useComments } from "../context/CommentContext";
 import { buildCommentTree } from "@/lib/utils";
-import { CommentItemProp } from "@/interface/CommentProp";
+import { CommentItemProp } from "@/interface/CommentProps";
 
 interface CommentsViewProp {
   post_id: number;
@@ -48,9 +48,10 @@ const CommentsView = ({ post_id }: CommentsViewProp) => {
     return (
       <div key={`parent-${comment_id}`} className="relative mb-1 p-1 comment-wrapper border-t border-t-neutral-800">
           {/* collapsable comment-border */}
-          <div
+          <div 
             className="absolute -left-1 top-0 h-full w-4 cursor-pointer border-l-8 border-l-neutral-700 comment-border"
-          ></div>
+          >
+          </div>
           {deleted ? (
             <DeletedCommentItem comment_id={comment_id} created_at={created_at} total_votes={total_votes} />
           ) : (

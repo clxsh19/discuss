@@ -30,7 +30,7 @@ const setCookiesFromHeader = (res: Response) => {
   }
 }
 
-export async function logIn(formData: FormData) {
+export async function userLogin(formData: FormData) {
   try {
     const res = await fetch('http://localhost:5000/api/user/login', {
       method: 'POST',
@@ -38,15 +38,16 @@ export async function logIn(formData: FormData) {
       body: formData
     });
     const data = await res.json();
+    // await new Promise(r => setTimeout(r, 2000));
 
     if (!res.ok) {
-      return { error: data.error || "Failed to login.", message: "" }
+      return { error: data.details.errors || "Unknown: Failed to loginn hb.", message: "" }
     }
 
     setCookiesFromHeader(res);
     return { error: "", message: data.message }
   } catch(error) {
-    return { error: "Unknown : Failed to login.", message: "" }
+    return { error: "Unknown: Failed to login.", message: "" }
   }
 }
 
@@ -58,9 +59,10 @@ export async function userRegister(formData:FormData) {
       body: formData,
     });
     const data = await res.json();
+    console.log(res)
     
     if (!res.ok) {
-      return { error: data.error || "Failed to Register.", message: "" }
+      return { error: data.details.errors || "Unknown: Failed to Register.", message: "" }
     }
 
     setCookiesFromHeader(res);
@@ -69,19 +71,30 @@ export async function userRegister(formData:FormData) {
     return { error: "", message: data.message }
   } catch (error) {
     console.error('Registration failed', error);
-    return { error: "Unknown : Failed to create account.", message: "" }
+    return { error: "Unknown: Failed to create account.", message: "" }
   }
 }
 
-export async function logOut() {
+export async function userLogout() {
   try {
     const res = await fetch('http://localhost:5000/api/user/logout', {
-      method: 'GET',
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Cookie': cookies().toString()
+      },
     });
-    const res_code = await res.json();
-    console.log(res_code);
+    const data = await res.json();
+
+    if (!res.ok) {
+      return { error: data.details.errors || "Unknown: Failed to Register.", message: "" }
+    }
+
+    cookies().set("connect.sid", "");
+    return { error: "", message: data.message };
   } catch (error) {
-    console.error('logout failed');
-    throw new Error('Failed to logout.');
+    console.error('Logout failed', error);
+    return { message: "", error: "An unexpected error occurred!" };
   }
 }
+

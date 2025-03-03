@@ -1,7 +1,5 @@
-import Register from "@/components/auth/RegisterForm";
+import AuthContainer from "@/components/auth/AuthContainer";
 
 export default function Page() {
-  return (
-      <Register />    
-  )
+  return <AuthContainer isRegister={true} />
 }

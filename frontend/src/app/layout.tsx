@@ -1,5 +1,5 @@
 import '@/globals.css';
-import HeaderNav from '@/components/HeaderNav';
+import HeaderNav from '@/components/header/HeaderNav';
 import { AuthProvider } from '@/components/context/AuthContext';
 import { ToastContainer, Zoom } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';

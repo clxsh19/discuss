@@ -1,4 +1,4 @@
-import SideBarContainer from "@/components/SidebarContainer";
+import SideBarContainer from "@/components/community/SidebarContainer";
 import { fetchSubData } from "@/lib/data_api";
 import { getNumberAbbreviation, getDate } from "@/lib/utils";
 import { notFound } from "next/navigation";

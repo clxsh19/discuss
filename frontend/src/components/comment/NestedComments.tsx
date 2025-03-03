@@ -2,7 +2,7 @@ import CommentItem from "./item/CommentItem";
 import CommentActionButtons from "./action_buttons/CommentActionButtons";
 import DeletedCommentItem from "./item/DeletedCommentItem"; // Import DeletedCommentItem
 import { submitCommentVote } from "@/lib/create_api";
-import { CommentItemProp } from "@/interface/CommentProp";
+import { CommentItemProp } from "@/interface/CommentProps";
 
 interface NestedCommentsProp {
   post_id: number;

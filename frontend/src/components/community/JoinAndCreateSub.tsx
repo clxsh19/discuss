@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { subscribeUser, unsubscribeUser } from '@/lib/create_api';
 import { useAuth } from '../context/AuthContext';
-import { showErrorToast } from './toasts';
+import { showErrorToast } from '../ui/toasts';
 import Link from 'next/link';
 
 const JoinAndCreateSub = ({ sub_name, subreddit_id, user_role }: { sub_name: string, subreddit_id: number, user_role: string }) => {

@@ -1,21 +1,25 @@
-import { PostItemProp } from "@/interface/PostProp";
-import InfiniteFeed from "../InfiniteFeed";
+import { PostItemProp } from "@/interface/PostProps";
 import Link from 'next/link';
+import FeedContainer from "../feed/FeedContainer";
+import LinkHref from "../ui/LinkHref";
+import { create } from "domain";
 
 interface HomeViewProps {
   posts: PostItemProp[],
   hasMore: boolean
 }
 
+const createLinkStyle = "w-full block text-white text-sm font-medium py-2 rounded-md text-center"
+
 const HomeView = ({ posts, hasMore }: HomeViewProps) => {
   return (
     <div className="w-4/5 h-full flex p-2 mt-2 mx-auto ">
       {/* Home Feed */}
       <div className="w-4/6 ">
-        <InfiniteFeed initialPosts={posts} initialHasMore={hasMore}/>
+        <FeedContainer initialPosts={posts} initialHasMore={hasMore}/>
       </div>
       
-      {/*  Create */}
+      {/*  Side bar */}
       <div className="w-1/4 ml-auto">
         <div className="p-4 rounded-md border border-neutral-400 text-white hidden lg:block">
           {/* Welcome Text */}
@@ -25,21 +29,18 @@ const HomeView = ({ posts, hasMore }: HomeViewProps) => {
             Start a thread or join one!
           </p>
 
+          {/* Create Links */}
           <div className="mt-4 space-y-2">
-            {/* Create Post Button */}
-            <Link
+            <LinkHref 
+              href="/create_post"
+              label="Create Community"
+              style={`${createLinkStyle} bg-blue-500 hover:bg-blue-600`}
+            />
+            <LinkHref 
               href="/create_community"
-              className="w-full block bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2 rounded-md text-center"
-            >
-              Create Community
-            </Link>
-            {/* Create Community Button */}
-            <Link
-              href="/create_community"
-              className="w-full block bg-green-600 hover:bg-green-700 text-white text-sm font-medium py-2 rounded-md text-center"
-            >
-              Explore Communities
-            </Link>
+              label="Explore Communities"
+              style={`${createLinkStyle} bg-green-600 hover:bg-green-700`}
+            />
           </div>
         </div>
       </div>

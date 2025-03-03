@@ -1,7 +1,5 @@
-import Login from "@/components/auth/LoginForm";
+import AuthContainer from "@/components/auth/AuthContainer";
 
 export default function Page() {
-  return (
-      <Login />   
-  )
+  return <AuthContainer isRegister={false} />
 }

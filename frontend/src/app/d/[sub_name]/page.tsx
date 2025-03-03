@@ -1,6 +1,6 @@
 import { fetchSubData, fetchPostsBySub } from "@/lib/data_api";
 import { buildPostWithMetaData } from "@/lib/utils";
-import SubView from '@/components/subreddit/SubView';
+import SubView from '@/components/community/SubView';
 import { notFound } from "next/navigation";
 
 interface SubPageProp {

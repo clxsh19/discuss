@@ -1,5 +1,5 @@
-import {PostItemProp} from "@/interface/PostProp";
-import { CommentItemProp } from "@/interface/CommentProp";
+import {PostItemProp} from "@/interface/PostProps";
+import { CommentItemProp } from "@/interface/CommentProps";
 import { fetchUrlMetaData } from "./data_api";
 import { fileTypeFromBuffer } from "file-type";
 

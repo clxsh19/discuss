@@ -1,4 +1,4 @@
-import JoinAndCreateSub from "./ui/JoinAndCreateSub"
+import JoinAndCreateSub from "./JoinAndCreateSub"
 
 interface SideBarContainerProps {
   display_name: string,

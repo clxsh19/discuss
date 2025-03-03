@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from "react"
-import PostForm from "./PostForm";
+import PostForm from "./CreatePostForm";
 import { useAuth } from "@/components/context/AuthContext";
 import { useRouter, useSearchParams } from "next/navigation";
 

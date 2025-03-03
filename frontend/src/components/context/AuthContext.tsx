@@ -2,7 +2,6 @@
 
 import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { userData } from '@/lib/data_api';
-import { promises } from 'dns';
 // import { useRouter } from 'next/router';
 
 interface UserInfo {
@@ -24,8 +23,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<UserInfo | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchUserStatus = async (): Promise<void> => {
-    console.log('fetching auth status')
+  const fetchUserStatus = async(): Promise<void> => {
     setLoading(true);
     try {
       const data = await userData();

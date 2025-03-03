@@ -12,34 +12,49 @@ const fetchWithConfig = async (
     headers: {
       'Content-Type': 'application/json',
       ...options.headers,
-      // Cookie: cookies().toString(),
+      Cookie: cookies().toString(),
     },
     ...options,
     // credentials: 'include', // cache: 'no-cache',
   });
 
   if (!res.ok) {
-    const errorData = await res.json().catch(() => null);
-    // const errorMessage = Array.isArray(errorData)
-    // ? errorData.map((err) => err.msg).join(", ")
-    // : errorData?.error || `HTTP Error ${res.status}`;
-    console.error('API error: ', JSON.stringify(errorData, null, 2));
-    // throw `HTTP Error ${res.status}`;
-      
+    const { success, status, message, details } = await res.json().catch(() => null);
+    const error = details.errors;
+    let errorText = "Unkown http error";
+    if (Array.isArray(error)) {
+      errorText = error.map((err: any) => err.msg).join(', ');
+    } else {
+      errorText = error;
+    }
+
+    console.log({
+      success,
+      status,
+      message,
+      location: details.location,
+      errors: details.errors
+    })
+
+    throw new Error(errorText);
   }
 
   return res.json();
 }
 
-export async function fetchAllPosts(offset : number, sort: string = 'new', t: string = 'all') {
+// post
+
+export async function fetchAllPosts(offset: number, sort: string = 'new', t = 'all') {
   try {
     const queryParams = new URLSearchParams({
       offset: offset.toString(),
       sort,
       t,
     });
+    console.log(queryParams);
     const data = await fetchWithConfig(`post/all?${queryParams}`);
     // data.hasMore = Array.isArray(data.posts) && data.posts.length > 0;
+    // await new Promise(r=> setTimeout(r, 2000))
     return {
       posts: data.posts ?? [],
       hasMore: data.hasMore ?? false,
@@ -61,21 +76,7 @@ export async function fetchPostDetail(post_id: number) {
   }
 }
 
-export async function fetchPostComments(post_id: number, offset: number, sort: string = 'new') {
-  try {
-    const queryParams = new URLSearchParams({
-      offset: offset.toString(),
-      sort
-    });
-    const data = await fetchWithConfig(`comment/${post_id}?${queryParams}`);
-    return data.comments ?? [];
-  } catch (error) {
-    console.error('Unkown Error fetching comments', error);
-    return [];
-    // throw new Error('An unkonw error occurred while fetching data.');
-  }
-}
-
+// fetch posts by subname
 export async function fetchPostsBySub(sub_name: string, offset: number, sort: string = 'new', t: string = 'all') {
   try {
     const queryParams = new URLSearchParams({
@@ -94,6 +95,25 @@ export async function fetchPostsBySub(sub_name: string, offset: number, sort: st
     throw new Error('An unkonw error occurred while fetching data.');
   }
 }
+
+// comment
+
+export async function fetchPostComments(post_id: number, offset: number, sort: string = 'new') {
+  try {
+    const queryParams = new URLSearchParams({
+      offset: offset.toString(),
+      sort
+    });
+    const data = await fetchWithConfig(`comment/${post_id}?${queryParams}`);
+    return data.comments ?? [];
+  } catch (error) {
+    console.error('Unkown Error fetching comments', error);
+    return [];
+    // throw new Error('An unkonw error occurred while fetching data.');
+  }
+}
+
+// sub
 
 export async function fetchAllCommunityNames() {
   try {
@@ -127,6 +147,19 @@ export async function fetchSubData(sub_name : string) {
     throw new Error('An unkonw error occurred while fetching data.');
   }
 }
+
+export async function checkIfCommunityExist(name: string) {
+  try {
+    const data = await fetchWithConfig(`subreddit/check_sub?sub_name=${name}`);
+    return data.sub ?? 0;
+  } catch (error) {
+    console.error('Unknown Error fetching if community exist.', error);
+    return 0;
+    // throw new Error('Failed to fetch sub status.');
+  }
+}
+
+// user
 
 export async function userData(): Promise<{
   status:boolean, 
@@ -181,13 +214,3 @@ export async function fetchUrlMetaData(url: string) {
   }
 }
 
-export async function checkIfCommunityExist(name: string) {
-  try {
-    const data = await fetchWithConfig(`subreddit/check_sub?sub_name=${name}`);
-    return data.sub ?? 0;
-  } catch (error) {
-    console.error('Unknown Error fetching if community exist.', error);
-    return 0;
-    // throw new Error('Failed to fetch sub status.');
-  }
-}

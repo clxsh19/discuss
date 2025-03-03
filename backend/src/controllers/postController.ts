@@ -103,7 +103,8 @@ const getBySubName = asyncHandler( async(req, res, next) => {
 const postVote = asyncHandler(async (req, res, next) => {
   handleValidationErrors(req, '/postController/postVote');
 
-  const { post_id: postId, vote_type: voteType} = req.body;
+  const postId = req.body.post_id;
+  const voteType = parseInt(req.body.vote_type, 10);
   const userId = req.user?.id;
   const result = await userVotePost({ userId, postId, voteType });
   

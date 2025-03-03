@@ -1,15 +1,11 @@
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { DownIcon } from '../Icons';
+import { SortDropDownProps } from "@/interface/feed/SortDropDownProps";
 
-interface SortDropDownProps {
-  onSortChange: (sort: 'hot' | 'new' | 'top', timeframe?: string) => void;
-}
-
-const SortDropDown = ({ onSortChange }: SortDropDownProps) => {
+const SortDropDown = ({ onSortChange, isSorting }: SortDropDownProps) => {
   return (
-
       <DropdownMenu.Root >
-        <DropdownMenu.Trigger asChild>
+        <DropdownMenu.Trigger asChild disabled={isSorting}>
           <button className="flex items-end space-x-4 outline-none">
             <span>Top</span>
             <DownIcon />

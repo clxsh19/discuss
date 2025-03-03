@@ -33,7 +33,6 @@ const CommentOnPostForm = ({ post_id }: CommentOnPostFormProp) => {
     }
 
     setLoading(true);
-
     try {
       setIsEditing(false);
       const comment_id = await createComment({ post_id, comment});
@@ -51,8 +50,6 @@ const CommentOnPostForm = ({ post_id }: CommentOnPostFormProp) => {
       setComment('');
     } catch (err) {
       showErrorToast('Failed to submit the comment.');
-      console.error('Error submitting comment:', err);
-
     } finally {
       setLoading(false);
     } 

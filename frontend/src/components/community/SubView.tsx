@@ -1,6 +1,6 @@
 import { SubProps } from "@/interface/SubProps";
-import InfiniteFeed from "../InfiniteFeed";
-import { PostItemProp } from "@/interface/PostProp";
+import FeedContainer from "../feed/FeedContainer";
+import { PostItemProp } from "@/interface/PostProps";
 
 interface SubViewProps {
   sub_detail: SubProps;
@@ -39,7 +39,7 @@ const SubView = ({ sub_detail, sub_posts, hasMore }: SubViewProps) => {
       </div>
 
       {/* Sub Feed */}
-      <InfiniteFeed sub_name={sub_name} initialPosts={sub_posts} initialHasMore={hasMore}/>
+      <FeedContainer subName={sub_name} initialPosts={sub_posts} initialHasMore={hasMore}/>
     </>
   );
 };

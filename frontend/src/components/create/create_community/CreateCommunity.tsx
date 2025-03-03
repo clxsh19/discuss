@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect } from "react"
-import CreateSubForm from "./CreateSubForm";
+import CreateSubForm from "./CreateCommunityForm";
 import { useAuth } from "@/components/context/AuthContext";
 import { useRouter } from "next/navigation";
 
@@ -28,7 +28,6 @@ const CreateSub = () => {
     </div>
     
   )
-
 }
 
 export default CreateSub;

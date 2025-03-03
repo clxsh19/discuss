@@ -1,8 +1,8 @@
-import { PostItemProp } from "@/interface/PostProp";
-import { CommentItemProp } from "@/interface/CommentProp";
+import { PostItemProp } from "@/interface/PostProps";
+import { CommentItemProp } from "@/interface/CommentProps";
 import { getTimePassed } from '@/lib/utils';
 import CommentProviderContainer from "./CommentProviderContainer";
-import FeedItem from "../FeedItem";
+import FeedItem from "../feed/feedtem/FeedItem";
 
 export interface PostViewProp {
   post : PostItemProp[],
