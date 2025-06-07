@@ -1,17 +1,11 @@
 import multer, { MulterError } from 'multer';
-import path from 'path';
 import cloudinary from './cloudinaryConifg';
+import { Request } from 'express';
 
-// const storage = multer.diskStorage({
-//   destination: process.env.MEDIA_API_URL,
-//   filename: function (req, file, cb) {
-//     cb(null, file.fieldname + "-" + Date.now() + path.extname(file.originalname));
-//   }
-// });
 const storage = multer.memoryStorage();
 // Allowed file types (images & videos)
 const fileFilter = (
-  req: Express.Request,
+  req: Request,
   file: Express.Multer.File,
   cb: multer.FileFilterCallback,
 ) => {
