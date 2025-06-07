@@ -36,7 +36,7 @@ const queryTransaction = async (queryText: string[], params: any[][]) => {
   try {
     await client.query('BEGIN'); // Start the transaction
 
-    const results = [];
+    const results: QueryResult<any>[] = [];
     // Loop through the queries and execute them in sequence
     for (let i = 0; i < queryText.length; i++) {
       const result = await client.query(queryText[i], params[i]);
@@ -55,4 +55,3 @@ const queryTransaction = async (queryText: string[], params: any[][]) => {
 };
 
 export { query, queryWithPool, pool, queryTransaction };
-

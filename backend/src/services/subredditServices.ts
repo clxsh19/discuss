@@ -174,7 +174,7 @@ const getAllSubName = async () => {
 
 const getByTag = async ({ tag, offset }: GetByTagParams) => {
   const limit = 4;
-  const params = [];
+  const params: (string | number)[] = [];
   let queryStr = `SELECT 
     s.display_name, s.name, s.members_count, s.description, s.logo_url 
     FROM subreddits s`;
