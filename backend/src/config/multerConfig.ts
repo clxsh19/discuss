@@ -1,12 +1,23 @@
 import multer, { MulterError } from 'multer';
-import cloudinary from './cloudinaryConifg';
 import { Request } from 'express';
+import cloudinary from './cloudinaryConifg';
+
+// Define the file interface explicitly
+interface MulterFile {
+  fieldname: string;
+  originalname: string;
+  encoding: string;
+  mimetype: string;
+  size: number;
+  buffer: Buffer;
+}
 
 const storage = multer.memoryStorage();
+
 // Allowed file types (images & videos)
 const fileFilter = (
   req: Request,
-  file: Express.Multer.File,
+  file: MulterFile,
   cb: multer.FileFilterCallback,
 ) => {
   const allowedMimeTypes = [
@@ -19,7 +30,7 @@ const fileFilter = (
   ];
 
   if (!allowedMimeTypes.includes(file.mimetype)) {
-    return cb(new MulterError('LIMIT_UNEXPECTED_FILE'));
+    return cb(new MulterError('LIMIT_UNEXPECTED_FILE', 'Invalid file type'));
   }
 
   cb(null, true);
@@ -27,8 +38,11 @@ const fileFilter = (
 
 const upload = multer({
   storage: storage,
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
-  fileFilter: fileFilter,
+  limits: { 
+    fileSize: 10 * 1024 * 1024, // 10MB limit
+    files: 1 // Limit to 1 file per upload
+  },
+  fileFilter: fileFilter as any, // Type assertion to bypass the type issue
 });
 
 const uploadToCloudinary = (fileBuffer: Buffer, fileName: string) => {
@@ -36,12 +50,12 @@ const uploadToCloudinary = (fileBuffer: Buffer, fileName: string) => {
     cloudinary.uploader
       .upload_stream(
         {
-          resource_type: 'auto', // Auto-detect image or video
+          resource_type: 'auto',
           folder: 'uploads',
           public_id: fileName,
         },
         (error, result) => {
-          if (error) reject(`Cloudinary upload failed: ${error.message}`);
+          if (error) reject(new Error(`Cloudinary upload failed: ${error.message}`));
           else resolve(result);
         },
       )
