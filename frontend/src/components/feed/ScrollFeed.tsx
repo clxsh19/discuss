@@ -1,15 +1,15 @@
 'use client';
 
 import { useEffect, useRef, useState, useMemo } from 'react';
-import FeedItem from '@/components/feed/feedtem/FeedItem';
+import FeedItem from '@/components/feed/feedItem/FeedItem';
 import { LoadingIconAnimation } from '../Icons';
-import { ScrollFeedProps } from '@/interface/feed/ScrollFeedProps';
+import { ScrollFeedProps } from '@/interface/feed/FeedProps';
 
 const ScrollFeed = ({ posts, hasMoreRef, subName, loadMorePosts }: ScrollFeedProps) => {
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const scrollTrigger = useRef<HTMLDivElement | null>(null);
 
-  const handleLoadMorePosts = async() => {
+  const handleLoadMorePosts = async () => {
     setIsLoadingMore(true);
     await loadMorePosts(false);
     setIsLoadingMore(false)
@@ -39,7 +39,7 @@ const ScrollFeed = ({ posts, hasMoreRef, subName, loadMorePosts }: ScrollFeedPro
       observer.disconnect();
     };
   }, [isLoadingMore]);
-  
+
   // const postItems = useMemo(() => 
   //   posts.map((post, index) => {
   //     const postWithSubFeed = { ...post, sub_feed: !!subName };
@@ -52,11 +52,12 @@ const ScrollFeed = ({ posts, hasMoreRef, subName, loadMorePosts }: ScrollFeedPro
     <>
       {/* Post List */}
       {posts.map((post, index) => {
-        post.sub_feed = !!subName;
+        {/*post.sub_feed = !!subName;*/ }
+        post.sub_feed = false;
         return <FeedItem key={`${post.post_id}-${index}`} {...post} />;
       })}
 
-      <div className="mt-4 text-white flex flex-col justify-center items-center space-y-2" 
+      <div className="mt-4 text-white flex flex-col justify-center items-center space-y-2"
         ref={scrollTrigger}
       >
         {isLoadingMore ? (

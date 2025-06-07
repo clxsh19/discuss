@@ -3,6 +3,8 @@ interface ButtonProps {
   label: string;
   style: string;
   isLoading?: boolean;
+  onClick?: React.MouseEventHandler<HTMLButtonElement>;
+
 }
 
 export default ButtonProps;

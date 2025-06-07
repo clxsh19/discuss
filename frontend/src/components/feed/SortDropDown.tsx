@@ -1,8 +1,8 @@
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { DownIcon } from '../Icons';
-import { SortDropDownProps } from "@/interface/feed/SortDropDownProps";
+import { SortOnTimeDropDownProps } from "@/interface/feed/FeedProps";
 
-const SortDropDown = ({ onSortChange, isSorting }: SortDropDownProps) => {
+const SortOnTimeDropDown = ({ onSortChange, isSorting }: SortOnTimeDropDownProps) => {
   return (
       <DropdownMenu.Root >
         <DropdownMenu.Trigger asChild disabled={isSorting}>
@@ -49,5 +49,5 @@ const SortDropDown = ({ onSortChange, isSorting }: SortDropDownProps) => {
   )
 } 
 
-export default SortDropDown;
+export default SortOnTimeDropDown;
 

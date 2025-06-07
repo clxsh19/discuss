@@ -1,13 +1,6 @@
-import { PostItemProp } from "@/interface/PostProps";
-import Link from 'next/link';
 import FeedContainer from "../feed/FeedContainer";
 import LinkHref from "../ui/LinkHref";
-import { create } from "domain";
-
-interface HomeViewProps {
-  posts: PostItemProp[],
-  hasMore: boolean
-}
+import { HomeViewProps } from "@/interface/home/HomeViewProps";
 
 const createLinkStyle = "w-full block text-white text-sm font-medium py-2 rounded-md text-center"
 
@@ -33,12 +26,12 @@ const HomeView = ({ posts, hasMore }: HomeViewProps) => {
           <div className="mt-4 space-y-2">
             <LinkHref 
               href="/create_post"
-              label="Create Community"
+              children="Create Community"
               style={`${createLinkStyle} bg-blue-500 hover:bg-blue-600`}
             />
             <LinkHref 
               href="/create_community"
-              label="Explore Communities"
+              children="Explore Communities"
               style={`${createLinkStyle} bg-green-600 hover:bg-green-700`}
             />
           </div>

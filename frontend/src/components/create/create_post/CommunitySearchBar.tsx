@@ -3,21 +3,17 @@
 import { useState, useEffect, useRef } from 'react';
 import { fetchAllCommunityNames } from '@/lib/data_api';
 import { useRouter } from 'next/navigation';
-import { DownIcon } from '@/components/Icons';
+// import { DownIcon } from '@/components/Icons';
 
 interface Community {
   subreddit_id: number;
   name: string;
 }
 
-interface CommunitySearchBarProps {
-  sub_name?: string;
-}
-
-const CommunitySearchBar = ({ sub_name }: CommunitySearchBarProps) => {
+const CommunitySearchBar = ({ subName }: {subName?: string}) => {
   const [communities, setCommunities] = useState<Community[]>([]);
   const [filteredCommunities, setFilteredCommunities] = useState<Community[]>([]);
-  const [selectedCommunity, setSelectedCommunity] = useState<string>(sub_name || '');
+  const [selectedCommunity, setSelectedCommunity] = useState<string>(subName || '');
   const [loading, setLoading] = useState(true);
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -63,7 +59,7 @@ const CommunitySearchBar = ({ sub_name }: CommunitySearchBarProps) => {
   };
 
   return (
-    <div className="w-full text-white" ref={dropdownRef}>
+    <div className="w-3/6 mb-4 text-white" ref={dropdownRef}>
       <label htmlFor="communityName" className="text-sm font-medium text-white">
         Community
       </label>
@@ -77,7 +73,8 @@ const CommunitySearchBar = ({ sub_name }: CommunitySearchBarProps) => {
         placeholder='Click to select community'
         readOnly
         required
-        onClick={() => setShowDropdown((prev) => !prev)} // Toggle dropdown
+        onClick={() => {
+          setShowDropdown((prev) => !prev)} }// Toggle dropdown
       />
       {showDropdown && (
         <div className="absolute w-4/12 mt-2 z-10 bg-neutral-900 border border-neutral-500 rounded-lg">
@@ -105,7 +102,6 @@ const CommunitySearchBar = ({ sub_name }: CommunitySearchBarProps) => {
                     setShowDropdown(false); // Close dropdown
                     router.replace(`/create_post?sub_name=${encodeURIComponent(community.name)}`)
                   }}
-          
                 >
                   {community.name}
                 </li>

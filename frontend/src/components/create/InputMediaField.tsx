@@ -1,20 +1,13 @@
 import { useState } from "react";
 import { validateFile } from "@/lib/utils";
 import { DeleteIcon } from "../Icons";
+import { InputMediaFieldProps } from "@/interface/create/InputMediaFieldProps";
 
-interface FormMediaInputProps {
-  label: string;
-  name: string;
-  placeholder?: string;
-  accept: string;
-  max_file_size: number;
-  allowed_mime_types: string[];
-  state: {
-    error: string
-  };
-}
-
-const InputMediaField = ({name, label, accept, max_file_size, allowed_mime_types, state} : FormMediaInputProps) => {
+const InputMediaField = ({
+  name, label,
+  accept, max_file_size,
+  allowed_mime_types, state
+} : InputMediaFieldProps) => {
   const [mediaFileSrc, setMediaFileSrc] = useState<string | null>(null);
   const [fileErrMsg, setFileErrMsg] = useState('');
   const [mediaFileType, setMediaFileType] = useState('');

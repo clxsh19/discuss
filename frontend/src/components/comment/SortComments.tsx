@@ -1,6 +1,7 @@
 import { useComments } from "../context/CommentContext";
+import { PostIdProp } from "@/interface/comment/CommentContainerProps";
 
-const  SortComments = ({post_id} : {post_id: number}) => {
+const  SortComments = ({ post_id }: PostIdProp) => {
   const { sortComments } = useComments();
 
   return (

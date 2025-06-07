@@ -1,12 +1,9 @@
-'use server'
+'use server';
 
-import { cookies } from "next/headers";
+import { cookies } from 'next/headers';
 import { JSDOM } from 'jsdom';
 
-const fetchWithConfig = async (
-  url: string,
-  options: RequestInit = {}
-) => {
+const fetchWithConfig = async (url: string, options: RequestInit = {}) => {
   const res = await fetch(`${process.env.BACKEND_API_URL}/api/${url}`, {
     method: 'GET',
     headers: {
@@ -19,39 +16,45 @@ const fetchWithConfig = async (
   });
 
   if (!res.ok) {
-    const { success, status, message, details } = await res.json().catch(() => null);
+    const { success, status, message, details } = await res
+      .json()
+      .catch(() => null);
     const error = details.errors;
-    let errorText = "Unkown http error";
+    let errorText = 'Unkown http error';
     if (Array.isArray(error)) {
       errorText = error.map((err: any) => err.msg).join(', ');
     } else {
       errorText = error;
     }
 
-    console.log({
+    console.error({
       success,
       status,
       message,
       location: details.location,
-      errors: details.errors
-    })
+      errors: details.errors,
+    });
 
     throw new Error(errorText);
   }
 
   return res.json();
-}
+};
 
 // post
 
-export async function fetchAllPosts(offset: number, sort: string = 'new', t = 'all') {
+export async function fetchAllPosts(
+  offset: number,
+  sort: string = 'new',
+  t = 'all',
+) {
   try {
     const queryParams = new URLSearchParams({
       offset: offset.toString(),
       sort,
       t,
     });
-    console.log(queryParams);
+    //console.log(queryParams);
     const data = await fetchWithConfig(`post/all?${queryParams}`);
     // data.hasMore = Array.isArray(data.posts) && data.posts.length > 0;
     // await new Promise(r=> setTimeout(r, 2000))
@@ -77,7 +80,12 @@ export async function fetchPostDetail(post_id: number) {
 }
 
 // fetch posts by subname
-export async function fetchPostsBySub(sub_name: string, offset: number, sort: string = 'new', t: string = 'all') {
+export async function fetchPostsBySub(
+  sub_name: string,
+  offset: number,
+  sort: string = 'new',
+  t: string = 'all',
+) {
   try {
     const queryParams = new URLSearchParams({
       offset: offset.toString(),
@@ -98,11 +106,15 @@ export async function fetchPostsBySub(sub_name: string, offset: number, sort: st
 
 // comment
 
-export async function fetchPostComments(post_id: number, offset: number, sort: string = 'new') {
+export async function fetchPostComments(
+  post_id: number,
+  offset: number,
+  sort: string = 'new',
+) {
   try {
     const queryParams = new URLSearchParams({
       offset: offset.toString(),
-      sort
+      sort,
     });
     const data = await fetchWithConfig(`comment/${post_id}?${queryParams}`);
     return data.comments ?? [];
@@ -118,13 +130,13 @@ export async function fetchPostComments(post_id: number, offset: number, sort: s
 export async function fetchAllCommunityNames() {
   try {
     const data = await fetchWithConfig('subreddit/all_names', {
-      headers: { 
-        Cookie: cookies().toString(), 
+      headers: {
+        Cookie: cookies().toString(),
       },
       credentials: 'include',
       cache: 'no-cache',
     });
-    return data.communities;
+    return data.communities || [];
   } catch (error) {
     console.error('Unknown Error fetching all communities name.', error);
     return [];
@@ -132,11 +144,11 @@ export async function fetchAllCommunityNames() {
   }
 }
 
-export async function fetchSubData(sub_name : string) {
+export async function fetchSubData(sub_name: string) {
   try {
     const data = await fetchWithConfig(`subreddit/${sub_name}`, {
-      headers: { 
-        Cookie: cookies().toString(), 
+      headers: {
+        Cookie: cookies().toString(),
       },
       credentials: 'include',
       cache: 'no-cache',
@@ -151,7 +163,7 @@ export async function fetchSubData(sub_name : string) {
 export async function checkIfCommunityExist(name: string) {
   try {
     const data = await fetchWithConfig(`subreddit/check_sub?sub_name=${name}`);
-    return data.sub ?? 0;
+    return data.exist;
   } catch (error) {
     console.error('Unknown Error fetching if community exist.', error);
     return 0;
@@ -159,11 +171,32 @@ export async function checkIfCommunityExist(name: string) {
   }
 }
 
+export async function fetchByTag(tag: string, offset: number) {
+  try {
+    let queryParams;
+    if (tag != 'All') {
+      queryParams = new URLSearchParams({
+        tag,
+        offset: offset.toString(),
+      });
+    } else {
+      queryParams = new URLSearchParams({
+        offset: offset.toString(),
+      });
+    }
+    const data = await fetchWithConfig(`subreddit/communities?${queryParams}`);
+    return data;
+  } catch (error) {
+    console.error('Unknown Error fetching communities by tag.', error);
+    return 0;
+  }
+}
+
 // user
 
 export async function userData(): Promise<{
-  status:boolean, 
-  user: { id: number, username: string } | null,
+  status: boolean;
+  user: { id: number; username: string } | null;
 }> {
   const local_cookies = cookies();
   const hasCookie = local_cookies.has('connect.sid');
@@ -173,17 +206,17 @@ export async function userData(): Promise<{
 
   try {
     const data = await fetchWithConfig('user/status', {
-      headers: { 
-        Cookie: local_cookies.toString(), 
+      headers: {
+        Cookie: local_cookies.toString(),
       },
       credentials: 'include',
       cache: 'no-cache',
-    })
+    });
 
     return {
       status: !!data.authenticated,
-      user: data.authenticated? data.user: null,
-    }
+      user: data.authenticated ? data.user : null,
+    };
   } catch (error) {
     console.error('Unknown Error fetching user status');
     return { status: false, user: null };
@@ -195,12 +228,24 @@ export async function fetchUrlMetaData(url: string) {
   try {
     const res = await fetch(url);
     const html = await res.text();
-    const dom = new JSDOM(html);
+    const cleanHtml = html
+      .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+      .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '');
+    const dom = new JSDOM(cleanHtml);
     const document = dom.window.document;
 
-    const ogImage = document.querySelector('meta[property="og:image"]')?.getAttribute('content') || null;
-    const ogTitle = document.querySelector('meta[property="og:title"]')?.getAttribute('content') || null;
-    const ogDescription = document.querySelector('meta[property="og:description"]')?.getAttribute('content') || null;
+    const ogImage =
+      document
+        .querySelector('meta[property="og:image"]')
+        ?.getAttribute('content') || null;
+    const ogTitle =
+      document
+        .querySelector('meta[property="og:title"]')
+        ?.getAttribute('content') || null;
+    const ogDescription =
+      document
+        .querySelector('meta[property="og:description"]')
+        ?.getAttribute('content') || null;
 
     const metadata = {
       image: ogImage,
@@ -213,4 +258,3 @@ export async function fetchUrlMetaData(url: string) {
     // throw new Error('Failed to fetch metadata.');
   }
 }
-

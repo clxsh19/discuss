@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { showErrorToast } from '../ui/toasts';
+import { showErrorToast } from '../ui/Toasts';
 import TextInput from '../ui/Form/TextInput';
 import Button from "../ui/Button";
 import LinkHref from "../ui/LinkHref";
@@ -68,7 +68,7 @@ const AuthForm = ({ linkText, linkLabel, submitText, authSubmit } : AuthFormProp
         <span>{linkText}</span>
         <LinkHref 
           href={`/${linkLabel}`}
-          label={linkLabel}
+          children={linkLabel}
           style="text-blue-400 hover:underline"
         />
       </div>

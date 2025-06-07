@@ -1,11 +1,7 @@
 import { useComments } from "../../context/CommentContext";
 import { deleteComment } from "@/lib/create_api";
-import { showErrorToast } from "../../ui/toasts";
-
-interface CommentDeleteConfirmProps {
-  comment_id: number,
-  setShowDeleteConfirm: React.Dispatch<React.SetStateAction<boolean>>
-}
+import { showErrorToast } from "../../ui/Toasts";
+import { CommentDeleteConfirmProps } from "@/interface/comment/ActionButtonProps";
 
 const CommentDeleteConfirm = ({ comment_id, setShowDeleteConfirm }: CommentDeleteConfirmProps) => {
   const { softDeleteComment } = useComments();
@@ -22,7 +18,7 @@ const CommentDeleteConfirm = ({ comment_id, setShowDeleteConfirm }: CommentDelet
 
   return (
     <div className="flex ml-3 text-red-600 font-semibold">
-      <>Are you sure?</>
+      Are you sure?
       <button
         onClick={handleSubmit}
         className="ml-1 hover:underline"

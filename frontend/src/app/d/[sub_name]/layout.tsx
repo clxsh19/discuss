@@ -1,4 +1,4 @@
-import SideBarContainer from "@/components/community/SidebarContainer";
+import CommunitySidebar from "@/components/community/CommunitySidebar";
 import { fetchSubData } from "@/lib/data_api";
 import { getNumberAbbreviation, getDate } from "@/lib/utils";
 import { notFound } from "next/navigation";
@@ -26,7 +26,7 @@ export default async function SubLayout({
       <div className="w-4/6 mt-4">{children}</div>
 
       {/* Side Container */}
-      <SideBarContainer 
+      <CommunitySidebar
         display_name={display_name} sub_name={sub_name}
         membersCountWithAbv={membersCountWithAbv}
         createdDate={createdDate}

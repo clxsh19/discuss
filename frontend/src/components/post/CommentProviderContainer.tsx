@@ -1,23 +1,20 @@
 'use client'
 
 import { CommentsProvider } from "../context/CommentContext";
-import CommentsView from "../comment/CommentsView";
-import { CommentItemProp } from "@/interface/CommentProps";
+import CommentsContainer from "../comment/CommentsContainer";
 import CommentOnPostForm from "./CommentOnPostForm";
 import SortComments from "../comment/SortComments";
+import { CommentProviderContainerProps } from "@/interface/post/PostProps";
 
 const CommentProviderContainer = ({ 
   initialComments, 
   post_id 
-} : {
-  initialComments: CommentItemProp[];
-  post_id: number;
-}) => {
+} : CommentProviderContainerProps ) => {
   return (
     <CommentsProvider initialComments={initialComments}>
       <CommentOnPostForm post_id={post_id} />
       <SortComments post_id={post_id} />
-      <CommentsView post_id={post_id} />
+      <CommentsContainer post_id={post_id} />
     </CommentsProvider>
   );
 };

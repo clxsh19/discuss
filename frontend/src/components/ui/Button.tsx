@@ -4,13 +4,15 @@ const Button = ({
   type,
   label,
   style,
-  isLoading
+  isLoading,
+  onClick,
 } : ButtonProps) => {
   return (
     <button 
       disabled={isLoading}
       type={type} 
       className={`${style} ${isLoading? "cursor-not-allowed" : "" }`}
+      onClick={onClick}
     >
       {isLoading ? "Loading..." : label}
     </button>

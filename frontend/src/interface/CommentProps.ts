@@ -5,7 +5,7 @@ export interface CommentItemProp {
   username: string,
   created_at: string,
   total_votes: number,
-  vote_type: 1|-1|null,
+  vote_type: 1| -1| null,
   content: string,
   children?: CommentItemProp[],
   deleted: boolean

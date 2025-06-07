@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { useFormState } from 'react-dom';
 import { createCommunity } from '@/lib/create_api';
-import { InputTextField, InputTextareaField, FormSubmitButton } from '../FormElements';
 import InputMediaField from '../InputMediaField';
+import TextInput from '@/components/ui/Form/TextInput';
+import Textarea from '@/components/ui/Form/Textarea';
+import FormSubmitButton from '../FormSubmitButton';
 
 const intialState = {
   error: '',
@@ -19,10 +21,9 @@ const TAGS = [
   "Spooky", "Nature & Outdoors"
 ];
 
-const CreateSubForm = () => {
+const CreateCommunityForm = () => {
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [state, formAction] = useFormState(createCommunity, intialState);
-
 
   const handleTagSelection = (tag: string) => {
     setSelectedTags((prev) =>
@@ -32,22 +33,26 @@ const CreateSubForm = () => {
 
   const handleMouseDownOnTag = (e: React.MouseEvent<HTMLElement>) => {
     e.preventDefault();
-  
     const value = e.currentTarget.getAttribute("value");
+
     if (!value) return;
-  
+
     setSelectedTags((prev) =>
       prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value]
     );
   };
-  
+
 
   return (
     <form action={formAction}>
+
       {/* Community name */}
-      <InputTextField
+      <TextInput
+        containerStyle="mb-4"
+        labelStyle="text-sm font-medium"
+        inputStyle="w-full mt-2 px-3 py-2 bg-neutral-900 rounded-lg text-white text-sm outline-none"
         label='Name'
-        name='name'
+        name='sub_name'
         placeholder="Enter the community name..."
         onInput={(e) => {
           const input = e.target as HTMLInputElement;
@@ -56,26 +61,28 @@ const CreateSubForm = () => {
       />
 
       {/* Display Name */}
-      <InputTextField
+      <TextInput
+        containerStyle="mb-4"
+        labelStyle="text-sm font-medium"
+        inputStyle="w-full mt-2 px-3 py-2 bg-neutral-900 rounded-lg text-white text-sm outline-none"
         label='Display Name'
-        name='displayName'
+        name='display_name'
         placeholder="Enter the display name for your community..."
-        onInput={(e) => {
-          const input = e.target as HTMLInputElement;
-          input.value = input.value.replace(/\s/g, '');
-        }}
       />
 
       {/* Description */}
-      <InputTextareaField
-        label="Description" 
+      <Textarea
+        containerStyle="mb-4"
+        labelStyle="text-sm font-medium"
+        inputStyle="w-full mt-2 px-3 py-2 bg-neutral-900 rounded-lg text-white text-sm outline-none"
+        label="Description"
         name="description"
         placeholder="Write your community description, rules etc..."
         rowCount={5}
       />
-      
+
       {/* Community Banner optional */}
-      <InputMediaField 
+      <InputMediaField
         name="banner"
         label="Banner"
         accept="image/*"
@@ -83,22 +90,25 @@ const CreateSubForm = () => {
         allowed_mime_types={ALLOWED_MIME_TYPES}
         state={state}
       />
-      
+
       {/* Community logo optional */}
-      <InputMediaField 
+      <InputMediaField
         name="logo"
         label="Logo"
         accept="image/*"
         max_file_size={MAX_FILE_SIZE}
-        allowed_mime_types={ALLOWED_MIME_TYPES}   
+        allowed_mime_types={ALLOWED_MIME_TYPES}
         state={state}
       />
 
       {/* Multi-select Tags */}
       <div className="mb-4 space-y-2">
-
+        {/*Sotring each tag in a diffrent input*/}
+        {selectedTags.map((tag, idx) => (
+          <input type="hidden" name="tags" value={tag} key={idx} />
+        ))}
         {/* Hidden input to store selected tag values */}
-        <input type="hidden" name="tags" value={selectedTags} />
+        {/*<input type="hidden" name="tags" value={selectedTags} /> */}
 
         <label htmlFor="tags" className="text-sm font-medium">Tags</label>
         <div className="w-full h-auto px-3 py-2 flex flex-wrap gap-2 bg-neutral-900 rounded-lg overflow-y-auto">
@@ -123,27 +133,31 @@ const CreateSubForm = () => {
           }
         </div>
         <select
-            id="tags"
-            multiple
-            className="bg-neutral-900 rounded-lg text-white text-sm outline-none"
-          >
-            {TAGS.map((tag) => (
-              <option 
-                key={tag} value={tag} 
-                className="p-2 mb-0.5 bg-neutral-900 rounded-md hover:bg-neutral-800"
-                onMouseDown={handleMouseDownOnTag}
-              >
-                {tag}
-              </option>
-            ))}
-          </select>
+          id="tags"
+          multiple
+          className="bg-neutral-900 rounded-lg text-white text-sm outline-none scrollbar-hide"
+        >
+          {TAGS.map((tag) => (
+            <option
+              key={tag} value={tag}
+              className="p-2 mb-0.5 bg-neutral-900 rounded-md hover:bg-neutral-800"
+              onMouseDown={handleMouseDownOnTag}
+            >
+              {tag}
+            </option>
+          ))}
+        </select>
       </div>
 
-      <FormSubmitButton
-        action_state={state}
-      />
+      <div className="flex flex-col justify-end">
+        <p aria-live="polite" className={`p-1 px-2 text-sm rounded-md
+          ${state?.error ? "font-semibold text-red-500" : "sr-only"}`}>
+          {`Error: ${state?.error}`}
+        </p>
+        <FormSubmitButton />
+      </div>
     </form>
   )
 }
 
-export default CreateSubForm;
+export default CreateCommunityForm;

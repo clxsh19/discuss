@@ -15,15 +15,22 @@ const HeaderNav = () => {
           <span className="text-xl font-medium ml-2">Discuss</span>
         </Link>
 
-        {/* Create Post and Community Link */}
-        <div className="flex items-center space-x-3 font-medium text-gray-400 text-sm ml-4 mt-1">
-          <LinkHref 
+        {/* Create Post, Community Link and Communities Link */}
+        <div className="flex items-center space-x-7 font-medium text-gray-400 text-sm ml-4 mt-1 ">
+          <LinkHref
             href="/create_post"
-            label="Create Post"
+            style='hover:underline'
+            children="Create Post"
           />
-          <LinkHref 
+          <LinkHref
             href="/create_community"
-            label="Create Community"
+            style='hover:underline'
+            children="Create Community"
+          />
+          <LinkHref
+            href="/communities"
+            style='hover:underline'
+            children="Communities"
           />
         </div>
 

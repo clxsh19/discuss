@@ -5,31 +5,31 @@ import { DownIcon } from '../Icons';
 
 import { useState, useEffect, useTransition } from "react";
 import { userLogout } from "@/lib/auth_api";
-import { showErrorToast } from "../ui/toasts";
-import { useRouter } from "next/navigation";
-import { useAuth } from "../context/AuthContext";
+import { showErrorToast } from "../ui/Toasts";
+// import { useRouter } from "next/navigation";
+// import { useAuth } from "../context/AuthContext";
 const UserDropdown = ({ username }: { username: string | undefined }) => {
 
-  // const [isLogout, setIsLogout] = useState(false);
-  // const [isPending, startTransition] = useTransition();
-  const router = useRouter();
-  const {updateAuthStatus} = useAuth()
+  const [isLogout, setIsLogout] = useState(false);
+  const [isPending, startTransition] = useTransition();
+  // const router = useRouter();
+  // const {updateAuthStatus} = useAuth()
 
-  // useEffect(() => {
-  //   if (isLogout && !isPending) {
-  //     window.location.reload();
-  //   };
-  // }, [isLogout, isPending]);
+  useEffect(() => {
+    if (isLogout && !isPending) {
+      window.location.reload();
+    };
+  }, [isLogout, isPending]);
 
   const logOut = async () => {
-    // startTransition(async () => {
+    startTransition(async () => {
       try {
         const res = await userLogout();
         if (!res.error && res.message) {
-          // setIsLogout(true);
-          await updateAuthStatus();
+          setIsLogout(true);
+          // await updateAuthStatus();
           // router.refresh();
-          router.push("/");
+          // router.push("/");
         } else {
           showErrorToast(res.error);
         }
@@ -37,7 +37,7 @@ const UserDropdown = ({ username }: { username: string | undefined }) => {
         console.error("logout failed", error);
         showErrorToast("An unexpected error occurred!");
       }
-    // })
+    })
   };
 
   return (

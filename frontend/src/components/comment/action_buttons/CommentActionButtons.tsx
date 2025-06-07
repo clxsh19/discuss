@@ -4,23 +4,15 @@ import CommentReplyForm from "./CommentReplyForm";
 import CommentEditForm from "./CommentEditForm";
 import VoteButton from "../../ui/VoteButton";
 import CommentDeleteConfirm from "./CommentDeleteConfirm";
+import { CommentActionButtonsProps } from "@/interface/comment/ActionButtonProps";
 
-interface CommentActionButtonsProps {
-  comment_id: number,
-  username: string,
-  user_id: number,
-  post_id: number,
-  comment: string,
-  votes_count: number,
-  vote_type: 1|-1|null,
-  submitVote: (id: number, vote_type: 1 | -1) => Promise<void>,
-  parent_comment_id : number,
-}
 // remove parent comment id as comment id same
-const CommentActionButtons = (
-  { username, comment_id, user_id, post_id, votes_count, 
-    vote_type, submitVote, parent_comment_id, comment
-  } : CommentActionButtonsProps) => {
+const CommentActionButtons = ({ 
+  comment_id, user_id, 
+  post_id, votes_count, 
+  vote_type, parent_comment_id, 
+  comment, submitVote
+} : CommentActionButtonsProps) => {
   const { isAuthenticated, user } = useAuth();  
   const [showReplyForm, setShowReplyForm] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
@@ -38,7 +30,7 @@ const CommentActionButtons = (
   }
   
   return (
-    <div id={`comment-buttons-${comment_id}`} className="flex flex-col font-mono">
+    <div id={`comment-buttons-${comment_id}`} className="font-mono">
       <div className="flex items-center  text-xs mt-1">
 
         {/* Vote Button */}
@@ -47,6 +39,7 @@ const CommentActionButtons = (
           votes_count={votes_count}
           vote_type={vote_type}
           submitVote={submitVote}
+          isVertical={false}
         />
 
         {/* Reply Button */}
@@ -74,16 +67,16 @@ const CommentActionButtons = (
             <span className="text-sm font-semibold text-neutral-400">Delete</span>
           </button>
         )}
-        
-        { (isAuthenticated && showDeleteConfirm)  && (
-        <CommentDeleteConfirm 
-          comment_id={comment_id}
-          setShowDeleteConfirm={setShowDeleteConfirm}
-        />
-      )}
+      
+        {(isAuthenticated && showDeleteConfirm) && (
+          <CommentDeleteConfirm 
+            comment_id={comment_id}
+            setShowDeleteConfirm={setShowDeleteConfirm}
+          />
+        )}
       </div>
 
-      { (showReplyForm && !showEditForm) && (
+      {(showReplyForm && !showEditForm) && (
         <CommentReplyForm 
           user={user}
           isAuthenticated={isAuthenticated}
@@ -93,7 +86,7 @@ const CommentActionButtons = (
         />
       )}
 
-      { (isAuthenticated && showEditForm && !showReplyForm) && (
+      {(isAuthenticated && showEditForm && !showReplyForm) && (
         <CommentEditForm 
           user={user}
           isAuthenticated={isAuthenticated}

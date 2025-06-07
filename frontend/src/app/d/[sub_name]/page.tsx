@@ -1,6 +1,6 @@
 import { fetchSubData, fetchPostsBySub } from "@/lib/data_api";
 import { buildPostWithMetaData } from "@/lib/utils";
-import SubView from '@/components/community/SubView';
+import CommunityView from '@/components/community/CommunityView';
 import { notFound } from "next/navigation";
 
 interface SubPageProp {
@@ -19,8 +19,6 @@ export default async function Page({ params } : SubPageProp) {
   const postWithLinkImg = await buildPostWithMetaData(posts);
 
   return (
-    <>
-      <SubView sub_posts={postWithLinkImg} sub_detail={subData} hasMore={hasMore}/>
-    </>
+    <CommunityView sub_posts={postWithLinkImg} sub_detail={subData} hasMore={hasMore}/>
   )
 }

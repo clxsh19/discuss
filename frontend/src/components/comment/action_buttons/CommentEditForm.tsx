@@ -3,20 +3,14 @@
 import { useState } from 'react';
 import { updateComment } from '@/lib/create_api';
 import { useComments } from '../../context/CommentContext';
-import { showErrorToast } from '../../ui/toasts';
+import { showErrorToast } from '../../ui/Toasts';
+import { CommentEditProps } from '@/interface/comment/ActionButtonProps';
 
-interface CommentEditProp {
-  user: {
-    id: number,
-    username: string   
-  } | null,
-  isAuthenticated: boolean,
-  comment_id: number,
-  initialComment: string,
-  setShowEditForm: React.Dispatch<React.SetStateAction<boolean>>
-} 
-
-const CommentEditForm = ({ user, isAuthenticated, comment_id, initialComment, setShowEditForm }: CommentEditProp) => {
+const CommentEditForm = ({ 
+  user, isAuthenticated,
+  comment_id, initialComment,
+  setShowEditForm 
+}: CommentEditProps) => {
   const [comment, setComment] = useState(initialComment);
   const [loading, setLoading] = useState(false);
   const { updateCommentState } = useComments();

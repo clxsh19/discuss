@@ -32,7 +32,7 @@ const setCookiesFromHeader = (res: Response) => {
 
 export async function userLogin(formData: FormData) {
   try {
-    const res = await fetch('${process.env.BACKEND_API_URL}/api/user/login', {
+    const res = await fetch(`${process.env.BACKEND_API_URL}/api/user/login`, {
       method: 'POST',
       credentials: 'include',
       body: formData
@@ -47,13 +47,14 @@ export async function userLogin(formData: FormData) {
     setCookiesFromHeader(res);
     return { error: "", message: data.message }
   } catch(error) {
+    console.error("Unknow Error: ", error)
     return { error: "Unknown: Failed to login.", message: "" }
   }
 }
 
 export async function userRegister(formData:FormData) {
   try {
-    const res = await fetch('${process.env.BACKEND_API_URL}/api/user/register', {
+    const res = await fetch(`${process.env.BACKEND_API_URL}/api/user/register`, {
       method: 'POST',
       credentials: 'include',    
       body: formData,
@@ -77,7 +78,7 @@ export async function userRegister(formData:FormData) {
 
 export async function userLogout() {
   try {
-    const res = await fetch('${process.env.BACKEND_API_URL}/api/user/logout', {
+    const res = await fetch(`${process.env.BACKEND_API_URL}/api/user/logout`, {
       method: 'POST',
       credentials: 'include',
       headers: {

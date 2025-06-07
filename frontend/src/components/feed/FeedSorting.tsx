@@ -1,5 +1,5 @@
-import SortDropDown from "./SortDropDown";
-import { FeedSortingProps } from "@/interface/feed/FeedSortingProps";
+import SortOnTimeDropDown from "./SortDropDown";
+import { FeedSortingProps } from "@/interface/feed/FeedProps";
 
 const FeedSorting = ({sort, handleSortChange, isSorting}: FeedSortingProps) => {
   return (
@@ -22,7 +22,7 @@ const FeedSorting = ({sort, handleSortChange, isSorting}: FeedSortingProps) => {
       </button>
       <div className={`flex items-center p-2 rounded-r-lg border border-gray-800 cursor-pointer
         ${sort === 'top' ? 'bg-neutral-800' : 'hover:bg-neutral-900'}`}>
-        <SortDropDown onSortChange={handleSortChange} isSorting={isSorting}/>
+        <SortOnTimeDropDown onSortChange={handleSortChange} isSorting={isSorting}/>
       </div>
     </div>
   )

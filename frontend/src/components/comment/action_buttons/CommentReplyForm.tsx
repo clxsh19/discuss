@@ -2,21 +2,15 @@
 
 import { useState } from 'react';
 import { useComments } from '../../context/CommentContext';
-import { showErrorToast } from '../../ui/toasts';
+import { showErrorToast } from '../../ui/Toasts';
 import { createComment } from '@/lib/create_api';
+import { CommentReplyProps } from '@/interface/comment/ActionButtonProps';
 
-interface CommentReplyProp {
-  user: {
-    id: number,
-    username: string   
-  } | null,
-  isAuthenticated: boolean,
-  post_id: number,
-  parent_comment_id?: number,
-  setShowReplyForm: React.Dispatch<React.SetStateAction<boolean>>,
-} 
-
-const CommentReplyForm = ( { user, isAuthenticated, post_id, parent_comment_id , setShowReplyForm } : CommentReplyProp) => {
+const CommentReplyForm = ({
+  user, isAuthenticated,
+  post_id, parent_comment_id,
+  setShowReplyForm 
+} : CommentReplyProps) => {
   const [comment, setComment] = useState('');
   const [loading, setLoading] = useState(false);
   const { addComment } = useComments();

@@ -1,24 +1,13 @@
 'use client'
 
-import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
 import { userData } from '@/lib/data_api';
 // import { useRouter } from 'next/router';
-
-interface UserInfo {
-  id: number,
-  username: string
-}
-
-interface AuthContextProps {
-  isAuthenticated: boolean,
-  user: UserInfo | null,
-  updateAuthStatus: () => Promise<void>,
-  loading: boolean,
-}
+import { UserInfo, AuthContextProps, AuthProviderProps } from '@/interface/context/AuthContextProps';
 
 const AuthContext = createContext<AuthContextProps | undefined>(undefined);
 
-export const AuthProvider = ({ children }: { children: ReactNode }) => {
+export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [authStatus, setAuthStatus] = useState(false);
   const [user, setUser] = useState<UserInfo | null>(null);
   const [loading, setLoading] = useState(true);

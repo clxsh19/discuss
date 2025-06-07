@@ -1,6 +1,6 @@
 import { TextareaProps } from "@/interface/ui/FormProps";
 
-export const Textarea = ({
+const Textarea = ({
   containerStyle,
   labelStyle,
   inputStyle,
@@ -25,3 +25,5 @@ export const Textarea = ({
     </div>
   )
 }
+
+export default Textarea;

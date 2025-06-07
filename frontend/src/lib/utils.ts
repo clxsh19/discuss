@@ -1,15 +1,18 @@
-import {PostItemProp} from "@/interface/PostProps";
-import { CommentItemProp } from "@/interface/CommentProps";
-import { fetchUrlMetaData } from "./data_api";
-import { fileTypeFromBuffer } from "file-type";
+import { PostItemProp } from '@/interface/PostProps';
+import { CommentItemProp } from '@/interface/CommentProps';
+import { fetchUrlMetaData } from './data_api';
+import { fileTypeFromBuffer } from 'file-type';
 
-
-export const validateFile = async (file: File, max_size: number, allowed_types: string[]) => {
+export const validateFile = async (
+  file: File,
+  max_size: number,
+  allowed_types: string[],
+) => {
   if (file.size > max_size) {
     return {
       valid: false,
-      message: 'File size exceeds the 10MB limit.'
-    }
+      message: 'File size exceeds the 10MB limit.',
+    };
   }
 
   const buffer = await file.arrayBuffer();
@@ -18,33 +21,32 @@ export const validateFile = async (file: File, max_size: number, allowed_types: 
   if (!fileType || !allowed_types.includes(fileType.mime)) {
     return {
       valid: false,
-      message: 'Invalid file type. Only images and videos are allowed.'
-    }
+      message: 'Invalid file type. Only images and videos are allowed.',
+    };
   }
 
   return {
     valid: true,
-    message : "valid file"
+    message: 'valid file',
   };
-}
+};
 
 export const getNumberAbbreviation = (member_count: string): string => {
   const memberCount = parseInt(member_count, 10);
   let abbreviatedCount = memberCount;
-  let abbreviation = "";
+  let abbreviation = '';
 
   if (memberCount >= 1000000) {
-    abbreviatedCount =memberCount / 1000000;
-    abbreviation = "M";
+    abbreviatedCount = memberCount / 1000000;
+    abbreviation = 'M';
   } else if (memberCount >= 1000) {
     abbreviatedCount = memberCount / 1000;
-    abbreviation = "K";
+    abbreviation = 'K';
   }
-  return abbreviatedCount.toFixed(1).replace(/\.0$/, "") + abbreviation;
+  return abbreviatedCount.toFixed(1).replace(/\.0$/, '') + abbreviation;
 };
 
-
-export const getTimePassed = (dateStr:string): string => {
+export const getTimePassed = (dateStr: string): string => {
   const currentDate = new Date();
   const providedDate = new Date(dateStr);
   const timeDifference = currentDate.getTime() - providedDate.getTime();
@@ -66,48 +68,95 @@ export const getTimePassed = (dateStr:string): string => {
       return `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
     default:
       return '1 minute ago';
-      // return `${seconds} second${seconds !== 1 ? 's' : ''}`;
+    // return `${seconds} second${seconds !== 1 ? 's' : ''}`;
   }
-}
+};
 
-export const getDate = (dateStr:string): string => {
+export const getDate = (dateStr: string): string => {
   const date = new Date(dateStr);
-  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul",
-         "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const months = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ];
 
   const namedMonth = months[date.getMonth()];
   const namedYear = date.getFullYear();
   const dateOfMonth = date.getDate();
 
   return `${namedMonth} ${dateOfMonth}, ${namedYear}`;
-}
+};
 
-export const buildCommentTree = (flatComments: CommentItemProp[]): CommentItemProp[] => {
+// export const buildCommentTree = (
+//   flatComments: CommentItemProp[],
+// ): CommentItemProp[] => {
+//   const commentMap: Record<number, CommentItemProp> = {};
+//   const tree: CommentItemProp[] = [];
+//
+//   // Create a map with children initialized
+//   for (const comment of flatComments) {
+//     comment.children = [];
+//     const commentCopy = { ...comment, children: [] };
+//     // comment.created_at client side sort maybe
+//     commentMap[comment.comment_id] = commentCopy;
+//   }
+//
+// Build the tree structure
+// for (const comment of flatComments) {
+//   const mappedComment = commentMap[comment.comment_id]
+//   if (comment.parent_id) {
+//     const parent = commentMap[comment.parent_id];
+//     if (parent) {
+//       parent.children?.push(mappedComment);
+//     }
+//   } else {
+//     if (!comment.deleted || mappedComment.children!.length > 0) {
+//       tree.push(mappedComment)
+//     }
+//   }
+// }
+
+//   return tree;
+// };
+export const buildCommentTree = (
+  flatComments: CommentItemProp[],
+): CommentItemProp[] => {
   const commentMap: Record<number, CommentItemProp> = {};
   const tree: CommentItemProp[] = [];
 
   // Create a map with children initialized
   for (const comment of flatComments) {
     comment.children = [];
-    // comment.created_at client side sort maybe
-    commentMap[comment.comment_id] = comment;
+    const commentCopy = { ...comment, children: [] };
+    commentMap[comment.comment_id] = commentCopy;
   }
 
   // Build the tree structure
   for (const comment of flatComments) {
-    // if (!comment.parent_id) {
-    //   tree.push(comment); // Root comments go to the tree
-    // } else if (commentMap[comment.parent_id]) {
-    //   commentMap[comment.parent_id].children!.push(comment); // Use non-null assertion for safe push
-    // }
+    const mappedComment = commentMap[comment.comment_id];
     if (comment.parent_id) {
       const parent = commentMap[comment.parent_id];
       if (parent) {
-        parent.children?.push(comment);
+        parent.children?.push(mappedComment);
       }
-    } else {
-      if (!comment.deleted || comment.children!.length > 0) {
-        tree.push(comment)
+    }
+  }
+
+  // Add root-level comments to tree (AFTER children are populated)
+  for (const comment of flatComments) {
+    const mappedComment = commentMap[comment.comment_id];
+    if (!comment.parent_id) {
+      if (!comment.deleted || mappedComment.children!.length > 0) {
+        tree.push(mappedComment);
       }
     }
   }
@@ -115,7 +164,9 @@ export const buildCommentTree = (flatComments: CommentItemProp[]): CommentItemPr
   return tree;
 };
 
-export const buildPostWithMetaData = async (posts: PostItemProp[] | PostItemProp) => {
+export const buildPostWithMetaData = async (
+  posts: PostItemProp[] | PostItemProp,
+) => {
   if (typeof posts === 'undefined') {
     return [];
   }
@@ -126,23 +177,11 @@ export const buildPostWithMetaData = async (posts: PostItemProp[] | PostItemProp
     postsArray.map(async (post: PostItemProp) => {
       if (post.link_url) {
         const link_img_url = await fetchUrlMetaData(post.link_url);
-        post.link_img_url = link_img_url;
+        post.link_img_url = link_img_url || '';
       }
       return post;
-    })
+    }),
   );
 
   return postWithLinkImg;
 };
-
-
-
-
-
-
-
-
-
-
-
-

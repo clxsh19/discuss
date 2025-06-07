@@ -1,6 +1,6 @@
 'use client'
 
-import { showErrorToast } from "../ui/toasts";
+import { showErrorToast } from "../ui/Toasts";
 import { userLogout } from "@/lib/auth_api";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../context/AuthContext";
@@ -40,4 +40,4 @@ const Logout = () => {
   )
 }
 
-export default Logout;
+// export default Logout;

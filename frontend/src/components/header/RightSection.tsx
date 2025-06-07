@@ -16,11 +16,11 @@ const RightSection = () => {
           {/* Login And SignUp */}
           <LinkHref 
             href="/login"
-            label="Login"
+            children="Login"
           />
           <LinkHref 
             href="/register"
-            label="Sign Up"
+            children="Sign Up"
           />
         </div>
       )}

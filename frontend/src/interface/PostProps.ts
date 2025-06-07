@@ -1,3 +1,5 @@
+export type postType = 'TEXT' | 'MEDIA' | 'LINK';
+
 export interface PostItemProp {
   post_id: number,
   title: string,
@@ -7,11 +9,11 @@ export interface PostItemProp {
   created_at: string,
   username: string,
   subreddit_name: string;
-  post_type: 'TEXT' | 'MEDIA' | 'LINK',
+  post_type: postType,
   text_content: string,
   link_url?: string,
   media_url?: string,
-  link_img_url?: string | null,
+  link_img_url?: string,
   sub_feed: boolean,
 };
 

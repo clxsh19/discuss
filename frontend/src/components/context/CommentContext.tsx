@@ -1,20 +1,8 @@
 // CommentsContext.tsx
-import React, { createContext, useContext, useState, ReactNode } from "react";
+import React, { createContext, useContext, useState } from "react";
 import { CommentItemProp } from "@/interface/CommentProps";
 import { fetchPostComments } from "@/lib/data_api";
-
-interface CommentsContextProps {
-  comments: CommentItemProp[],
-  addComment: (newComment: CommentItemProp) => void,
-  updateCommentState: (comment_id: number, newContent: string) => void,
-  softDeleteComment: (comment_id: number) => void,
-  sortComments: (post_id: number, newSort: 'new'| 'old' | 'top') => Promise<void>
-}
-
-interface CommentProviderProps {
-  initialComments: CommentItemProp[],
-  children: ReactNode
-}
+import { CommentsContextProps, CommentProviderProps } from "@/interface/context/CommentContextProps";
 
 const CommentsContext = createContext<CommentsContextProps | undefined>(undefined);
 
@@ -24,7 +12,6 @@ export const CommentsProvider = ({ initialComments, children } : CommentProvider
   const sortComments = async(post_id: number, newSort: 'new'| 'old' | 'top') => {
     // const shalloCopy = comments.slice();client side sort maybe
     const newComments = await fetchPostComments(post_id, 0, newSort);
-    console.log(newComments);
     setComments(newComments);
   }
   

@@ -2,15 +2,13 @@
 
 import { useState } from 'react';
 import { createComment } from '@/lib/create_api';
-import { showErrorToast } from '../ui/toasts';
+import { showErrorToast } from '../ui/Toasts';
 import { useComments } from '../context/CommentContext';
 import { useAuth } from '../context/AuthContext';
+import Button from '../ui/Button';
+import { CommentOnPostFormProps } from '@/interface/post/PostProps';
 
-interface CommentOnPostFormProp {
-  post_id: number,
-} 
-
-const CommentOnPostForm = ({ post_id }: CommentOnPostFormProp) => {
+const CommentOnPostForm = ({ post_id }: CommentOnPostFormProps) => {
   const [comment, setComment] = useState('');
   const [loading, setLoading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -28,7 +26,7 @@ const CommentOnPostForm = ({ post_id }: CommentOnPostFormProp) => {
     }
   
     if (!isAuthenticated || !user) {
-      showErrorToast('You must be logged in to comment!');
+      showErrorToast('Login to comment!');
       return;
     }
 
@@ -58,15 +56,14 @@ const CommentOnPostForm = ({ post_id }: CommentOnPostFormProp) => {
   return (
     <div className="mt-4 mb-4 font-mono overflow-hidden">
       {!isEditing ? (
-        <button
-        className="w-full p-4 font-semibold text-sm text-left text-neutral-400 border border-neutral-800"
-        onClick={() => setIsEditing(true)}
-        disabled={loading}
-      >
-        Add a comment...
-      </button>
+        <Button 
+          label="Add a comment..."
+          isLoading={loading}
+          style="w-full p-4 font-semibold text-sm text-left text-neutral-400 border border-neutral-800"
+          onClick={() => setIsEditing(true)}
+        />
       ) : (
-        <div>
+        <>
           <textarea
             value={comment}
             onChange={handleCommentChange} 
@@ -76,26 +73,23 @@ const CommentOnPostForm = ({ post_id }: CommentOnPostFormProp) => {
             placeholder="Type your comment..."
           />
           <div className="mt-2 flex justify-end space-x-4">
-            <button
-              className="px-4 py-1 text-white rounded-md border border-neutral-800 hover:border-neutral-600"
+            <Button 
+              label="Cancel"
+              style="px-4 py-1 text-white rounded-md border border-neutral-800 hover:border-neutral-600"
               onClick={() => {
                 setComment('');
                 setIsEditing(false);
               }}
-            >
-              Cancel
-            </button>
-            <button
-              className={`px-4 py-1 text-white rounded-md border border-neutral-800 hover:border-neutral-600 ${loading ? 'cursor-wait' : ''}`}
+            />
+            <Button 
+              label="Comment"
+              style="px-4 py-1 text-white rounded-md border border-neutral-800 hover:border-neutral-600"
+              isLoading={loading}
               onClick={handleSubmit}
-              disabled={loading}
-            >
-              {loading ? 'Submitting...' : 'Comment'}
-            </button>
+            />
           </div>
-        </div>
+        </>
       )}
-
     </div>
   );
 };

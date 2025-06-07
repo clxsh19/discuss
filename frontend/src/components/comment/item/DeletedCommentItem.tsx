@@ -1,18 +1,12 @@
 import { getTimePassed } from '@/lib/utils';
 import { CircleIcon } from '../../Icons';
-import Link from 'next/link';
-
-interface DeletedCommentItemProp {
-  comment_id: number,
-  created_at: string,
-  total_votes: number,
-}
+import { DeletedCommentItemProps } from '@/interface/comment/ItemProps';
 
 const DeletedCommentItem = ({
   comment_id,
   created_at,
   total_votes
-}: DeletedCommentItemProp) => {
+}: DeletedCommentItemProps) => {
   const timePassed = getTimePassed(created_at);
   return (
   <div className="ml-2 pl-1 pt-0.5 mb-1 text-neutral-300" id={`${comment_id}`}>

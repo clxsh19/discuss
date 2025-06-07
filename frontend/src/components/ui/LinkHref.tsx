@@ -4,14 +4,14 @@ import LinkProps from "@/interface/ui/LinkProps";
 const LinkHref = ({
   href,
   style,
-  label
+  children
 } : LinkProps) => {
   return (
     <Link 
       href={href} 
       className={style}
     >
-      {label}
+      {children}
     </Link>
   )
 }
