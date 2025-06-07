@@ -1,114 +1,121 @@
-import asyncHandler from "express-async-handler";
-import { validationResult } from "express-validator";
-import { deleteUploadedFile } from "../utils/deleteUploadedFile";
-import CustomError from "../utils/customError";
-import handleValidationErrors from "../utils/handleValidationErrors";
-import { 
+import asyncHandler from 'express-async-handler';
+import { validationResult } from 'express-validator';
+import { deleteUploadedFile } from '../utils/deleteUploadedFile';
+import deleteFromCloudinary from '../utils/deleteFromCloudinary';
+import CustomError from '../utils/customError';
+import handleValidationErrors from '../utils/handleValidationErrors';
+import {
   checkSubExist,
-  createSub, 
+  createSub,
   getSubInfo,
   subscribeUserToSub,
   unsubscribeUserToSub,
-  getAllSubName
-} from "../services/subredditServices";
+  getAllSubName,
+  getByTag,
+} from '../services/subredditServices';
 
-
-
-const postCreate = asyncHandler( async(req, res, next) => {
+const postCreate = asyncHandler(async (req, res, next) => {
   const errors = validationResult(req);
-  const { sub_name:subName, display_name:displayName, description } = req.body;
-  const files = req.files as { [fieldname: string] : Express.Multer.File[] };
-  const bannerFilePath =  files.banner?.[0]?.path;
-  const logoFilePath =  files.logo?.[0]?.path;
+  const {
+    sub_name: subName,
+    display_name: displayName,
+    description,
+    tags,
+  } = req.body;
+  const files = req.files as { [fieldname: string]: Express.Multer.File[] };
+  // const bannerFilePath = files.banner?.[0]?.path;
+  // const logoFilePath = files.logo?.[0]?.path;
+  //
+  // Get Cloudinary URLs instead of file paths
+  const bannerUrl = files.banner?.[0]?.cloudinary?.secure_url;
+  const logoUrl = files.logo?.[0]?.cloudinary?.secure_url;
 
   if (!errors.isEmpty()) {
-    if (bannerFilePath) deleteUploadedFile(bannerFilePath);
-    if (logoFilePath) deleteUploadedFile(logoFilePath);
+    // if (bannerFilePath) deleteUploadedFile(bannerFilePath);
+    // if (logoFilePath) deleteUploadedFile(logoFilePath);
+    if (files.banner?.[0]?.cloudinary?.public_id) {
+      await deleteFromCloudinary(files.banner[0].cloudinary.public_id);
+    }
+    if (files.logo?.[0]?.cloudinary?.public_id) {
+      await deleteFromCloudinary(files.logo[0].cloudinary.public_id);
+    }
 
-    throw new CustomError("Validation Error", 400, {
+    throw new CustomError('Validation Error', 400, {
       errors: errors.array(),
-      location: "subController/postCreate "
+      location: 'subController/postCreate ',
     });
   }
 
-  const result = await createSub({ subName, displayName, description, bannerFilePath, logoFilePath });
+  const result = await createSub({
+    subName,
+    displayName,
+    description,
+    bannerUrl,
+    logoUrl,
+    tags,
+  });
   res.status(202).json({ success: true, message: result.message });
 });
 
-const getInfo = asyncHandler( async(req, res, next) => {
-  handleValidationErrors(req, "subController/getInfo");
-  
+const getInfo = asyncHandler(async (req, res, next) => {
+  handleValidationErrors(req, 'subController/getInfo');
+
   const subName = req.params.sub_name;
   const userId = req.user?.id;
-  const result = await getSubInfo({ userId, subName })
+  const result = await getSubInfo({ userId, subName });
   res.status(200).json({ success: true, subreddit_detail: result.data });
 });
 
-const postSubscribe = asyncHandler( async(req, res, next) => {
-  handleValidationErrors(req, "subController/postSubscribe");
+const postSubscribe = asyncHandler(async (req, res, next) => {
+  handleValidationErrors(req, 'subController/postSubscribe');
 
   const subId = req.body.sub_id;
-  const userId = req.user?.id; 
+  const userId = req.user?.id;
   const result = await subscribeUserToSub({ userId, subId });
-  res.status(200).json({ success: true,  message: result.message });
+  res.status(200).json({ success: true, message: result.message });
 });
 
-const postUnsubscribe = asyncHandler( async(req, res, next) => {
-  handleValidationErrors(req, "subController/postUnsubscribe");
+const postUnsubscribe = asyncHandler(async (req, res, next) => {
+  handleValidationErrors(req, 'subController/postUnsubscribe');
 
   const subId = req.body.sub_id;
-  const userId = req.user?.id; 
+  const userId = req.user?.id;
   const result = await unsubscribeUserToSub({ userId, subId });
   res.status(200).json({ success: true, message: result.message });
 });
 
-const getAllName= asyncHandler( async(req, res,next) => {
+const getAllName = asyncHandler(async (req, res, next) => {
   // const user_id = req.user?.id;
   const result = await getAllSubName();
   res.status(200).json({ success: true, communities: result.data });
 });
 
-const getSubExist = asyncHandler( async(req, res, next) => {
-  handleValidationErrors(req, "subController/checkIfSubExist");
-  
-  const subName = req.query.sub_name as string;  
+const getSubExist = asyncHandler(async (req, res, next) => {
+  handleValidationErrors(req, 'subController/getSubExist');
+
+  const subName = req.query.sub_name as string;
   const result = await checkSubExist(subName);
   res.status(200).json({ success: true, exist: result });
 });
 
-// const get_all_subreddit = asyncHandler( async(req, res) => {
-//   query('offset')
-//     .notEmpty()
-//     .withMessage('Offset is required.')
-//     .trim()
-//     .isInt({ min: 0 })
-//     .withMessage('Offset must be a positive integer.')
-//     .escape()
-//     .toInt(),
-//   query('sort')
-//     .optional()
-//     .trim()
-//     .isIn(['old', 'top', 'new'])
-//     .withMessage('Only top and new sort by')
-//     .escape(),
+const getSubsByTag = asyncHandler(async (req, res) => {
+  handleValidationErrors(req, 'subController/getSubsByTag');
 
-//   asyncHandler(async (req, res) => {
-//     const errors = validationResult(req);
-//     if (!errors.isEmpty()) {
-//       res.status(400).json({ errors: errors.array() });
-//       return;
-//     }
+  const offset = Number(req.query.offset) || 0;
+  const tag = req.query.tag as string;
+  console.log(tag);
+  const result = await getByTag({ tag, offset });
+  res
+    .status(200)
+    .json({ success: true, hasMore: result.hasMore, communities: result.subs });
+});
 
-//     const { }
-
-//     const user_id = req.user?.id || null;
-//   })
-// })
 export default {
   postCreate,
   getInfo,
   postSubscribe,
   postUnsubscribe,
   getAllName,
-  getSubExist
-}
+  getSubExist,
+  getSubsByTag,
+};

@@ -1,5 +1,3 @@
-\c discuss;
-
 CREATE TABLE IF NOT EXISTS users (
     user_id SERIAL PRIMARY KEY,
     username VARCHAR(50) UNIQUE NOT NULL,
@@ -30,7 +28,7 @@ CREATE TABLE IF NOT EXISTS posts (
     media_url VARCHAR(255),
     link_url VARCHAR(255),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    hotness DOUBLE PRECISION DEFAULT 0;
+    hotness DOUBLE PRECISION DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS comments (
@@ -123,30 +121,33 @@ FOR EACH ROW
 WHEN (OLD.vote_count IS DISTINCT FROM NEW.vote_count) -- Avoid unnecessary updates
 EXECUTE FUNCTION update_post_hotness();
 
--- INSERT INTO users (user_id, username, password_hash) need to insert deleted user with -1 user id then resync the serial
--- INSERT INTO tags (name) VALUES 
--- ('Internet Culture'),
--- ('Games'),
--- ('Q&As & Stories'),
--- ('Technology'),
--- ('Movies & TV'),
--- ('Places & Travel'),
--- ('Pop Culture'),
--- ('News & Politics'),
--- ('Business & Finance'),
--- ('Education & Career'),
--- ('Sports'),
--- ('Music'),
--- ('Fashion & Beauty'),
--- ('Humanities & Law'),
--- ('Vehicles'),
--- ('Home & Garden'),
--- ('Food & Drinks'),
--- ('Art'),
--- ('Anime & Cosplay'),
--- ('Reading & Writing'),
--- ('Sciences'),
--- ('Wellness'),
--- ('Collectibles & Other Hobbies'),
--- ('Spooky'),
--- ('Nature & Outdoors');
+-- Deleted user with '!' as password assign all deleted comments to this
+INSERT INTO users (user_id, username, password_hash) VALUES (-1, 'DeletedUser', '!');
+
+-- all tags for subreddits
+INSERT INTO tags (name) VALUES 
+('Internet Culture'),
+('Games'),
+('Q&As & Stories'),
+('Technology'),
+('Movies & TV'),
+('Places & Travel'),
+('Pop Culture'),
+('News & Politics'),
+('Business & Finance'),
+('Education & Career'),
+('Sports'),
+('Music'),
+('Fashion & Beauty'),
+('Humanities & Law'),
+('Vehicles'),
+('Home & Garden'),
+('Food & Drinks'),
+('Art'),
+('Anime & Cosplay'),
+('Reading & Writing'),
+('Sciences'),
+('Wellness'),
+('Collectibles & Other Hobbies'),
+('Spooky'),
+('Nature & Outdoors');

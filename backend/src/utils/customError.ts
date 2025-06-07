@@ -1,4 +1,4 @@
-import { ValidationError } from "express-validator/src";
+import { ValidationError } from 'express-validator/src';
 
 interface customErrorProps {
   errors: ValidationError[] | string;
@@ -7,13 +7,13 @@ interface customErrorProps {
 
 class CustomError extends Error {
   statusCode?: number;
-  custom?: customErrorProps
+  custom?: customErrorProps;
 
   constructor(message: string, statusCode = 400, custom?: customErrorProps) {
     super(message);
     this.statusCode = statusCode;
     this.custom = custom;
-    
+
     // Object.setPrototypeOf(this, CustomError.prototype)
   }
 }

@@ -147,7 +147,7 @@ const userVoteComment = async({ userId, commentId, voteType } : UserVoteCommentP
     }
   } else { 
     // vote doesn't exist so insert it
-    voteQuery = 'INSERT INTO comment_votes (user_id, post_id, vote_type) VALUES ($1, $2, $3)';
+    voteQuery = 'INSERT INTO comment_votes (user_id, comment_id, vote_type) VALUES ($1, $2, $3)';
     voteQueryParams = [userId, commentId, voteType];
   }
 
