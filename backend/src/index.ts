@@ -1,6 +1,6 @@
 import express from 'express';
 import logger from 'morgan';
-import http from 'http';
+import http from 'node:http';
 import passport from 'passport';
 import session from 'express-session';
 import passportLocal from 'passport-local';
