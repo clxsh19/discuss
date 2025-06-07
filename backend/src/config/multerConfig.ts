@@ -22,10 +22,6 @@ const fileFilter = (
     return cb(new MulterError('LIMIT_UNEXPECTED_FILE'));
   }
 
-  if (file.size === 0) {
-    return cb(new MulterError('LIMIT_FILE_SIZE'));
-  }
-
   cb(null, true);
 };
 
