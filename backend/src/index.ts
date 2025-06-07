@@ -153,7 +153,8 @@ app.use('/api/comment', commentRouter);
 app.use(ErrorHandler);
 
 const port: number = Number(process.env.PORT) || 5000;
-const host: string = process.env.HOST || 'localhost';
+// const host: string = process.env.HOST || 'localhost';
+const host = '0.0.0.0';
 const server = http.createServer(app);
 
 server.listen(port, host, () => {
