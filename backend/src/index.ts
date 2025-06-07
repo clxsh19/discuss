@@ -15,7 +15,6 @@ import subredditRouter from './routes/subreddit';
 import postRouter from './routes/post';
 import commentRouter from './routes/comment';
 
-import path from 'path';
 import ErrorHandler from './middlewares/errorHandler';
 
 dotenv.config();

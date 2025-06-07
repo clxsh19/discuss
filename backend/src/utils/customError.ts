@@ -1,4 +1,4 @@
-import { ValidationError } from 'express-validator/src';
+import { ValidationError } from 'express-validator';
 
 interface customErrorProps {
   errors: ValidationError[] | string;

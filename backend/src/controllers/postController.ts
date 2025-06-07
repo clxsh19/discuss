@@ -3,7 +3,6 @@ import { validationResult } from 'express-validator';
 import deleteFromCloudinary from '../utils/deleteFromCloudinary';
 import handleValidationErrors from '../utils/handleValidationErrors';
 import CustomError from '../utils/customError';
-import { deleteUploadedFile } from '../utils/deleteUploadedFile';
 import {
   createPost,
   getPostInfoById,
@@ -11,6 +10,7 @@ import {
   getPostByName,
   userVotePost,
 } from '../services/postServices';
+import { Request, Response } from 'express';
 
 const allowedSorts: Record<string, string> = {
   new: 'ORDER BY p.created_at DESC, p.post_id DESC',
@@ -34,7 +34,7 @@ const sortAndTimeCondition = (sort: string, t: string) => {
   return { sortCondition, timeCondition };
 };
 
-const postCreate = asyncHandler(async (req, res) => {
+const postCreate = asyncHandler(async (req: Request, res: Response) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     if (req.file?.cloudinary?.public_id) {
@@ -63,7 +63,7 @@ const postCreate = asyncHandler(async (req, res) => {
   res.status(202).json({ success: true, post_id: result.data });
 });
 
-const getInfoById = asyncHandler(async (req, res, next) => {
+const getInfoById = asyncHandler(async (req: Request, res: Response) => {
   handleValidationErrors(req, 'postController/getById');
 
   const postId = req.params.post_id;
@@ -73,7 +73,7 @@ const getInfoById = asyncHandler(async (req, res, next) => {
   res.status(200).json({ success: true, post: result.data });
 });
 
-const getAll = asyncHandler(async (req, res, next) => {
+const getAll = asyncHandler(async (req: Request, res: Response) => {
   handleValidationErrors(req, 'postController/getAll');
 
   const limit = 5;
@@ -99,7 +99,7 @@ const getAll = asyncHandler(async (req, res, next) => {
   });
 });
 
-const getBySubName = asyncHandler(async (req, res, next) => {
+const getBySubName = asyncHandler(async (req: Request, res: Response) => {
   handleValidationErrors(req, '/postController/getBySubName');
 
   const limit = 5;
@@ -127,7 +127,7 @@ const getBySubName = asyncHandler(async (req, res, next) => {
   });
 });
 
-const postVote = asyncHandler(async (req, res, next) => {
+const postVote = asyncHandler(async (req: Request, res: Response) => {
   handleValidationErrors(req, '/postController/postVote');
 
   const postId = req.body.post_id;

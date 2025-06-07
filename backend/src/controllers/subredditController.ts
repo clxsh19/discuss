@@ -1,6 +1,5 @@
 import asyncHandler from 'express-async-handler';
 import { validationResult } from 'express-validator';
-import { deleteUploadedFile } from '../utils/deleteUploadedFile';
 import deleteFromCloudinary from '../utils/deleteFromCloudinary';
 import CustomError from '../utils/customError';
 import handleValidationErrors from '../utils/handleValidationErrors';
@@ -13,8 +12,9 @@ import {
   getAllSubName,
   getByTag,
 } from '../services/subredditServices';
+import { Request, Response } from 'express';
 
-const postCreate = asyncHandler(async (req, res, next) => {
+const postCreate = asyncHandler(async (req: Request, res: Response) => {
   const errors = validationResult(req);
   const {
     sub_name: subName,
@@ -23,16 +23,11 @@ const postCreate = asyncHandler(async (req, res, next) => {
     tags,
   } = req.body;
   const files = req.files as { [fieldname: string]: Express.Multer.File[] };
-  // const bannerFilePath = files.banner?.[0]?.path;
-  // const logoFilePath = files.logo?.[0]?.path;
-  //
-  // Get Cloudinary URLs instead of file paths
+  // Get Cloudinary URLs
   const bannerUrl = files.banner?.[0]?.cloudinary?.secure_url;
   const logoUrl = files.logo?.[0]?.cloudinary?.secure_url;
 
   if (!errors.isEmpty()) {
-    // if (bannerFilePath) deleteUploadedFile(bannerFilePath);
-    // if (logoFilePath) deleteUploadedFile(logoFilePath);
     if (files.banner?.[0]?.cloudinary?.public_id) {
       await deleteFromCloudinary(files.banner[0].cloudinary.public_id);
     }
@@ -57,7 +52,7 @@ const postCreate = asyncHandler(async (req, res, next) => {
   res.status(202).json({ success: true, message: result.message });
 });
 
-const getInfo = asyncHandler(async (req, res, next) => {
+const getInfo = asyncHandler(async (req: Request, res: Response) => {
   handleValidationErrors(req, 'subController/getInfo');
 
   const subName = req.params.sub_name;
@@ -66,7 +61,7 @@ const getInfo = asyncHandler(async (req, res, next) => {
   res.status(200).json({ success: true, subreddit_detail: result.data });
 });
 
-const postSubscribe = asyncHandler(async (req, res, next) => {
+const postSubscribe = asyncHandler(async (req: Request, res: Response) => {
   handleValidationErrors(req, 'subController/postSubscribe');
 
   const subId = req.body.sub_id;
@@ -75,7 +70,7 @@ const postSubscribe = asyncHandler(async (req, res, next) => {
   res.status(200).json({ success: true, message: result.message });
 });
 
-const postUnsubscribe = asyncHandler(async (req, res, next) => {
+const postUnsubscribe = asyncHandler(async (req: Request, res: Response) => {
   handleValidationErrors(req, 'subController/postUnsubscribe');
 
   const subId = req.body.sub_id;
@@ -84,13 +79,13 @@ const postUnsubscribe = asyncHandler(async (req, res, next) => {
   res.status(200).json({ success: true, message: result.message });
 });
 
-const getAllName = asyncHandler(async (req, res, next) => {
+const getAllName = asyncHandler(async (req: Request, res: Response) => {
   // const user_id = req.user?.id;
   const result = await getAllSubName();
   res.status(200).json({ success: true, communities: result.data });
 });
 
-const getSubExist = asyncHandler(async (req, res, next) => {
+const getSubExist = asyncHandler(async (req: Request, res: Response) => {
   handleValidationErrors(req, 'subController/getSubExist');
 
   const subName = req.query.sub_name as string;
@@ -98,16 +93,18 @@ const getSubExist = asyncHandler(async (req, res, next) => {
   res.status(200).json({ success: true, exist: result });
 });
 
-const getSubsByTag = asyncHandler(async (req, res) => {
+const getSubsByTag = asyncHandler(async (req: Request, res: Response) => {
   handleValidationErrors(req, 'subController/getSubsByTag');
 
   const offset = Number(req.query.offset) || 0;
   const tag = req.query.tag as string;
-  console.log(tag);
+  // console.log(tag);
   const result = await getByTag({ tag, offset });
-  res
-    .status(200)
-    .json({ success: true, hasMore: result.hasMore, communities: result.subs });
+  res.status(200).json({
+    success: true,
+    hasMore: result.hasMore,
+    communities: result.subs,
+  });
 });
 
 export default {
