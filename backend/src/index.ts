@@ -138,7 +138,13 @@ app.use(
     },
   }),
 );
-
+app.use((req, res, next) => {
+  console.log('🌐 CORS DEBUG:');
+  console.log('Origin:', req.headers.origin);
+  console.log('Method:', req.method);
+  console.log('FRONTEND_URL env:', process.env.FRONTEND_URL);
+  next();
+});
 app.use((req, res, next) => {
   console.log('🔍 === REQUEST DEBUG ===');
   console.log('Method:', req.method, 'URL:', req.url);
