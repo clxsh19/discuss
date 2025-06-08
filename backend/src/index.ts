@@ -42,7 +42,7 @@ declare global {
 //cros
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL,
+    origin: ['http://localhost:3000', process.env.FRONTEND_URL as string],
     credentials: true, // Allow cookies if using authentication
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization'],
