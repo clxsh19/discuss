@@ -50,9 +50,14 @@ app.use(
   }),
 );
 app.use((req, res, next) => {
-  console.log('req.protocol:', req.protocol);
-  console.log('req.secure:', req.secure);
-  console.log('x-forwarded-proto:', req.headers['x-forwarded-proto']);
+  const originalSend = res.send;
+  res.send = function (data) {
+    const cookies = res.getHeaders()['set-cookie'];
+    if (cookies) {
+      console.log('🍪 Set-Cookie headers:', cookies);
+    }
+    return originalSend.call(this, data);
+  };
   next();
 });
 
