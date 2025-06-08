@@ -8,6 +8,7 @@ import dotenv from 'dotenv';
 import bcrypt from 'bcrypt';
 import cors from 'cors';
 import connectPgSimple from 'connect-pg-simple';
+import rateLimit from 'express-rate-limit';
 
 import { query, pool } from './db/index';
 import homeRouter from './routes/home';
@@ -41,7 +42,7 @@ declare global {
 //cros
 app.use(
   cors({
-    origin: 'http://localhost:3000',
+    origin: process.env.FRONTEND_URL,
     credentials: true, // Allow cookies if using authentication
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization'],
@@ -121,15 +122,17 @@ app.use(
     store: new pgSession({
       pool: pool,
       tableName: 'user_sessions',
+      createTableIfMissing: true,
     }),
     secret: process.env.SECRET_KEY!,
     resave: false,
     proxy: true,
     saveUninitialized: false,
     cookie: {
-      sameSite: 'strict',
-      secure: false,
-      maxAge: 1000 * 60 * 60 * 24,
+      sameSite: 'none',
+      secure: true,
+      maxAge: 1000 * 60 * 60 * 24 * 7,
+      httpOnly: true,
     },
   }),
 );
@@ -138,22 +141,24 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.authenticate('session'));
 
+// General rate limiting for all routes
+const generalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  message: {
+    error: 'Too many requests from this IP, please try again later.',
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+app.use(generalLimiter);
+
 // Routes
 app.use('/', homeRouter);
 app.use('/api/user', userRouter);
 app.use('/api/subreddit', subredditRouter);
 app.use('/api/post', postRouter);
 app.use('/api/comment', commentRouter);
-// Serve static files from the "uploads" folder
-// app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
-
-// app.get('/success', (req, res) => {
-//   if (req.isAuthenticated()) {
-//     res.send('Login successful!');
-//   } else {
-//     res.send('Not authenticated');
-//   }
-// });
 
 app.use(ErrorHandler);
 
