@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState, useMemo } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import FeedItem from '@/components/feed/feedItem/FeedItem';
 import { LoadingIconAnimation } from '../Icons';
 import { ScrollFeedProps } from '@/interface/feed/FeedProps';
@@ -18,7 +18,6 @@ const ScrollFeed = ({ posts, hasMoreRef, subName, loadMorePosts }: ScrollFeedPro
   // Infinite Scroll Effect
   useEffect(() => {
     if (isLoadingMore) return;
-    console.log(isLoadingMore)
 
     // if (posts.length === 5 && offsetRef.current === 0) return;
     if (typeof window === "undefined" || !window.IntersectionObserver) return;
