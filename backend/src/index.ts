@@ -7,8 +7,9 @@ import passportLocal from 'passport-local';
 import dotenv from 'dotenv';
 import bcrypt from 'bcrypt';
 import cors from 'cors';
+import connectPgSimple from 'connect-pg-simple';
 
-import { query } from './db/index';
+import { query, pool } from './db/index';
 import homeRouter from './routes/home';
 import userRouter from './routes/user';
 import subredditRouter from './routes/subreddit';
@@ -113,9 +114,14 @@ app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
+const pgSession = connectPgSimple(session);
 // Session Middleware
 app.use(
   session({
+    store: new pgSession({
+      pool: pool,
+      tableName: 'user_sessions',
+    }),
     secret: process.env.SECRET_KEY!,
     resave: false,
     proxy: true,
