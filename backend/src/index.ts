@@ -135,6 +135,8 @@ app.use(
       secure: true,
       maxAge: 1000 * 60 * 60 * 24 * 7,
       httpOnly: true,
+      domain: undefined, // Let browser set automatically
+      path: '/',
     },
   }),
 );
