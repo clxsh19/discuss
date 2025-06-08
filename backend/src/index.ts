@@ -49,17 +49,6 @@ app.use(
     allowedHeaders: ['Content-Type', 'Authorization'],
   }),
 );
-app.use((req, res, next) => {
-  const originalSend = res.send;
-  res.send = function (data) {
-    const cookies = res.getHeaders()['set-cookie'];
-    if (cookies) {
-      console.log('🍪 Set-Cookie headers:', cookies);
-    }
-    return originalSend.call(this, data);
-  };
-  next();
-});
 
 // Passport Local Strategy
 const localStrategy = passportLocal.Strategy;
@@ -129,26 +118,64 @@ app.use(express.urlencoded({ extended: false }));
 
 const pgSession = connectPgSimple(session);
 // Session Middleware
-const sessionConfig = {
-  store: new pgSession({
-    pool: pool,
-    tableName: 'user_sessions',
-    createTableIfMissing: true,
+app.use(
+  session({
+    store: new pgSession({
+      pool: pool,
+      tableName: 'user_sessions',
+      createTableIfMissing: true,
+    }),
+    secret: process.env.SECRET_KEY!,
+    resave: false,
+    proxy: true,
+    saveUninitialized: false,
+    name: 'sessionid',
+    cookie: {
+      sameSite: 'none',
+      secure: true,
+      maxAge: 1000 * 60 * 60 * 24 * 7,
+      httpOnly: true,
+    },
   }),
-  secret: process.env.SECRET_KEY!,
-  resave: false,
-  saveUninitialized: false,
-  name: 'sessionid',
-  proxy: true,
-  cookie: {
-    sameSite: 'none' as const,
-    secure: true,
-    maxAge: 1000 * 60 * 60 * 24 * 7,
-    httpOnly: true,
-  },
-};
-sessionConfig.cookie.secure = true;
-app.use(session(sessionConfig));
+);
+
+app.use((req, res, next) => {
+  console.log('🔍 === REQUEST DEBUG ===');
+  console.log('Method:', req.method, 'URL:', req.url);
+  console.log('Protocol:', req.protocol);
+  console.log('Secure:', req.secure);
+  console.log('Trust proxy setting:', app.get('trust proxy'));
+  console.log('X-Forwarded-Proto:', req.headers['x-forwarded-proto']);
+  console.log('X-Forwarded-For:', req.headers['x-forwarded-for']);
+  console.log('Host:', req.headers.host);
+  console.log('User-Agent:', req.headers['user-agent']);
+  console.log('Origin:', req.headers.origin);
+  console.log('Environment:', process.env.NODE_ENV);
+
+  // Intercept response headers
+  const originalSetHeader = res.setHeader;
+  res.setHeader = function (name, value) {
+    if (name.toLowerCase() === 'set-cookie') {
+      console.log('🍪 === COOKIE BEING SET ===');
+      console.log('Raw Set-Cookie:', value);
+
+      // Parse the cookie to see individual attributes
+      if (Array.isArray(value)) {
+        value.forEach((cookie, index) => {
+          console.log(`Cookie ${index}:`, cookie);
+          console.log('- Has Secure?', cookie.includes('Secure'));
+          console.log('- Has SameSite?', cookie.includes('SameSite'));
+          console.log('- Has HttpOnly?', cookie.includes('HttpOnly'));
+        });
+      } else {
+        console.log('Single Cookie:', value);
+      }
+    }
+    return originalSetHeader.call(this, name, value);
+  };
+
+  next();
+});
 
 // Initialize Passport
 app.use(passport.initialize());
