@@ -40,15 +40,43 @@ declare global {
 }
 
 //cros
+// app.use(
+//   cors({
+//     origin: ['http://localhost:3000', process.env.FRONTEND_URL as string],
+//     credentials: true, // Allow cookies if using authentication
+//     methods: ['GET', 'POST', 'PUT', 'DELETE'],
+//     allowedHeaders: ['Content-Type', 'Authorization'],
+//   }),
+// );
 app.use(
   cors({
-    origin: ['http://localhost:3000', process.env.FRONTEND_URL as string],
-    credentials: true, // Allow cookies if using authentication
+    origin: function (origin, callback) {
+      console.log('Request origin:', origin);
+      console.log('Allowed origins:', [
+        'http://localhost:3000',
+        process.env.FRONTEND_URL,
+      ]);
+
+      const allowedOrigins = [
+        'http://localhost:3000',
+        process.env.FRONTEND_URL as string,
+      ];
+
+      // Allow requests with no origin (mobile apps, Postman, etc.)
+      if (!origin) return callback(null, true);
+
+      if (allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        console.log('Origin not allowed:', origin);
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
+    credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization'],
   }),
 );
-
 // Passport Local Strategy
 const localStrategy = passportLocal.Strategy;
 
