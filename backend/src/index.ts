@@ -128,9 +128,10 @@ app.use(
     resave: false,
     proxy: true,
     saveUninitialized: false,
+    name: 'sessionid',
     cookie: {
       sameSite: 'none',
-      secure: true,
+      secure: false,
       maxAge: 1000 * 60 * 60 * 24 * 7,
       httpOnly: true,
     },
