@@ -129,26 +129,26 @@ app.use(express.urlencoded({ extended: false }));
 
 const pgSession = connectPgSimple(session);
 // Session Middleware
-app.use(
-  session({
-    store: new pgSession({
-      pool: pool,
-      tableName: 'user_sessions',
-      createTableIfMissing: true,
-    }),
-    secret: process.env.SECRET_KEY!,
-    resave: false,
-    proxy: true,
-    saveUninitialized: false,
-    name: 'sessionid',
-    cookie: {
-      sameSite: 'none',
-      secure: true,
-      maxAge: 1000 * 60 * 60 * 24 * 7,
-      httpOnly: true,
-    },
+const sessionConfig = {
+  store: new pgSession({
+    pool: pool,
+    tableName: 'user_sessions',
+    createTableIfMissing: true,
   }),
-);
+  secret: process.env.SECRET_KEY!,
+  resave: false,
+  saveUninitialized: false,
+  name: 'sessionid',
+  proxy: true,
+  cookie: {
+    sameSite: 'none' as const,
+    secure: true,
+    maxAge: 1000 * 60 * 60 * 24 * 7,
+    httpOnly: true,
+  },
+};
+sessionConfig.cookie.secure = true;
+app.use(session(sessionConfig));
 
 // Initialize Passport
 app.use(passport.initialize());
