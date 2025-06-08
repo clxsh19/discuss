@@ -49,6 +49,12 @@ app.use(
     allowedHeaders: ['Content-Type', 'Authorization'],
   }),
 );
+app.use((req, res, next) => {
+  console.log('req.protocol:', req.protocol);
+  console.log('req.secure:', req.secure);
+  console.log('x-forwarded-proto:', req.headers['x-forwarded-proto']);
+  next();
+});
 
 // Passport Local Strategy
 const localStrategy = passportLocal.Strategy;
