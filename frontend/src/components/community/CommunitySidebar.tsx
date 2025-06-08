@@ -13,9 +13,10 @@ const CommunitySidebar = ({
         {/* Subreddit Name */}
         <LinkHref
           href={`/d/${sub_name}`}
-          children={display_name}
           style="text-xl font-semibold text-green-300"
-        />
+        >
+          {display_name}
+        </LinkHref>
         <p className="text-sm text-neutral-300">d/{sub_name}</p>
 
         {/* Subreddit Stats */}
@@ -35,9 +36,10 @@ const CommunitySidebar = ({
           {/* Create Post Button */}
           <LinkHref
             href={`/create_post?sub_name=${sub_name}`}
-            children="Create Post"
             style="p-1 bg-green-600 rounded-md hover:bg-green-700 text-center transition"
-          />
+          >
+            {"Create Post"}
+          </LinkHref>
           <CommunityJoinLeaveButton subreddit_id={subreddit_id} user_role={user_role} />
         </div>
       </div>

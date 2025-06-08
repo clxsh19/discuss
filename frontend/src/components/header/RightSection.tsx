@@ -9,19 +9,21 @@ const RightSection = () => {
 
   return (
     <div className="ml-auto">
-      {( isAuthenticated && user ) ? (
+      {(isAuthenticated && user) ? (
         <UserDropdown username={user.username} />
       ) : (
         <div className="flex items-center space-x-4 text-sm font-medium text-gray-400 mt-1">
           {/* Login And SignUp */}
-          <LinkHref 
+          <LinkHref
             href="/login"
-            children="Login"
-          />
-          <LinkHref 
+          >
+            {"Login"}
+          </LinkHref>
+          <LinkHref
             href="/register"
-            children="Sign Up"
-          />
+          >
+            {"Sign Up"}
+          </LinkHref>
         </div>
       )}
     </div>

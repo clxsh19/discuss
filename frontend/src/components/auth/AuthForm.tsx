@@ -16,7 +16,7 @@ const textInputStyle = {
           rounded-md ring-0 hover:border-white"
 }
 
-const AuthForm = ({ linkText, linkLabel, submitText, authSubmit } : AuthFormProps) => {
+const AuthForm = ({ linkText, linkLabel, submitText, authSubmit }: AuthFormProps) => {
   const { updateAuthStatus } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
@@ -47,7 +47,7 @@ const AuthForm = ({ linkText, linkLabel, submitText, authSubmit } : AuthFormProp
 
   return (
     <form className="space-y-6" onSubmit={handleSubmit}>
-      <TextInput 
+      <TextInput
         name="username"
         label="Username"
         placeholder="Enter your username"
@@ -55,7 +55,7 @@ const AuthForm = ({ linkText, linkLabel, submitText, authSubmit } : AuthFormProp
         labelStyle={textInputStyle.label}
         inputStyle={textInputStyle.input}
       />
-      <TextInput 
+      <TextInput
         name="password"
         label="Password"
         placeholder="Enter your password"
@@ -66,15 +66,16 @@ const AuthForm = ({ linkText, linkLabel, submitText, authSubmit } : AuthFormProp
 
       <div className="space-x-1 text-sm text-gray-400">
         <span>{linkText}</span>
-        <LinkHref 
+        <LinkHref
           href={`/${linkLabel}`}
-          children={linkLabel}
           style="text-blue-400 hover:underline"
-        />
+        >
+          {linkLabel}
+        </LinkHref>
       </div>
 
       <div className="text-end">
-        <Button 
+        <Button
           type="submit"
           label={submitText}
           style="px-4 py-2 text-end font-medium text-white rounded-md bg-blue-700 hover:bg-blue-600"

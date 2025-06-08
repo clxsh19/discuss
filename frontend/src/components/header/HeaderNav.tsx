@@ -20,18 +20,21 @@ const HeaderNav = () => {
           <LinkHref
             href="/create_post"
             style='hover:underline'
-            children="Create Post"
-          />
+          >
+            {"Create Post"}
+          </LinkHref>
           <LinkHref
             href="/create_community"
             style='hover:underline'
-            children="Create Community"
-          />
+          >
+            {"Create Community"}
+          </LinkHref>
           <LinkHref
             href="/communities"
             style='hover:underline'
-            children="Communities"
-          />
+          >
+            {"Communities"}
+          </LinkHref>
         </div>
 
         {/* Right Section */}

@@ -1,6 +1,5 @@
 import { fetchPostDetail, fetchPostComments } from "@/lib/data_api";
 import PostView from "@/components/post/PostView";
-// import { buildCommentTree } from '@/lib/utils';
 
 import { buildPostWithMetaData } from "@/lib/utils";
 
