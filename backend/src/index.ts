@@ -22,7 +22,8 @@ import ErrorHandler from './middlewares/errorHandler';
 dotenv.config();
 
 const app = express();
-app.set('trust proxy', 1);
+//app.set('trust proxy', 1);
+app.set('trust proxy', true); // or use app.set('trust proxy', 'loopback')
 
 // Extending Express.User defined in @types/passport
 declare global {
