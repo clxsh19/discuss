@@ -62,9 +62,6 @@ app.use(
         process.env.FRONTEND_URL as string,
       ];
 
-      // Allow requests with no origin (mobile apps, Postman, etc.)
-      if (!origin) return callback(null, true);
-
       if (allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {
@@ -159,7 +156,7 @@ app.use(
     name: 'sessionid',
     cookie: {
       sameSite: 'none',
-      secure: false,
+      secure: true,
       maxAge: 1000 * 60 * 60 * 24 * 7,
       httpOnly: true,
     },
