@@ -16,6 +16,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     setLoading(true);
     try {
       const data = await userData();
+      alert(data.user);
       console.log(data.status);
       console.log(data.user);
       setAuthStatus(data.status);
