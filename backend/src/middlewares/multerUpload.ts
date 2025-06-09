@@ -74,11 +74,11 @@ const multipleFileUpload = (
   res: Response,
   next: NextFunction,
 ) => {
-  console.log(req.files);
   upload.fields([
     { name: 'banner', maxCount: 1 },
     { name: 'logo', maxCount: 1 },
   ])(req, res, async (err) => {
+    console.log(req.files);
     if (err)
       return handleMulterError(err, 'middleware/multipleFileUpload', next);
     await handleUpload(req, res, next, 'middleware/multipleFileUpload');
