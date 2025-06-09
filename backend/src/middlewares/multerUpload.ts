@@ -15,7 +15,10 @@ const handleMulterError = (err: any, location: string, next: NextFunction) => {
       message = 'Unexpected file field.';
 
     return next(
-      new CustomError('File Upload Error', 400, { errors: message, location }),
+      new CustomError('Multer Error', 400, {
+        errors: err.message || message,
+        location,
+      }),
     );
   }
 
@@ -80,5 +83,4 @@ const multipleFileUpload = (
     await handleUpload(req, res, next, 'middleware/multipleFileUpload');
   });
 };
-
 export { fileUpload, multipleFileUpload };

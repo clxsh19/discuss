@@ -62,7 +62,6 @@ passport.use(
         [username],
       );
       const user_data = result.rows[0];
-      console.log(user_data);
 
       if (!user_data) {
         return done(null, false, {
@@ -89,12 +88,10 @@ passport.use(
 );
 
 passport.serializeUser((user: Express.User, done) => {
-  console.log('serialize');
   done(null, user.id);
 });
 
 passport.deserializeUser(async (id: number, done) => {
-  console.log('deserialize');
   try {
     const result = await query(
       'SELECT user_id, username FROM users WHERE user_id = $1',
@@ -140,50 +137,6 @@ app.use(
     },
   }),
 );
-app.use((req, res, next) => {
-  console.log('🌐 CORS DEBUG:');
-  console.log('Origin:', req.headers.origin);
-  console.log('Method:', req.method);
-  console.log('FRONTEND_URL env:', process.env.FRONTEND_URL);
-  next();
-});
-app.use((req, res, next) => {
-  console.log('🔍 === REQUEST DEBUG ===');
-  console.log('Method:', req.method, 'URL:', req.url);
-  console.log('Protocol:', req.protocol);
-  console.log('Secure:', req.secure);
-  console.log('Trust proxy setting:', app.get('trust proxy'));
-  console.log('X-Forwarded-Proto:', req.headers['x-forwarded-proto']);
-  console.log('X-Forwarded-For:', req.headers['x-forwarded-for']);
-  console.log('Host:', req.headers.host);
-  console.log('User-Agent:', req.headers['user-agent']);
-  console.log('Origin:', req.headers.origin);
-  console.log('Environment:', process.env.NODE_ENV);
-
-  // Intercept response headers
-  const originalSetHeader = res.setHeader;
-  res.setHeader = function (name, value) {
-    if (name.toLowerCase() === 'set-cookie') {
-      console.log('🍪 === COOKIE BEING SET ===');
-      console.log('Raw Set-Cookie:', value);
-
-      // Parse the cookie to see individual attributes
-      if (Array.isArray(value)) {
-        value.forEach((cookie, index) => {
-          console.log(`Cookie ${index}:`, cookie);
-          console.log('- Has Secure?', cookie.includes('Secure'));
-          console.log('- Has SameSite?', cookie.includes('SameSite'));
-          console.log('- Has HttpOnly?', cookie.includes('HttpOnly'));
-        });
-      } else {
-        console.log('Single Cookie:', value);
-      }
-    }
-    return originalSetHeader.call(this, name, value);
-  };
-
-  next();
-});
 
 // Initialize Passport
 app.use(passport.initialize());

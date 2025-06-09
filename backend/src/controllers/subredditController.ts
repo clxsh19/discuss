@@ -98,7 +98,6 @@ const getSubsByTag = asyncHandler(async (req: Request, res: Response) => {
 
   const offset = Number(req.query.offset) || 0;
   const tag = req.query.tag as string;
-  // console.log(tag);
   const result = await getByTag({ tag, offset });
   res.status(200).json({
     success: true,

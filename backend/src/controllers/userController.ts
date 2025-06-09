@@ -85,7 +85,6 @@ const postLogout = asyncHandler(
             }),
           );
         }
-        console.log('After logout : ', req.session);
 
         res.clearCookie('connect.sid', {
           path: '/',
@@ -103,13 +102,6 @@ const postLogout = asyncHandler(
 );
 
 const getAuthStatus = (req: Request, res: Response) => {
-  const cookies = req.headers.cookie;
-  if (cookies) {
-    const cookie = cookies.split('; ');
-    console.log('User Cookies:', cookie);
-  } else {
-    console.log('User Status No Cookies');
-  }
   res.json({ success: true, authenticated: true, user: req.user });
 };
 
