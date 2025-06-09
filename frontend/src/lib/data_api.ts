@@ -204,19 +204,13 @@ export async function userData(): Promise<{
   user: { id: number; username: string } | null;
 }> {
   const local_cookies = cookies();
-  const hasCookie = local_cookies.has('connect.sid');
+  const hasCookie = local_cookies.has('sessionid');
   if (!hasCookie) {
     return { status: false, user: null };
   }
 
   try {
-    const data = await fetchWithConfig('user/status', {
-      headers: {
-        Cookie: local_cookies.toString(),
-      },
-      credentials: 'include',
-      cache: 'no-cache',
-    });
+    const data = await fetchWithConfig('user/status');
 
     return {
       status: !!data.authenticated,
