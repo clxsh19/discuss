@@ -12,9 +12,8 @@ const fetchWithConfig = async (url: string, options: RequestInit = {}) => {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
-      Origin:
-        process.env.FRONTEND_URL || 'https://discuss-peach-rho.vercel.app',
-      'User-Agent': 'Next.js/Vercel',
+      // Origin: process.env.FRONTEND_URL || 'https://discuss-peach-rho.vercel.app',
+      // 'User-Agent': 'Next.js/Vercel',
       ...(cookieString && { Cookie: cookieString }),
       ...options.headers,
     },
