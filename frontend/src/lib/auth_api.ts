@@ -1,7 +1,39 @@
 'use server';
-// import { revalidatePath } from "next/cache";
-// import { redirect } from 'next/navigation';
+
 import { cookies } from 'next/headers';
+
+function parseCookie(setCookieHeader: string) {
+  const cookie: any = {};
+
+  // Split by semicolon and process each part
+  setCookieHeader.split(';').forEach((part, index) => {
+    const trimmed = part.trim();
+
+    if (index === 0) {
+      // First part is name=value
+      const [name, value] = trimmed.split('=');
+      cookie.name = name;
+      cookie.value = decodeURIComponent(value);
+    } else {
+      // Handle attributes
+      if (trimmed.toLowerCase() === 'httponly') {
+        cookie.httpOnly = true;
+      } else if (trimmed.toLowerCase() === 'secure') {
+        cookie.secure = true;
+      } else if (trimmed.toLowerCase().startsWith('samesite=')) {
+        cookie.sameSite = trimmed.split('=')[1].toLowerCase();
+      } else if (trimmed.toLowerCase().startsWith('path=')) {
+        cookie.path = trimmed.split('=')[1];
+      } else if (trimmed.toLowerCase().startsWith('expires=')) {
+        cookie.expires = new Date(trimmed.split('=')[1]);
+      } else if (trimmed.toLowerCase().startsWith('max-age=')) {
+        cookie.maxAge = parseInt(trimmed.split('=')[1]);
+      }
+    }
+  });
+
+  return cookie;
+}
 
 const setCookiesFromHeader = (res: Response) => {
   const setCookieHeader = res.headers.get('Set-Cookie');
@@ -33,98 +65,111 @@ const setCookiesFromHeader = (res: Response) => {
   }
 };
 
-// export async function userLogin(formData: FormData) {
-//   try {
-//     const username = formData.get('username') as string;
-//     const password = formData.get('password') as string;
-//
-//     const res = await fetch(`${process.env.BACKEND_API_URL}/api/user/login`, {
-//       method: 'POST',
-//       credentials: 'include',
-//       headers: {
-//         'Content-Type': 'application/json', // required for CORS and cookies
-//       },
-//       body: JSON.stringify({ username, password }),
-//     });
-//     console.log('Set-Cookie:', res.headers.get('set-cookie'));
-//     const data = await res.json();
-//     // await new Promise(r => setTimeout(r, 2000));
-//
-//     if (!res.ok) {
-//       return {
-//         error: data.details.errors || 'Unknown: Failed to loginn hb.',
-//         message: '',
-//       };
-//     }
-//
-//     setCookiesFromHeader(res);
-//     return { error: '', message: data.message };
-//   } catch (error) {
-//     console.error('Unknow Error: ', error);
-//     return { error: 'Unknown: Failed to login.', message: '' };
-//   }
-// }
-
 export async function userLogin(formData: FormData) {
   try {
     const username = formData.get('username') as string;
     const password = formData.get('password') as string;
 
-    const url = `${process.env.BACKEND_API_URL}/api/user/login`;
-    console.log('🔍 Making login request to:', url);
-
-    const res = await fetch(url, {
+    const res = await fetch(`${process.env.BACKEND_API_URL}/api/user/login`, {
       method: 'POST',
       credentials: 'include',
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/json', // required for CORS and cookies
       },
       body: JSON.stringify({ username, password }),
     });
-
-    // Log response status
-    console.log('📡 Response Status:', res.status);
-
-    // Log all response headers
-    console.log('📬 Response Headers:');
-    res.headers.forEach((value, key) => {
-      console.log(`  ${key}: ${value}`);
-    });
-
-    // Attempt to get set-cookie (will not work on client-side JS due to security)
-    console.log(
-      '🍪 res.headers.get("set-cookie"):',
-      res.headers.get('set-cookie'),
-    );
-
-    // Try reading cookies from document (if run in browser and allowed)
-    if (typeof document !== 'undefined') {
-      console.log('🧁 document.cookie:', document.cookie);
-    }
-
     const data = await res.json();
 
     if (!res.ok) {
-      console.log('❌ Login failed. Response body:', data);
       return {
-        error: data?.details?.errors || 'Unknown: Failed to login.',
+        error: data.details.errors || 'Unknown: Failed to loginn hb.',
         message: '',
       };
     }
+    // Parse and set cookie using backend values
+    const setCookieHeader = res.headers.get('set-cookie');
+    if (setCookieHeader) {
+      const cookieData = parseCookie(setCookieHeader);
+      console.log('Parsed cookie data:', cookieData);
 
-    // Log what the backend responded with
-    console.log('✅ Login successful. Response body:', data);
-
-    // Log if you're doing any manual cookie handling
-    console.log('🔧 Attempting to call setCookiesFromHeader()');
-    setCookiesFromHeader(res);
-
+      // Set cookie using parsed values from backend
+      cookies().set(cookieData.name, cookieData.value, {
+        httpOnly: cookieData.httpOnly || false,
+        secure: cookieData.secure || false,
+        sameSite: cookieData.sameSite || 'lax',
+        path: cookieData.path || '/',
+        maxAge: cookieData.maxAge,
+        expires: cookieData.expires,
+      });
+    }
+    // setCookiesFromHeader(res);
     return { error: '', message: data.message };
   } catch (error) {
-    console.error('🚨 Unknown Error during login:', error);
+    console.error('Unknow Error: ', error);
     return { error: 'Unknown: Failed to login.', message: '' };
   }
 }
+
+// export async function userLogin(formData: FormData) {
+//   try {
+//     const username = formData.get('username') as string;
+//     const password = formData.get('password') as string;
+//
+//     const url = `${process.env.BACKEND_API_URL}/api/user/login`;
+//     console.log('🔍 Making login request to:', url);
+//
+//     const res = await fetch(url, {
+//       method: 'POST',
+//       credentials: 'include',
+//       headers: {
+//         'Content-Type': 'application/json',
+//       },
+//       body: JSON.stringify({ username, password }),
+//     });
+//
+//     // Log response status
+//     console.log('📡 Response Status:', res.status);
+//
+//     // Log all response headers
+//     console.log('📬 Response Headers:');
+//     res.headers.forEach((value, key) => {
+//       console.log(`  ${key}: ${value}`);
+//     });
+//
+//     // Attempt to get set-cookie (will not work on client-side JS due to security)
+//     console.log(
+//       '🍪 res.headers.get("set-cookie"):',
+//       res.headers.get('set-cookie'),
+//     );
+//
+//     // Try reading cookies from document (if run in browser and allowed)
+//     if (typeof document !== 'undefined') {
+//       console.log('🧁 document.cookie:', document.cookie);
+//     }
+//
+//     const data = await res.json();
+//
+//     if (!res.ok) {
+//       console.log('❌ Login failed. Response body:', data);
+//       return {
+//         error: data?.details?.errors || 'Unknown: Failed to login.',
+//         message: '',
+//       };
+//     }
+//
+//     // Log what the backend responded with
+//     console.log('✅ Login successful. Response body:', data);
+//
+//     // Log if you're doing any manual cookie handling
+//     console.log('🔧 Attempting to call setCookiesFromHeader()');
+//     setCookiesFromHeader(res);
+//
+//     return { error: '', message: data.message };
+//   } catch (error) {
+//     console.error('🚨 Unknown Error during login:', error);
+//     return { error: 'Unknown: Failed to login.', message: '' };
+//   }
+// }
 export async function userRegister(formData: FormData) {
   try {
     const res = await fetch(
