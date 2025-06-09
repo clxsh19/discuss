@@ -15,7 +15,7 @@ const handleMulterError = (err: any, location: string, next: NextFunction) => {
       message = 'Unexpected file field.';
 
     return next(
-      new CustomError('Multer Error', 400, {
+      new CustomError('File Upload Error', 400, {
         errors: err.message || message,
         location,
       }),
@@ -74,6 +74,7 @@ const multipleFileUpload = (
   res: Response,
   next: NextFunction,
 ) => {
+  console.log(req.files);
   upload.fields([
     { name: 'banner', maxCount: 1 },
     { name: 'logo', maxCount: 1 },
