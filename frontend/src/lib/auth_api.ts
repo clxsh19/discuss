@@ -35,35 +35,22 @@ function parseCookie(setCookieHeader: string) {
   return cookie;
 }
 
-const setCookiesFromHeader = (res: Response) => {
-  const setCookieHeader = res.headers.get('Set-Cookie');
+function setCookiesFromHeader(res: Response) {
+  const setCookieHeader = res.headers.get('set-cookie');
   if (setCookieHeader) {
-    // Split the Set-Cookie header to extract cookies
-    const [cookieNameValue, ...attributes] = setCookieHeader.split(';');
-    const [cookieName, cookieValue] = cookieNameValue.split('=');
-    const decodedCookieValue = decodeURIComponent(cookieValue);
+    const cookieData = parseCookie(setCookieHeader);
 
-    // Initialize cookie options
-    const cookieOptions: Record<string, any> = {};
-    attributes.forEach((attr) => {
-      const trimmedAttr = attr.trim();
-
-      if (trimmedAttr.toLowerCase() === 'httponly') {
-        cookieOptions.httpOnly = true;
-      } else if (trimmedAttr.toLowerCase().startsWith('samesite=')) {
-        cookieOptions.sameSite = trimmedAttr.split('=')[1] as
-          | 'strict'
-          | 'lax'
-          | 'none';
-      } else if (trimmedAttr.toLowerCase().startsWith('path=')) {
-        cookieOptions.path = trimmedAttr.split('=')[1];
-      } else if (trimmedAttr.toLowerCase().startsWith('expires=')) {
-        cookieOptions.expires = new Date(trimmedAttr.split('=')[1]);
-      }
+    // Set cookie using parsed values from backend
+    cookies().set(cookieData.name, cookieData.value, {
+      httpOnly: cookieData.httpOnly || false,
+      secure: cookieData.secure || false,
+      sameSite: cookieData.sameSite || 'lax',
+      path: cookieData.path || '/',
+      maxAge: cookieData.maxAge,
+      expires: cookieData.expires,
     });
-    cookies().set(cookieName, decodedCookieValue, cookieOptions);
   }
-};
+}
 
 export async function userLogin(formData: FormData) {
   try {
@@ -74,7 +61,7 @@ export async function userLogin(formData: FormData) {
       method: 'POST',
       credentials: 'include',
       headers: {
-        'Content-Type': 'application/json', // required for CORS and cookies
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify({ username, password }),
     });
@@ -82,27 +69,11 @@ export async function userLogin(formData: FormData) {
 
     if (!res.ok) {
       return {
-        error: data.details.errors || 'Unknown: Failed to loginn hb.',
+        error: data.details.errors || 'Unknown: Failed to login.',
         message: '',
       };
     }
-    // Parse and set cookie using backend values
-    const setCookieHeader = res.headers.get('set-cookie');
-    if (setCookieHeader) {
-      const cookieData = parseCookie(setCookieHeader);
-      console.log('Parsed cookie data:', cookieData);
-
-      // Set cookie using parsed values from backend
-      cookies().set(cookieData.name, cookieData.value, {
-        httpOnly: cookieData.httpOnly || false,
-        secure: cookieData.secure || false,
-        sameSite: cookieData.sameSite || 'lax',
-        path: cookieData.path || '/',
-        maxAge: cookieData.maxAge,
-        expires: cookieData.expires,
-      });
-    }
-    // setCookiesFromHeader(res);
+    setCookiesFromHeader(res);
     return { error: '', message: data.message };
   } catch (error) {
     console.error('Unknow Error: ', error);
@@ -121,7 +92,6 @@ export async function userRegister(formData: FormData) {
       },
     );
     const data = await res.json();
-    console.log(res);
 
     if (!res.ok) {
       return {
@@ -141,6 +111,11 @@ export async function userRegister(formData: FormData) {
 }
 
 export async function userLogout() {
+  const local_cookies = cookies();
+  const hasCookie = local_cookies.has('sessionid');
+  if (!hasCookie) {
+    return { error: '', message: '' };
+  }
   try {
     const res = await fetch(`${process.env.BACKEND_API_URL}/api/user/logout`, {
       method: 'POST',

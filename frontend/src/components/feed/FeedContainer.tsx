@@ -19,7 +19,6 @@ const FeedContainer = ({ initialPosts, initialHasMore, subName }: FeedContainerP
   const hasMoreRef = useRef(initialHasMore);
 
   const loadMorePosts = async (reset = false, newSort?: SortType, newTimeFrame?: TimeFrameType) => {
-    console.log('loading new posts')
     if (!hasMoreRef.current && !reset) return;
 
     // if(reset) setIsSorting(true);

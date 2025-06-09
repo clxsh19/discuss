@@ -3,7 +3,7 @@
 import { cookies } from 'next/headers';
 import { JSDOM } from 'jsdom';
 
-const fetchWithConfig = async (url: string, options: RequestInit = {}) => {
+async function fetchWithConfig(url: string, options: RequestInit = {}) {
   // Get all cookies as string
   const cookieStore = cookies();
   const cookieString = cookieStore.toString();
@@ -43,7 +43,7 @@ const fetchWithConfig = async (url: string, options: RequestInit = {}) => {
     throw new Error(errorText);
   }
   return res.json();
-};
+}
 
 // post
 
@@ -58,7 +58,6 @@ export async function fetchAllPosts(
       sort,
       t,
     });
-    //console.log(queryParams);
     const data = await fetchWithConfig(`post/all?${queryParams}`);
     // data.hasMore = Array.isArray(data.posts) && data.posts.length > 0;
     // await new Promise(r=> setTimeout(r, 2000))
@@ -133,13 +132,7 @@ export async function fetchPostComments(
 
 export async function fetchAllCommunityNames() {
   try {
-    const data = await fetchWithConfig('subreddit/all_names', {
-      headers: {
-        Cookie: cookies().toString(),
-      },
-      credentials: 'include',
-      cache: 'no-cache',
-    });
+    const data = await fetchWithConfig('subreddit/all_names');
     return data.communities || [];
   } catch (error) {
     console.error('Unknown Error fetching all communities name.', error);
@@ -150,13 +143,7 @@ export async function fetchAllCommunityNames() {
 
 export async function fetchSubData(sub_name: string) {
   try {
-    const data = await fetchWithConfig(`subreddit/${sub_name}`, {
-      headers: {
-        Cookie: cookies().toString(),
-      },
-      credentials: 'include',
-      cache: 'no-cache',
-    });
+    const data = await fetchWithConfig(`subreddit/${sub_name}`);
     return data.subreddit_detail;
   } catch (error) {
     console.error('Unknow Error fetching sub data', error);
