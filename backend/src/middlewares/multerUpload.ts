@@ -74,6 +74,18 @@ const multipleFileUpload = (
   res: Response,
   next: NextFunction,
 ) => {
+  console.log('📦 req.body:');
+  console.log(JSON.stringify(req.body, null, 2)); // formatted view of text fields
+
+  console.log('🖼️ req.files:');
+  Object.entries(req.files || {}).forEach(([fieldName, files]) => {
+    console.log(`Field: ${fieldName}`);
+    (files as Express.Multer.File[]).forEach((file, idx) => {
+      console.log(`  [${idx}] originalname: ${file.originalname}`);
+      console.log(`      mimetype: ${file.mimetype}`);
+      console.log(`      size: ${file.size}`);
+    });
+  });
   upload.fields([
     { name: 'banner', maxCount: 1 },
     { name: 'logo', maxCount: 1 },
