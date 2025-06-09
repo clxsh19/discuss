@@ -4,15 +4,21 @@ import { cookies } from 'next/headers';
 import { JSDOM } from 'jsdom';
 
 const fetchWithConfig = async (url: string, options: RequestInit = {}) => {
+  // Get all cookies as string
+  const cookieStore = cookies();
+  const cookieString = cookieStore.toString();
+
   const res = await fetch(`${process.env.BACKEND_API_URL}/api/${url}`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
+      Origin:
+        process.env.FRONTEND_URL || 'https://discuss-peach-rho.vercel.app',
+      'User-Agent': 'Next.js/Vercel',
+      ...(cookieString && { Cookie: cookieString }),
       ...options.headers,
-      Cookie: cookies().toString(),
     },
     ...options,
-    // credentials: 'include', // cache: 'no-cache',
   });
 
   if (!res.ok) {
@@ -37,7 +43,6 @@ const fetchWithConfig = async (url: string, options: RequestInit = {}) => {
 
     throw new Error(errorText);
   }
-
   return res.json();
 };
 
