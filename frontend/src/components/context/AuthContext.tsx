@@ -12,18 +12,19 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [user, setUser] = useState<UserInfo | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchUserStatus = async(): Promise<void> => {
+  const fetchUserStatus = async (): Promise<void> => {
     setLoading(true);
     try {
       const data = await userData();
+      alert(data);
       setAuthStatus(data.status);
       setUser(data.user);
     } catch (error) {
       console.error('Error fetching user status:', error);
       setAuthStatus(false);
       setUser(null);
-    } 
-   
+    }
+
     setLoading(false);
   };
 
