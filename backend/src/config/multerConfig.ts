@@ -38,9 +38,9 @@ const fileFilter = (
 
 const upload = multer({
   storage: storage,
-  limits: { 
+  limits: {
     fileSize: 10 * 1024 * 1024, // 10MB limit
-    files: 1 // Limit to 1 file per upload
+    files: 2, // Limit to 1 file per upload
   },
   fileFilter: fileFilter as any, // Type assertion to bypass the type issue
 });
@@ -55,7 +55,8 @@ const uploadToCloudinary = (fileBuffer: Buffer, fileName: string) => {
           public_id: fileName,
         },
         (error, result) => {
-          if (error) reject(new Error(`Cloudinary upload failed: ${error.message}`));
+          if (error)
+            reject(new Error(`Cloudinary upload failed: ${error.message}`));
           else resolve(result);
         },
       )

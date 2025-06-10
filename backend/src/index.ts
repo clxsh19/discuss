@@ -22,6 +22,11 @@ import ErrorHandler from './middlewares/errorHandler';
 dotenv.config();
 
 const app = express();
+
+// Environment-specific configuration
+const isProduction = process.env.NODE_ENV === 'production';
+const isDevelopment = process.env.NODE_ENV === 'development';
+
 app.set('trust proxy', 1);
 // app.set('trust proxy', 'loopback');
 
@@ -40,10 +45,15 @@ declare global {
   }
 }
 
-//cros
+//cors
+
+const corsOrigins = isDevelopment
+  ? ['http://localhost:3000', 'http://127.0.0.1:3000']
+  : [process.env.FRONTEND_URL as string].filter(Boolean);
+
 app.use(
   cors({
-    origin: ['http://localhost:3000', process.env.FRONTEND_URL as string],
+    origin: corsOrigins,
     credentials: true, // Allow cookies if using authentication
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization'],
@@ -124,15 +134,15 @@ app.use(
     }),
     secret: process.env.SECRET_KEY!,
     resave: false,
-    proxy: true,
+    proxy: isProduction,
     saveUninitialized: false,
     name: 'sessionid',
     cookie: {
-      sameSite: 'none',
-      secure: true,
+      sameSite: isProduction ? 'none' : 'strict',
+      secure: isProduction,
       maxAge: 1000 * 60 * 60 * 24 * 7,
       httpOnly: true,
-      domain: undefined, // Let browser set automatically
+      // domain: undefined, // Let browser set automatically
       path: '/',
     },
   }),
@@ -151,6 +161,12 @@ const generalLimiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
+  skip: isDevelopment
+    ? (req) => {
+        // Skip rate limiting for localhost in development
+        return req.ip === '127.0.0.1' || req.ip === '::1';
+      }
+    : undefined,
 });
 app.use(generalLimiter);
 
@@ -165,7 +181,7 @@ app.use(ErrorHandler);
 
 const port: number = Number(process.env.PORT) || 5000;
 // const host: string = process.env.HOST || 'localhost';
-const host = '0.0.0.0';
+const host: string = isProduction ? '0.0.0.0' : 'localhost';
 const server = http.createServer(app);
 
 server.listen(port, host, () => {

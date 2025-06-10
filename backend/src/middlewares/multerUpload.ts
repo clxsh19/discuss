@@ -32,7 +32,6 @@ const handleMulterError = (err: any, location: string, next: NextFunction) => {
 
 const handleUpload = async (
   req: Request,
-  res: Response,
   next: NextFunction,
   location: string,
 ) => {
@@ -65,7 +64,7 @@ const handleUpload = async (
 const fileUpload = (req: Request, res: Response, next: NextFunction) => {
   upload.single('file')(req, res, async (err) => {
     if (err) return handleMulterError(err, 'middleware/fileUpload', next);
-    await handleUpload(req, res, next, 'middleware/fileUpload');
+    await handleUpload(req, next, 'middleware/fileUpload');
   });
 };
 
@@ -74,22 +73,13 @@ const multipleFileUpload = (
   res: Response,
   next: NextFunction,
 ) => {
-  console.log('=== FILE DEBUG INFO ===');
-  console.log('Content-Type:', req.headers['content-type']);
-  console.log('Content-Length:', req.headers['content-length']);
-
-  // Log form data keys if available
-  if (req.body) {
-    console.log('Body keys:', Object.keys(req.body));
-  }
   upload.fields([
-    { name: 'banner', maxCount: 1 },
-    { name: 'logo', maxCount: 1 },
+    { name: 'banner', maxCount: 3 },
+    { name: 'logo', maxCount: 3 },
   ])(req, res, async (err) => {
-    console.log(req.files);
     if (err)
       return handleMulterError(err, 'middleware/multipleFileUpload', next);
-    await handleUpload(req, res, next, 'middleware/multipleFileUpload');
+    // await handleUpload(req, next, 'middleware/multipleFileUpload');
   });
 };
 export { fileUpload, multipleFileUpload };
