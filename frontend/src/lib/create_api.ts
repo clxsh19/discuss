@@ -183,14 +183,6 @@ export async function createCommunity(prevState: any, formData: FormData) {
     if (formTags.length < 2) {
       throw new Error('Select at least two tags!');
     }
-    formData.forEach((value, key) => {
-      if (value instanceof File) {
-        console.log(`${key}:`, value.name, value.type, value.size);
-      } else {
-        console.log(`${key}:`, value);
-      }
-    });
-
     await fetchWithConfig('subreddit/create', {
       body: formData,
     });

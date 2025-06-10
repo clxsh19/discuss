@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { useState } from 'react';
 import { CommentIcon, ShareIcon } from '@/components/Icons';
 import { FeedActionButtonsProps } from '@/interface/feed/FeedItemProps';
@@ -55,11 +56,13 @@ const FeedActionButtons = ({
                   controls
                 />
               ) : (
-                <img
+                <Image
                   src={mediaUrl}
                   alt="Image content"
+                  width={800}  // Set a reasonable width
+                  height={600} // Set a reasonable height (will maintain aspect ratio)
                   className="w-full h-auto rounded object-cover"
-                  loading='lazy'
+                  sizes="100vw"
                 />
               )}
             </div>
